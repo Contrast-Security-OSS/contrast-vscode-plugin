@@ -1,0 +1,339 @@
+{
+  "contrastSettings": {
+    "formFields": {
+      "source": {
+        "translate": "ソース",
+        "options": [
+          {
+            "name": "scan",
+            "translate": "スキャン"
+          },
+          {
+            "name": "assess",
+            "translate": "評価"
+          }
+        ]
+      },
+      "contrastURL": {
+        "translate": "コントラストURL",
+        "placeholder": "コントラストURLを入力してください"
+      },
+      "userName": {
+        "translate": "ユーザー名",
+        "placeholder": "ユーザー名を入力してください"
+      },
+      "serviceKey": {
+        "translate": "サービスキー",
+        "placeholder": "サービスキーを入力してください"
+      },
+      "apiKey": {
+        "translate": "APIキー",
+        "placeholder": "APIキーを入力してください"
+      },
+      "organizationId": {
+        "translate": "組織ID",
+        "placeholder": "組織IDを入力してください"
+      },
+      "projectName": {
+        "translate": "プロジェクト名"
+      },
+      "vulnerabilityRefreshCycle": {
+        "translate": "脆弱性更新サイクル"
+      }
+    },
+    "organization": {
+      "organizationName": {
+        "translate": "組織"
+      },
+      "projectName": {
+        "translate": "名前"
+      },
+      "type": {
+        "translate": "タイプ"
+      }
+    },
+    "buttons": {
+      "add": {
+        "translate": "追加"
+      },
+      "cancel": {
+        "translate": "キャンセル"
+      },
+      "update": {
+        "translate": "更新"
+      },
+      "retrieve": {
+        "translate": "取得"
+      }
+    },
+    "others": {
+      "minute": {
+        "translate": "分"
+      }
+    },
+    "tooltips": {
+      "edit": {
+        "translate": "編集"
+      },
+      "delete": {
+        "translate": "削除"
+      }
+    },
+    "errorMessages": {
+      "contrastURL": {
+        "required": {
+          "translate": "コントラストURLが必要です"
+        },
+        "invalid": {
+          "translate": "無効なURL: 有効なContrast Security URLを入力してください"
+        }
+      },
+      "userName": {
+        "required": {
+          "translate": "ユーザー名が必要です"
+        },
+        "invalid": {
+          "translate": "無効なユーザー名: 有効なメールアドレスを入力してください"
+        }
+      },
+      "serviceKey": {
+        "required": {
+          "translate": "サービスキーは必須です"
+        }
+      },
+      "apiKey": {
+        "required": {
+          "translate": "APIキーは必須です"
+        }
+      },
+      "organizationId": {
+        "required": {
+          "translate": "組織は必須です"
+        }
+      },
+      "minute": {
+        "required": {
+          "translate": "脆弱性リフレッシュサイクルは必須です"
+        }
+      }
+    }
+  },
+  "contrastScan": {
+    "translate": "コントラストスキャン",
+    "filter": {
+      "translate": "フィルタ",
+      "severity": {
+        "translate": "重大度",
+        "options": [
+          {
+            "name": "critical",
+            "translate": "クリティカル"
+          },
+          {
+            "name": "high",
+            "translate": "高い"
+          },
+          {
+            "name": "medium",
+            "translate": "中間"
+          },
+          {
+            "name": "low",
+            "translate": "低い"
+          },
+          {
+            "name": "note",
+            "translate": "注意"
+          }
+        ]
+      },
+      "status": {
+        "translate": "ステータス",
+        "options": [
+          {
+            "name": "reported",
+            "translate": "報告済み"
+          },
+          {
+            "name": "confirmed",
+            "translate": "確認済み"
+          },
+          {
+            "name": "suspicious",
+            "translate": "疑わしい"
+          },
+          {
+            "name": "notAproblem",
+            "translate": "問題なし"
+          },
+          {
+            "name": "remediated",
+            "translate": "修正済み"
+          },
+          {
+            "name": "remediatedAutoVerified",
+            "translate": "自動検証修正済み"
+          },
+          {
+            "name": "reopened",
+            "translate": "再開"
+          }
+        ]
+      },
+      "buttons": {
+        "run": {
+          "translate": "実行"
+        },
+        "clear": {
+          "translate": "クリア"
+        }
+      }
+    },
+    "currentFile": {
+      "translate": "現在のファイル"
+    },
+    "vulnerabilityReport": {
+      "translate": "脆弱性レポート",
+      "htmlElements": {
+        "translate": "<h1>プロジェクトの脆弱性レポートは見つかりませんでした:</h1><ol><li>アクティビティバーのContrastビューに移動します。</li><li>プロジェクトのために脆弱性を取得ボタンをクリックします。</li></ol><p>脆弱性を取得した後、この画面に戻るか、更新アイコンをクリックして最新の脆弱性レポートを確認してください。</p><p>ヒント: <span style='font-weight: 400;'>アクティビティバーのContrast Scanパネルからいつでもこの画面にアクセスできます。</span></p>"
+      }
+    },
+    "tooltips": {
+      "refresh": {
+        "translate": "リフレッシュ"
+      }
+    }
+  },
+  "apiResponse": {
+    "projectsFetchedSuccessful": {
+      "translate": "プロジェクトの取得に成功しました"
+    },
+    "badRequest": {
+      "translate": "認証エラー"
+    },
+    "authenticationFailure": {
+      "translate": "認証エラー"
+    },
+    "missingOneOrMoreError": {
+      "translate": "必要なパラメータの一部が不足しています。"
+    },
+    "scanFetchedSuccessful": {
+      "translate": "スキャン結果の取得に成功しました"
+    },
+    "projectNotFound": {
+      "translate": "プロジェクトが見つかりません"
+    },
+    "failedToFecthScanResult": {
+      "translate": "スキャン結果の取得に失敗しました"
+    },
+    "errorFetchingScanResult": {
+      "translate": "スキャン結果の取得中にエラーが発生しました"
+    },
+    "configureFilter": {
+      "translate": "データのサブセットを制限するフィルタを設定してください"
+    },
+    "fileNotFound": {
+      "translate": "ファイルが見つかりません"
+    },
+    "successfullyResetTimer": {
+      "translate": "タイマーを正常にリセットしました"
+    },
+    "scanRetrievedSuccessful": {
+      "translate": "スキャンを正常に取得しました"
+    },
+    "failedToRetrieveScan": {
+      "translate": "スキャンの取得に失敗しました"
+    },
+    "scanRetrievedByIdSuccessful": {
+      "translate": "スキャンを正常に取得しました"
+    },
+    "failedToRetrieveScanById": {
+      "translate": "スキャンの取得に失敗しました"
+    },
+    "errorFetchingScanById": {
+      "translate": "スキャン結果の取得中にエラーが発生しました"
+    },
+    "foundIssues": {
+      "translate": "{1} ファイル中に {0} の問題が見つかりました"
+    },
+    "failedToRefreshCache": {
+      "translate": "キャッシュの更新に失敗しました"
+    },
+    "fileDataFetchedSuccess": {
+      "translate": "ファイルデータの取得に成功しました"
+    },
+    "noActiveFile": {
+      "translate": "現在アクティブなファイルが開いていません"
+    },
+    "allFillDataFetchedSuccessful": {
+      "translate": "すべてのファイルデータの取得に成功しました"
+    },
+    "fetchingProjectDetails": {
+      "translate": "プロジェクト詳細を取得しています."
+    },
+    "vulnerabilityNotFound": {
+      "translate": "申し訳ありませんが、このプロジェクトの脆弱性は見つかりませんでした"
+    }
+  },
+  "persistResponse": {
+    "errorOccurred": {
+      "translate": "何かがうまくいきませんでした。もう一度お試しください"
+    },
+    "fetchAllProjectsSuccess": {
+      "translate": "すべてのレコードを正常に取得しました"
+    },
+    "projectAddedSuccess": {
+      "translate": "プロジェクトが正常に追加されました"
+    },
+    "projectUpdatedSuccess": {
+      "translate": "プロジェクトが正常に更新されました"
+    },
+    "projectDeletedSuccess": {
+      "translate": "プロジェクトが正常に削除されました。"
+    },
+    "projectNotConfigured": {
+      "translate": "プロジェクトが設定されていません。進む前に設定にプロジェクトを追加してください。"
+    },
+    "projectDeletionFailed": {
+      "translate": "プロジェクトの削除に失敗しました"
+    },
+    "deletePreConfirm": {
+      "translate": "プロジェクトを削除してもよろしいですか？"
+    },
+    "organizationNotFound": {
+      "translate": "組織が見つかりません"
+    },
+    "filterUpdatedSuccess": {
+      "translate": "フィルタが正常に更新されました"
+    },
+    "filterRetrivedSucess": {
+      "translate": "フィルタが正常に取得されました"
+    },
+    "vulnerabilityNotFound": {
+      "translate": "このファイルの脆弱性は見つかりませんでした。スキャンの脆弱性レポートを確認してください"
+    },
+    "vulnerabilityNotFoundForFilters": {
+      "translate": "選択したフィルターに対する脆弱性は見つかりませんでした"
+    },
+    "autoRefreshSucess": {
+      "translate": "脆弱性同期プロセスが完了しました"
+    },
+    "retrievingVulnerabilities": {
+      "translate": "脆弱性を取得しています"
+    }
+  },
+  "contrastItems": {
+    "about": {
+      "translate": "概要"
+    },
+    "settings": {
+      "translate": "Contrast - 設定"
+    },
+    "scan": {
+      "translate": "Contrast - スキャン"
+    },
+    "retrieve_vulnerability": {
+      "translate": "脆弱性を取得"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "lib": ["ES2022", "DOM"],
+    "sourceMap": true,
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*", "src/**/*.d.ts", "jest.setup.ts"],
+  "exclude": ["node_modules", ".vscode-test", "out", "dist", "test"]
+}

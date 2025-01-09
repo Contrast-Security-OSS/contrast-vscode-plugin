@@ -1,0 +1,352 @@
+{
+  "contrast": "contrast",
+  "contrastSettings": {
+    "formFields": {
+      "source": {
+        "translate": "Source",
+        "options": [
+          {
+            "name": "scan",
+            "translate": "Scan"
+          },
+          {
+            "name": "assess",
+            "translate": "Assess"
+          }
+        ]
+      },
+      "contrastURL": {
+        "translate": "Contrast URL",
+        "placeholder": "Enter Contrast URL"
+      },
+      "userName": {
+        "translate": "User Name",
+        "placeholder": "Enter User Name"
+      },
+      "serviceKey": {
+        "translate": "Service Key",
+        "placeholder": "Enter Service Key"
+      },
+      "apiKey": {
+        "translate": "API Key",
+        "placeholder": "Enter API Key"
+      },
+      "organizationId": {
+        "translate": "Organization ID",
+        "placeholder": "Enter Organization ID"
+      },
+      "projectName": {
+        "translate": "Project Name"
+      },
+      "vulnerabilityRefreshCycle": {
+        "translate": "Vulnerability Refresh Cycle"
+      }
+    },
+    "organization": {
+      "organizationName": {
+        "translate": "Organization"
+      },
+      "projectName": {
+        "translate": "Name"
+      },
+      "type": {
+        "translate": "Type"
+      }
+    },
+    "buttons": {
+      "add": {
+        "translate": "Add"
+      },
+      "cancel": {
+        "translate": "Cancel"
+      },
+      "update": {
+        "translate": "Update"
+      },
+      "retrieve": {
+        "translate": "Retrieve"
+      }
+    },
+    "others": {
+      "minute": {
+        "translate": "minute"
+      }
+    },
+    "tooltips": {
+      "edit": {
+        "translate": "Edit"
+      },
+      "delete": {
+        "translate": "Delete"
+      }
+    },
+    "errorMessages": {
+      "contrastURL": {
+        "required": {
+          "translate": "Contrast URL is required"
+        },
+        "invalid": {
+          "translate": "Invalid URL: Please enter a valid Contrast Security URL"
+        }
+      },
+      "userName": {
+        "required": {
+          "translate": "User Name is required"
+        },
+        "invalid": {
+          "translate": "Invalid User Name: Please enter a valid email address"
+        }
+      },
+      "serviceKey": {
+        "required": {
+          "translate": "Service Key is required"
+        }
+      },
+      "apiKey": {
+        "required": {
+          "translate": "API Key is required"
+        }
+      },
+      "organizationId": {
+        "required": {
+          "translate": "Organization ID is required"
+        }
+      },
+      "minute": {
+        "required": {
+          "translate": "Vulnerability Refresh Cycle is required"
+        }
+      }
+    }
+  },
+  "contrastScan": {
+    "translate": "Contrast Scan",
+    "filter": {
+      "translate": "Filter",
+      "severity": {
+        "translate": "Severity",
+        "options": [
+          {
+            "name": "critical",
+            "translate": "Critical"
+          },
+          {
+            "name": "high",
+            "translate": "High"
+          },
+          {
+            "name": "medium",
+            "translate": "Medium"
+          },
+          {
+            "name": "low",
+            "translate": "Low"
+          },
+          {
+            "name": "note",
+            "translate": "Note"
+          }
+        ]
+      },
+      "status": {
+        "translate": "Status",
+        "options": [
+          {
+            "name": "reported",
+            "translate": "Reported"
+          },
+          {
+            "name": "confirmed",
+            "translate": "Confirmed"
+          },
+          {
+            "name": "suspicious",
+            "translate": "Suspicious"
+          },
+          {
+            "name": "notAproblem",
+            "translate": "Not a problem"
+          },
+          {
+            "name": "remediated",
+            "translate": "Remediated"
+          },
+          {
+            "name": "remediatedAutoVerified",
+            "translate": "Remediated Auto Verified"
+          },
+          {
+            "name": "reopened",
+            "translate": "Reopened"
+          }
+        ]
+      },
+      "buttons": {
+        "run": {
+          "translate": "OK"
+        },
+        "clear": {
+          "translate": "Clear"
+        }
+      }
+    },
+    "currentFile": {
+      "translate": "Current File"
+    },
+    "vulnerabilityReport": {
+      "translate": "Vulnerability Report",
+      "htmlElements": {
+        "translate": "<h1>No vulnerabilities found for the project:</h1><ol><li>Go to the Contrast view in the Activity Bar.</li><li>Click the Retrieve Vulnerability button for the project.</li></ol><p>After retrieving vulnerabilities, return to this screen or else click on refresh icon to see the latest vulnerability report.</p><p>Tip: <span style='font-weight: 400;'>You can access this screen anytime via the Contrast Scan panel in the Activity Bar.</span></p>"
+      }
+    },
+    "tooltips": {
+      "refresh": {
+        "translate": "Refresh"
+      }
+    }
+  },
+  "apiResponse": {
+    "projectsFetchedSuccessful": {
+      "translate": "Projects Fetched Successfully"
+    },
+    "badRequest": {
+      "translate": "Authentication failure"
+    },
+    "authenticationFailure": {
+      "translate": "Authentication failure"
+    },
+    "missingOneOrMoreError": {
+      "translate": "Missing one or more required parameters."
+    },
+    "scanFetchedSuccessful": {
+      "translate": "Scan results fetched successfully"
+    },
+    "projectNotFound": {
+      "translate": "Project not found"
+    },
+    "failedToFecthScanResult": {
+      "translate": "Failed to fetch scan results"
+    },
+    "errorFetchingScanResult": {
+      "translate": "Error fetching scan results"
+    },
+    "configureFilter": {
+      "translate": "Please configure Filters to limit the subset of data"
+    },
+    "fileNotFound": {
+      "translate": "File not found"
+    },
+    "successfullyResetTimer": {
+      "translate": "Successfully reset timer"
+    },
+    "scanRetrievedSuccessful": {
+      "translate": "Scans Retrieved Successfully"
+    },
+    "failedToRetrieveScan": {
+      "translate": "Failed to retrieve scans"
+    },
+    "scanRetrievedByIdSuccessful": {
+      "translate": "Scans Retrieved Successfully"
+    },
+    "failedToRetrieveScanById": {
+      "translate": "Failed to retrieve scans"
+    },
+    "errorFetchingScanById": {
+      "translate": "Error fetching sacn results"
+    },
+    "foundIssues": {
+      "translate": "Found {0} issues in {1} files(s)"
+    },
+    "failedToRefreshCache": {
+      "translate": "Failed to refresh cache"
+    },
+    "fileDataFetchedSuccess": {
+      "translate": "File Data fetched Successfully"
+    },
+    "noActiveFile": {
+      "translate": "No active file is currently opened"
+    },
+    "allFillDataFetchedSuccessful": {
+      "translate": "All File Data fetched Successfully"
+    },
+    "fetchingProjectDetails": {
+      "translate": "Fetching Project Details."
+    },
+    "vulnerabilityNotFound": {
+      "translate": "Sorry we can't find the Vulnerabilities for this project"
+    },
+    "cacheStarted": {
+      "translate": "cache started"
+    },
+    "cacheCompleted": {
+      "translate": "cache completed"
+    },
+    "packageInfoSuccess": {
+      "translate": "Successfully retrieved package information"
+    },
+    "refineFilter": {
+      "translate": "There are more than 12,000 records. Please refine your filter criteria to fetch vulnerabilities"
+    }
+  },
+  "persistResponse": {
+    "errorOccurred": {
+      "translate": "Something went wrong, Please try again"
+    },
+    "fetchAllProjectsSuccess": {
+      "translate": "Got all records successfully"
+    },
+    "projectAddedSuccess": {
+      "translate": "Project Added Successfully"
+    },
+    "projectUpdatedSuccess": {
+      "translate": "Project Updated Successfully"
+    },
+    "projectDeletedSuccess": {
+      "translate": "Project deleted successfully."
+    },
+    "projectNotConfigured": {
+      "translate": "Project is not configured. Please add the project in settings before proceeding."
+    },
+    "projectDeletionFailed": {
+      "translate": "Unable to delete Project"
+    },
+    "deletePreConfirm": {
+      "translate": "Are you sure you want to delete the Project?"
+    },
+    "organizationNotFound": {
+      "translate": "Organization ID not found"
+    },
+    "filterUpdatedSuccess": {
+      "translate": "Filters updated successfully"
+    },
+    "filterRetrivedSucess": {
+      "translate": "Filters retrieved successfully"
+    },
+    "vulnerabilityNotFound": {
+      "translate": "No vulnerabilities found for this file."
+    },
+    "vulnerabilityNotFoundForFilters": {
+      "translate": "No vulnerabilities Found for the selected filters"
+    },
+    "autoRefreshSucess": {
+      "translate": "Vulnerability Sync Process Completed"
+    },
+    "retrievingVulnerabilities": {
+      "translate": "Retrieving vulnerabilities"
+    }
+  },
+  "contrastItems": {
+    "about": {
+      "translate": "About"
+    },
+    "settings": {
+      "translate": "Contrast - Settings"
+    },
+    "scan": {
+      "translate": "Contrast - Scan"
+    },
+    "retrieve_vulnerability": {
+      "translate": "Retrieve Vulnerability"
+    }
+  }
+}
