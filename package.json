@@ -3,7 +3,7 @@
   "displayName": "Contrast IDE",
   "description": "By integrating the Contrast Security Visual Studio Code extension into your IDE you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your last vulnerability scan data, with actionable information on each of the vulnerabilities found",
   "version": "1.0.0",
-  "publisher": "Contrast Security",
+  "publisher": "ContrastSecurityIDE",
   "aboutPage": {
     "title": "About Plugin",
     "content": "<p class='about-ul'>By integrating the Contrast Security Visual Studio Code extension into your IDE, you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your last vulnerability scan data, with actionable information on each of the vulnerabilities found.</p><p>The IDE plugin provides these <strong>features</strong> : </p><ul class='about-ul'><li><strong>Comprehensive vulnerability analysis : </strong> The extension allows you to connect your IDE to the Contrast Platform and analyze scanned repositories directly within the IDE. View vulnerability summaries at the file and line level, highlighting risks and providing short remediation guidance. Follow links to the Contrast Platform for detailed how-to-fix information, including insights from Secure Code Warrior.</li><br><li><strong>Broad language and framework support : </strong> Contrast Security covers commonly supported languages.</li></ul>"
