@@ -1,0 +1,1032 @@
+import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react';
+import Input from '../../components/Input';
+import { ContrastDropdown, ContrastOption } from '../../components/DropDown';
+import { useSelector } from 'react-redux';
+import OrganizationTable from '../../components/Settings/OrganizationTable';
+import {
+  WEBVIEW_COMMANDS,
+  WEBVIEW_SCREENS,
+} from '../../../vscode-extension/utils/constants/commands';
+import { Button } from '../../components/Button';
+import { settingLocale } from '../../utils/constant';
+import { webviewPostMessage } from '../../utils/postMessage';
+import {
+  PrimaryConfigValidation,
+  PrimaryConfig,
+  ConfigInputValidation,
+  SecondaryConfigValidation,
+  SecondaryConfig,
+  ConfiguredProject,
+  ContrastSettingsLocales,
+  ReducerTypes,
+  LocalizationJSON,
+} from '../../../common/types';
+
+interface UnConfiguredProject {
+  name: string;
+  id: string | number;
+}
+
+function ThrowError({ fieldData }: { fieldData: ConfigInputValidation }) {
+  return (
+    <>
+      {Boolean(fieldData.valid) === false && Boolean(fieldData.touched) && (
+        <div className="error-message" id="error-message">
+          {fieldData.message}
+        </div>
+      )}
+    </>
+  );
+}
+
+function Setting() {
+  // ----------------------- use Selectors -------------------------------------
+  const i18nData = useSelector((state: ReducerTypes) => state.i10ln.data);
+  const getAllProjectList = useSelector(
+    (state: ReducerTypes) => state.project.allProjectList
+  );
+
+  const deleteResponse = useSelector(
+    (state: ReducerTypes) => state.project.configuredProjectDelete
+  );
+
+  const getConfiguredProjects = useSelector(
+    (state: ReducerTypes) => state.project.configuredProjects
+  );
+
+  const addResponse = useSelector(
+    (state: ReducerTypes) => state.project.addConfigureProject
+  );
+  const editResponse = useSelector(
+    (state: ReducerTypes) => state.project.updateConfigureProject
+  );
+
+  // ------------------------ use States ----------------------------------------
+
+  // const [selectedRow, setSelectedRow] = useState(null);
+  const [i18nFields, updateI18nFields] =
+    useState<ContrastSettingsLocales>(settingLocale);
+
+  const [actionButton, setActionButton] = useState<number>(0);
+
+  const [listOfProjects, setListOfProjects] = useState<
+    [] | UnConfiguredProject[]
+  >([]);
+
+  const [configuredProjectsList, updateConfiguredProjectsList] = useState<
+    ConfiguredProject[]
+  >([]);
+
+  const [commonButton, updateCommonButton] = useState({
+    retreive: true,
+    save: true,
+  });
+
+  const [cancelButton, updateCancelButton] = useState(false);
+
+  const [defaultParamterPatch, updateDefaultParamsPatch] = useState(true);
+
+  const [primaryConfigurationParams, setPrimaryConfigurationParams] =
+    useState<PrimaryConfig>({
+      source: 'scan',
+      contrastURL: '',
+      userName: '',
+      serviceKey: '',
+      apiKey: '',
+      organizationId: '',
+    });
+
+  const [secondaryConfigurationParams, setSecondaryConfigurationParams] =
+    useState<Record<string, string>>({
+      project: '',
+      minute: '1440',
+      id: '',
+    });
+
+  const [primaryConfigureValidation, setPrimaryConfigureValidation] =
+    useState<PrimaryConfigValidation>({
+      source: { touched: false, valid: true },
+      contrastURL: {
+        touched: false,
+        valid: true,
+        message: i18nFields.errorMessages.contrastURL.required.translate,
+      },
+      userName: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.userName.required.translate,
+      },
+      serviceKey: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.serviceKey.required.translate,
+      },
+      apiKey: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.apiKey.required.translate,
+      },
+      organizationId: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.organizationId.required.translate,
+      },
+    });
+
+  const [secondaryConfigureValidation, setSecondaryConfigureValidation] =
+    useState<SecondaryConfigValidation>({
+      projectName: { touched: false, valid: false },
+      minute: {
+        touched: false,
+        valid: true,
+        message: i18nFields.errorMessages.minute.required.translate,
+      },
+    });
+
+  const [activeConfiguredProject, updateActiveConfiguredProject] =
+    useState<ConfiguredProject | null>(null);
+
+  const [deselectRow, updateDeselect] = useState(false);
+  // ----------------------- use Effects ----------------------------------
+
+  useEffect(() => {
+    if (
+      getConfiguredProjects !== null &&
+      getConfiguredProjects?.responseData !== null &&
+      getConfiguredProjects?.responseData !== undefined &&
+      (getConfiguredProjects?.responseData as ConfiguredProject[]).length > 0
+    ) {
+      const configuredProjects =
+        getConfiguredProjects.responseData as ConfiguredProject[];
+
+      updateConfiguredProjectsList(configuredProjects);
+      if (defaultParamterPatch === true) {
+        const {
+          source,
+          contrastURL,
+          userName,
+          serviceKey,
+          apiKey,
+          organizationId,
+        } = configuredProjects[0];
+        setPrimaryConfigurationParams({
+          source,
+          contrastURL,
+          userName,
+          serviceKey,
+          apiKey,
+          organizationId,
+        });
+
+        setPrimaryConfigureValidation({
+          apiKey: {
+            ...primaryConfigureValidation.apiKey,
+            valid: true,
+            touched: true,
+          },
+          contrastURL: {
+            ...primaryConfigureValidation.contrastURL,
+            valid: true,
+            touched: true,
+          },
+          organizationId: {
+            ...primaryConfigureValidation.organizationId,
+            valid: true,
+            touched: true,
+          },
+          serviceKey: {
+            ...primaryConfigureValidation.serviceKey,
+            valid: true,
+            touched: true,
+          },
+          source: {
+            ...primaryConfigureValidation.source,
+            valid: true,
+            touched: true,
+          },
+          userName: {
+            ...primaryConfigureValidation.userName,
+            valid: true,
+            touched: true,
+          },
+        });
+      }
+    } else {
+      updateConfiguredProjectsList([]);
+    }
+  }, [getConfiguredProjects]);
+
+  useEffect(() => {
+    const allValid = Object.values(primaryConfigureValidation).every(
+      (item: ConfigInputValidation) => item.valid
+    );
+    updateCommonButton((prev) => ({
+      ...prev,
+      retreive: !allValid,
+    }));
+  }, [primaryConfigureValidation]);
+
+  useEffect(() => {
+    const primaryValid = Object.values(primaryConfigureValidation).every(
+      (item: ConfigInputValidation) => item.valid
+    );
+    const secondaryValid = Object.values(secondaryConfigureValidation).every(
+      (item: ConfigInputValidation) => item.valid
+    );
+    const isButtonEnabled = primaryValid && secondaryValid;
+
+    updateCommonButton((prev) => ({
+      ...prev,
+      save: !isButtonEnabled,
+    }));
+  }, [primaryConfigureValidation, secondaryConfigureValidation]);
+
+  useEffect(() => {
+    if (i18nData !== null && i18nData !== undefined) {
+      const { formFields, others, errorMessages, buttons } =
+        i18nData as LocalizationJSON['contrastSettings'];
+      const {
+        apiKey,
+        contrastURL,
+        organizationId,
+        serviceKey,
+        source,
+        userName,
+        projectName,
+        vulnerabilityRefreshCycle,
+      } = formFields;
+      // const { minute } = others ;
+
+      updateI18nFields({
+        apiKey,
+        contrastURL,
+        organizationId,
+        serviceKey,
+        source,
+        projectName,
+        userName,
+        vulnerabilityRefreshCycle,
+        minute: others?.minute,
+        buttons: buttons,
+        errorMessages,
+      });
+    }
+  }, [i18nData]);
+
+  useEffect(() => {
+    if (getAllProjectList !== null && getAllProjectList.responseData !== null) {
+      const content = getAllProjectList.responseData as UnConfiguredProject[];
+      const filteredProjects: UnConfiguredProject[] =
+        filterUnConfiguredProject(content);
+      let id: string = '';
+      let project: string = '';
+
+      if (activeConfiguredProject !== null) {
+        filteredProjects.push({
+          name: activeConfiguredProject.projectName,
+          id: activeConfiguredProject.projectId as string,
+        });
+        setListOfProjects(filteredProjects);
+        id = activeConfiguredProject.projectId ?? '';
+        project = activeConfiguredProject.projectName ?? '';
+      } else {
+        setListOfProjects(filteredProjects);
+        id = filteredProjects[0]?.id as string; // Ensure id is always a string
+        project = filteredProjects[0]?.name ?? ''; // Ensure project is always a string
+      }
+
+      setPrimaryConfigureValidation({
+        apiKey: {
+          ...primaryConfigureValidation.apiKey,
+          valid: true,
+          touched: true,
+        },
+        contrastURL: {
+          ...primaryConfigureValidation.contrastURL,
+          valid: true,
+          touched: true,
+        },
+        organizationId: {
+          ...primaryConfigureValidation.organizationId,
+          valid: true,
+          touched: true,
+        },
+        serviceKey: {
+          ...primaryConfigureValidation.serviceKey,
+          valid: true,
+          touched: true,
+        },
+        source: {
+          ...primaryConfigureValidation.source,
+          valid: true,
+          touched: true,
+        },
+        userName: {
+          ...primaryConfigureValidation.userName,
+          valid: true,
+          touched: true,
+        },
+      });
+
+      updateCommonButton({
+        ...commonButton,
+        retreive: false,
+      });
+
+      updateCancelButton(false);
+
+      setSecondaryConfigurationParams({
+        ...secondaryConfigurationParams,
+        id: id,
+        project: project,
+      });
+
+      setSecondaryConfigureValidation({
+        ...secondaryConfigureValidation,
+        projectName: { touched: true, valid: true },
+      });
+    }
+  }, [getAllProjectList]);
+
+  useEffect(() => {
+    setListOfProjects([]);
+    updateCommonButton({ retreive: true, save: true });
+    setPrimaryConfigureValidation({
+      source: { touched: false, valid: true },
+      contrastURL: {
+        touched: false,
+        valid: true,
+        message: i18nFields.errorMessages.contrastURL.required.translate,
+      },
+      userName: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.userName.required.translate,
+      },
+      serviceKey: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.serviceKey.required.translate,
+      },
+      apiKey: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.apiKey.required.translate,
+      },
+      organizationId: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.organizationId.required.translate,
+      },
+    });
+
+    setSecondaryConfigureValidation({
+      projectName: { touched: false, valid: false },
+      minute: {
+        touched: false,
+        valid: true,
+        message: i18nFields.errorMessages.minute.required.translate,
+      },
+    });
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SETTING_GET_CONFIGURE_PROJECTS,
+      payload: [],
+      screen: WEBVIEW_SCREENS.SETTING,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (addResponse !== null) {
+      const content = addResponse.responseData;
+      if (content !== null) {
+        setListOfProjects([]);
+        updateCancelButton(false);
+        updateDeselect(true);
+        setSecondaryConfigureValidation({
+          ...secondaryConfigureValidation,
+          projectName: {
+            ...secondaryConfigureValidation.projectName,
+            valid: false,
+            touched: false,
+          },
+        });
+        setSecondaryConfigurationParams({
+          project: '',
+          minute: '1440',
+          id: '',
+        });
+
+        webviewPostMessage({
+          command: WEBVIEW_COMMANDS.SETTING_GET_CONFIGURE_PROJECTS,
+          payload: [],
+          screen: WEBVIEW_SCREENS.SETTING,
+        });
+      }
+    }
+  }, [addResponse]);
+
+  useEffect(() => {
+    if (editResponse !== null) {
+      const content = editResponse.responseData;
+      if (content !== null) {
+        // handleClear();
+        setListOfProjects([]);
+        updateDeselect(true);
+        updateCancelButton(false);
+        setSecondaryConfigureValidation({
+          ...secondaryConfigureValidation,
+          projectName: {
+            ...secondaryConfigureValidation.projectName,
+            valid: false,
+            touched: false,
+          },
+        });
+        setSecondaryConfigurationParams({
+          project: '',
+          minute: '1440',
+          id: '',
+        });
+        setActionButton(0);
+        updateActiveConfiguredProject(null);
+        webviewPostMessage({
+          command: WEBVIEW_COMMANDS.SETTING_GET_CONFIGURE_PROJECTS,
+          payload: [],
+          screen: WEBVIEW_SCREENS.SETTING,
+        });
+      }
+    }
+  }, [editResponse]);
+
+  useEffect(() => {
+    if (deleteResponse !== null && deleteResponse !== undefined) {
+      const content = deleteResponse.responseData;
+      if (content !== undefined && content !== null) {
+        handleClear();
+        webviewPostMessage({
+          command: WEBVIEW_COMMANDS.SETTING_GET_CONFIGURE_PROJECTS,
+          payload: [],
+          screen: WEBVIEW_SCREENS.SETTING,
+        });
+      }
+    }
+  }, [deleteResponse]);
+
+  // ------------------------------ Methods ----------------------------------
+
+  const primaryValidator = (name: keyof PrimaryConfig, value: string) => {
+    let isValid = value !== '';
+    const prevState = primaryConfigureValidation[name as keyof PrimaryConfig];
+    let message = prevState.message;
+
+    switch (name) {
+      case 'userName':
+        {
+          if (value.length > 0) {
+            const emailPattern =
+              /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            isValid = emailPattern.test(value);
+            message =
+              prevState.valid === true
+                ? ''
+                : i18nFields.errorMessages.userName.invalid.translate;
+          } else {
+            isValid = false;
+            message = i18nFields.errorMessages.userName.required.translate;
+          }
+        }
+        break;
+      case 'contrastURL':
+        {
+          if (value.length > 0) {
+            const urlPattern =
+              /^(https?:\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/\S*)?$/;
+            isValid = urlPattern.test(value);
+            message = isValid
+              ? ''
+              : i18nFields.errorMessages.contrastURL.invalid.translate;
+          } else {
+            isValid = false;
+            message = i18nFields.errorMessages.contrastURL.required.translate;
+          }
+        }
+        break;
+      default:
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          message = (i18nFields.errorMessages as any)[name].required.translate;
+        }
+        break;
+    }
+
+    setPrimaryConfigureValidation((prev: PrimaryConfigValidation) => {
+      const updatedState = {
+        ...prev,
+        [name]: { ...prevState, touched: true, valid: isValid, message },
+      };
+
+      updateCommonButton((prev) => ({
+        ...prev,
+        retreive: !Object.values(updatedState).every(
+          (item: ConfigInputValidation) => item.valid
+        ),
+      }));
+      return updatedState;
+    });
+  };
+
+  const secondaryValidator = (name: keyof SecondaryConfig, value: string) => {
+    const prevState = secondaryConfigureValidation[name];
+    let isValid = value.trim() !== ''; // Basic required field validation
+    let message = prevState?.message;
+
+    switch (name) {
+      case 'minute': {
+        if (value.length > 0) {
+          const numberPattern = /^\d+$/;
+
+          if (numberPattern.test(value)) {
+            isValid = true;
+            message = '';
+          }
+        } else {
+          message = i18nFields.errorMessages.minute.required.translate;
+        }
+
+        break;
+      }
+    }
+    setSecondaryConfigureValidation((prev: SecondaryConfigValidation) => {
+      const updatedState = {
+        ...prev,
+        [name]: { ...prevState, touched: true, valid: isValid, message },
+      };
+
+      return updatedState; // Return the updated state
+    });
+  };
+
+  const primaryHandleInput = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const {
+      name,
+      value,
+    }: { name: string | keyof PrimaryConfig; value: string | number } =
+      e.target;
+    setPrimaryConfigurationParams({
+      ...primaryConfigurationParams,
+      [name]: value.trim(),
+    });
+    primaryValidator(name as keyof PrimaryConfig, value.trim());
+  };
+
+  const secondaryHandleInput = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value }: { name: string; value: string | number } = e.target;
+    if (name === 'minute') {
+      if (
+        value === '' ||
+        (/^\d+$/.test(value) && +value > 0 && +value <= 4332)
+      ) {
+        //  return;
+        setSecondaryConfigurationParams({
+          ...secondaryConfigurationParams,
+          [name]: value.trim(),
+        });
+        secondaryValidator(name, value.trim());
+      }
+    }
+  };
+
+  const filterUnConfiguredProject = (content: UnConfiguredProject[]) => {
+    if (configuredProjectsList?.length > 0 && configuredProjectsList !== null) {
+      const projectName = configuredProjectsList.map(
+        (val: ConfiguredProject) => {
+          return val.projectName;
+        }
+      );
+      const filterData = content.filter((val: { name: string }) => {
+        return !projectName.includes(val.name);
+      });
+      return filterData;
+    }
+    return content;
+  };
+
+  const getAllProjects = () => {
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
+      payload: primaryConfigurationParams,
+      screen: WEBVIEW_SCREENS.SETTING,
+    });
+    updateCommonButton({
+      ...commonButton,
+      retreive: true,
+    });
+    updateCancelButton(true);
+  };
+
+  const handleCrudOperation = () => {
+    let newProject: ConfiguredProject = {
+      ...primaryConfigurationParams,
+      minute: secondaryConfigurationParams.minute,
+      projectName: secondaryConfigurationParams?.project,
+      projectId: secondaryConfigurationParams?.id,
+    };
+
+    if (actionButton !== 0) {
+      newProject = { ...newProject, id: activeConfiguredProject?.id };
+    }
+    switch (actionButton) {
+      case 0:
+        {
+          webviewPostMessage({
+            command: WEBVIEW_COMMANDS.SETTING_ADD_PROJECT_TO_CONFIGURE,
+            payload: newProject,
+            screen: WEBVIEW_SCREENS.SETTING,
+          });
+        }
+        break;
+      case 1:
+        {
+          updateDefaultParamsPatch(false);
+          webviewPostMessage({
+            command: WEBVIEW_COMMANDS.SETTING_UPDATE_CONFIGURE_PROJECT,
+            payload: newProject,
+            screen: WEBVIEW_SCREENS.SETTING,
+          });
+        }
+        break;
+      case 2:
+        {
+          // handleClear();
+          webviewPostMessage({
+            command: WEBVIEW_COMMANDS.SETTING_GET_CONFIGURE_PROJECTS,
+            payload: [],
+            screen: WEBVIEW_SCREENS.SETTING,
+          });
+        }
+        break;
+    }
+    updateCommonButton({
+      ...commonButton,
+      save: true,
+    });
+    updateCancelButton(true);
+  };
+
+  const handleClear = () => {
+    updateDeselect(true);
+    updateDefaultParamsPatch(true);
+    setPrimaryConfigurationParams({
+      source: 'scan',
+      contrastURL: '',
+      userName: '',
+      serviceKey: '',
+      apiKey: '',
+      organizationId: '',
+    });
+
+    setPrimaryConfigureValidation({
+      source: { touched: false, valid: true },
+      contrastURL: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.contrastURL.required.translate,
+      },
+      userName: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.userName.required.translate,
+      },
+      serviceKey: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.serviceKey.required.translate,
+      },
+      apiKey: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.apiKey.required.translate,
+      },
+      organizationId: {
+        touched: false,
+        valid: false,
+        message: i18nFields.errorMessages.organizationId.required.translate,
+      },
+    });
+
+    setSecondaryConfigurationParams({
+      project: '',
+      minute: '1440',
+      id: '',
+    });
+
+    setSecondaryConfigureValidation({
+      projectName: { touched: false, valid: false },
+      minute: {
+        touched: false,
+        valid: true,
+        message: i18nFields.errorMessages.minute.required.translate,
+      },
+    });
+
+    setListOfProjects([]);
+    setActionButton(0);
+  };
+
+  const onDelete = (e: ConfiguredProject) => {
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT,
+      payload: e,
+      screen: WEBVIEW_SCREENS.SETTING,
+    });
+  };
+
+  const getSelectedProject = (selectedConfiguredProject: ConfiguredProject) => {
+    updateCommonButton({
+      ...commonButton,
+      save: true,
+      retreive: true,
+    });
+    updateCancelButton(true);
+    if (selectedConfiguredProject !== null) {
+      const {
+        apiKey,
+        contrastURL,
+        organizationId,
+        serviceKey,
+        source,
+        userName,
+        minute,
+      } = selectedConfiguredProject;
+      setActionButton(1);
+
+      updateActiveConfiguredProject(selectedConfiguredProject);
+      setPrimaryConfigurationParams({
+        apiKey: selectedConfiguredProject.apiKey,
+        contrastURL: selectedConfiguredProject.contrastURL,
+        organizationId: selectedConfiguredProject.organizationId,
+        serviceKey: selectedConfiguredProject.serviceKey,
+        source: selectedConfiguredProject.source,
+        userName: selectedConfiguredProject.userName,
+      });
+
+      setSecondaryConfigurationParams({
+        project: '',
+        minute: typeof minute === 'string' ? minute : `${minute}`,
+        id: '',
+      });
+
+      setListOfProjects([]);
+
+      webviewPostMessage({
+        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
+        payload: {
+          apiKey: apiKey,
+          contrastURL: contrastURL,
+          organizationId: organizationId,
+          serviceKey: serviceKey,
+          source: source,
+          userName: userName,
+        },
+        screen: WEBVIEW_SCREENS.SETTING,
+      });
+    } else {
+      setActionButton(0);
+    }
+  };
+
+  return (
+    <>
+      <div className="settingFormDiv">
+        <table className="settingFormTable1">
+          <tbody>
+            <tr>
+              <td>{i18nFields?.source?.translate}</td>
+              <td>
+                <div className="source-dropdown">
+                  <ContrastDropdown
+                    id="source"
+                    value={primaryConfigurationParams.source}
+                    onChange={(e: { value: string }) => {
+                      setPrimaryConfigurationParams({
+                        ...primaryConfigurationParams,
+                        source: e.value,
+                      });
+                    }}
+                  >
+                    <ContrastOption id="scan" value={'scan'}>
+                      Scan
+                    </ContrastOption>
+                    {/* <ContrastOption id="assess" value={'assess'}>
+                      Assess
+                    </ContrastOption> */}
+                  </ContrastDropdown>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>{i18nFields.contrastURL?.translate}</td>
+              <td>
+                <div className="form-field">
+                  <Input
+                    id="contrastURL"
+                    type="text"
+                    value={primaryConfigurationParams.contrastURL}
+                    name="contrastURL"
+                    placeholder={i18nFields.contrastURL?.placeholder ?? ''}
+                    onChange={primaryHandleInput}
+                  />
+                  <ThrowError
+                    fieldData={primaryConfigureValidation['contrastURL']}
+                  />
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>{i18nFields?.userName?.translate}</td>
+              <td>
+                <div className="form-field">
+                  <Input
+                    id="userName"
+                    name="userName"
+                    type="text"
+                    value={primaryConfigurationParams.userName}
+                    placeholder={i18nFields.userName?.placeholder ?? ''}
+                    onChange={primaryHandleInput}
+                  />
+                  <ThrowError
+                    fieldData={primaryConfigureValidation['userName']}
+                  />
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>{i18nFields?.organizationId?.translate}</td>
+              <td>
+                <div className="form-field">
+                  <Input
+                    id="organizationId"
+                    name="organizationId"
+                    type="text"
+                    value={primaryConfigurationParams.organizationId}
+                    placeholder={i18nFields.organizationId?.placeholder ?? ''}
+                    onChange={primaryHandleInput}
+                  />
+                  <ThrowError
+                    fieldData={primaryConfigureValidation['organizationId']}
+                  />
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>{i18nFields.apiKey?.translate}</td>
+              <td>
+                <div className="form-field">
+                  <Input
+                    id="apiKey"
+                    name="apiKey"
+                    type="password"
+                    value={primaryConfigurationParams.apiKey}
+                    placeholder={i18nFields.apiKey?.placeholder ?? ''}
+                    onChange={primaryHandleInput}
+                  />
+                  <ThrowError
+                    fieldData={primaryConfigureValidation['apiKey']}
+                  />
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>{i18nFields.serviceKey?.translate}</td>
+              <td>
+                <div className="form-field">
+                  <Input
+                    id="serviceKey"
+                    name="serviceKey"
+                    type="password"
+                    value={primaryConfigurationParams.serviceKey}
+                    placeholder={i18nFields.serviceKey?.placeholder ?? ''}
+                    onChange={primaryHandleInput}
+                  />
+                  <ThrowError
+                    fieldData={primaryConfigureValidation['serviceKey']}
+                  />
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td>
+                <div>
+                  <Button
+                    id="retrieve-btn"
+                    isDisable={commonButton.retreive}
+                    className="mt_5 mb_5 float-right"
+                    title={i18nFields.buttons?.retrieve.translate ?? ''}
+                    onClick={() => getAllProjects()}
+                    color="btn-blue"
+                  />
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>{i18nFields.projectName?.translate}</td>
+              <td>
+                <div className="project-dropdown">
+                  <ContrastDropdown
+                    id="projects"
+                    value={secondaryConfigurationParams.id}
+                    onChange={(e: { children: ReactNode; value: string }) => {
+                      setSecondaryConfigurationParams({
+                        ...secondaryConfigurationParams,
+                        project: String(e.children),
+                        id: e.value,
+                      });
+                    }}
+                  >
+                    {listOfProjects !== null && listOfProjects.length > 0
+                      ? listOfProjects.map((item: UnConfiguredProject) => (
+                          <ContrastOption
+                            key={item.id}
+                            id={item.name}
+                            value={item.id as string}
+                          >
+                            {item.name}
+                          </ContrastOption>
+                        ))
+                      : []}
+                  </ContrastDropdown>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>{i18nFields.vulnerabilityRefreshCycle?.translate}</td>
+              <td>
+                <div className="form-field">
+                  <div className="minute-form-field">
+                    <Input
+                      id="minute"
+                      type="text"
+                      name="minute"
+                      value={secondaryConfigurationParams.minute}
+                      className="w-80"
+                      placeholder="0000"
+                      onChange={secondaryHandleInput}
+                    />{' '}
+                    <span>({i18nFields.minute?.translate})</span>
+                  </div>
+                  <ThrowError
+                    fieldData={secondaryConfigureValidation['minute']}
+                  />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style={{ width: '680px' }}>
+        <OrganizationTable
+          dataSource={configuredProjectsList}
+          onChange={getSelectedProject}
+          onDelete={onDelete}
+          isDeselect={{
+            deselectRow,
+            updateDeselect,
+          }}
+        />
+
+        <div className="org-add-update">
+          <Button
+            isDisable={commonButton.save}
+            id="add-project"
+            title={
+              actionButton === 0
+                ? (i18nFields.buttons?.add.translate ?? 'Add')
+                : (i18nFields.buttons?.update.translate ?? 'Update')
+            }
+            color="btn-blue"
+            onClick={handleCrudOperation}
+          />
+
+          <Button
+            isDisable={cancelButton}
+            title={i18nFields.buttons?.cancel.translate ?? ''}
+            color="btn-transparent"
+            onClick={handleClear}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default Setting;

@@ -1,0 +1,35 @@
+* {
+  user-select: none;
+}
+body {
+  padding: 10px;
+}
+
+table,
+th,
+td {
+  border: 1px solid #313131;
+  border-collapse: collapse;
+}
+
+table td {
+  min-width: 200px;
+  padding: 8px;
+}
+
+.indent {
+  padding-left: 20px;
+}
+
+hr {
+  background-color: rgb(20, 19, 19);
+  border: none;
+  height: 1px;
+  margin: 20px 0px;
+}
+
+.about-ul {
+  li {
+    line-height: 1.3;
+  }
+}

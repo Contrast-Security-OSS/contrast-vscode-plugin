@@ -1,0 +1,204 @@
+{
+  "name": "com-contrastsecurity-vscode",
+  "displayName": "Contrast IDE",
+  "description": "By integrating the Contrast Security Visual Studio Code extension into your IDE you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your last vulnerability scan data, with actionable information on each of the vulnerabilities found",
+  "version": "1.0.0",
+  "publisher": "ContrastSecurityIDE",
+  "aboutPage": {
+    "title": "About Plugin",
+    "content": "<p class='about-ul'>By integrating the Contrast Security Visual Studio Code extension into your IDE, you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your last vulnerability scan data, with actionable information on each of the vulnerabilities found.</p><p>The IDE plugin provides these <strong>features</strong> : </p><ul class='about-ul'><li><strong>Comprehensive vulnerability analysis : </strong> The extension allows you to connect your IDE to the Contrast Platform and analyze scanned repositories directly within the IDE. View vulnerability summaries at the file and line level, highlighting risks and providing short remediation guidance. Follow links to the Contrast Platform for detailed how-to-fix information, including insights from Secure Code Warrior.</li><br><li><strong>Broad language and framework support : </strong> Contrast Security covers commonly supported languages.</li></ul>"
+  },
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "os": [
+    "win32",
+    "linux",
+    "darwin"
+  ],
+  "bugs": {
+    "url": "https://support.contrastsecurity.com/hc/en-us"
+  },
+  "icon": "assets/contrastIcon.png",
+  "pricing": "Free",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Contrast-Security-Inc/contrast-vscode-plugin"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Testing",
+    "Other"
+  ],
+  "keywords": [
+    "Security",
+    "Vulnerability"
+  ],
+  "tags": [
+    "Application Security",
+    "code-analysis",
+    "code-quality",
+    "sast",
+    "security",
+    "source",
+    "static-code-analysis",
+    "vulnerabilities"
+  ],
+  "activationEvents": [
+    "onPlatform:win32",
+    "onPlatform:linux",
+    "onPlatform:darwin"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "contrast.setting",
+        "title": "Contrast Settings"
+      },
+      {
+        "command": "contrast.scan",
+        "title": "Contrast Scan",
+        "enablement": "contrast.tab.blocker"
+      },
+      {
+        "command": "contrast.retrieveVul",
+        "title": "Retrieve Vulnerability",
+        "enablement": "contrast.tab.blocker"
+      },
+      {
+        "command": "contrast.statusBarOnClick",
+        "title": "statusBarCall"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ContrastActivityBar",
+          "icon": "/assets/contrastIcon.png",
+          "title": "Contrast"
+        }
+      ],
+      "panel": [
+        {
+          "id": "ContrastPanel",
+          "title": "Contrast",
+          "icon": ""
+        }
+      ]
+    },
+    "views": {
+      "ContrastActivityBar": [
+        {
+          "id": "Contrast.activityBar",
+          "name": "Contrast",
+          "icon": "",
+          "type": "tree"
+        }
+      ],
+      "ContrastPanel": [
+        {
+          "id": "Contrast.Panel",
+          "name": "Contrast",
+          "icon": "",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "yourExtensionName.logLevel": {
+          "type": "string",
+          "default": "INFO",
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR"
+          ],
+          "description": "Set the logging level for the extension."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "build": " npm run build:webview && npm run build:extension",
+    "build:webview": "webpack --config webpack.webview.config.js",
+    "build:extension": "webpack --config webpack.config.js",
+    "format:check": "prettier --write .",
+    "test:coverage": "npx jest --coverage"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.7",
+    "@babel/preset-env": "^7.25.7",
+    "@babel/preset-react": "^7.25.7",
+    "@babel/preset-typescript": "^7.25.7",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
+    "@types/cache-manager": "^4.0.6",
+    "@types/jest": "^29.5.13",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.17.6",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@types/redux-mock-store": "^1.0.6",
+    "@types/vscode": "^1.93.0",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "axios-mock-adapter": "^2.1.0",
+    "axios-retry": "^4.5.0",
+    "babel-loader": "^9.2.1",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.2",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.2",
+    "file-loader": "^6.2.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.4.2",
+    "process": "^0.11.10",
+    "redux-mock-store": "^1.5.5",
+    "sass": "^1.80.4",
+    "sass-loader": "^16.0.2",
+    "style-loader": "^4.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.4",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.3",
+    "@mui/material": "^6.1.3",
+    "@reduxjs/toolkit": "^2.3.0",
+    "axios": "^1.7.8",
+    "buffer": "^6.0.3",
+    "cache-manager": "^2.11.1",
+    "dotenv": "^16.4.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-redux": "^9.1.2",
+    "uuid": "^10.0.0"
+  }
+}

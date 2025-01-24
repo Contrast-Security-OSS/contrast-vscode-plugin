@@ -1,0 +1,39 @@
+# Node Modules
+node_modules/**
+
+# Version Control
+.git/
+.github/
+.gitignore
+.vscode/
+.vscode/**
+
+# Tests
+.vscode-test/**
+coverage/
+
+# Additional Ignored Files
+.gitignore
+.yarnrc
+vsc-extension-quickstart.md
+
+# System Files
+.DS_Store
+Thumbs.db
+**/src/webview
+
+# Bundler Configuration
+webpack.config.js
+webpack.*.config.js
+prettier.config.js
+eslint.config.js
+tsconfig.json
+**/tsconfig.json
+**/eslint.config.mjs
+
+# Source Maps and TypeScript Files
+**/*.map
+**/*.ts
+
+# VS Code Test Files
+**/.vscode-test.*
