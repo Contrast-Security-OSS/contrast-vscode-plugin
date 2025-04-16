@@ -6,25 +6,25 @@ import {
 
 const configuredProject1: ConfiguredProject = {
   source: 'scan',
-  contrastURL: 'https://apptwo.contrast.com/Contrast/api/sast',
-  userName: 'raju.kumar@security.com',
-  serviceKey: '2OTZXMTYIYYYXG2K',
-  apiKey: 'HLgcBCLpXwuXvOM9uBE64fIpd15xb90',
-  organizationId: '2c3a73d6-78a0-46c7-944a-b07b94d557f0',
+  contrastURL: 'https://xyz.com',
+  userName: 'xyz@xyz.com',
+  serviceKey: 'ABCDEFGHIJ',
+  apiKey: 'PQRS1234TUV5678',
+  organizationId: '123-XYZ-456-ABC-789',
   minute: '1440',
-  projectName: 'AnnettesRest14',
-  projectId: '42a30a30-a34d-43ee-b347-8fd2dc5775fa',
+  projectName: 'Test Project',
+  projectId: '456-ABC-789-XYZ',
 };
 const configuredProject2: ConfiguredProject = {
   source: 'scan',
-  contrastURL: 'https://apptwo.security.com/Contrast/api/sast',
-  userName: 'reddy.ramesh@security.com',
-  serviceKey: '2OTZXMTI6YZZXG2K',
-  apiKey: 'HLgcBCLpXwuXvOM9uBEw81fIpd15xb92',
-  organizationId: '3d3a73d6-78a0-46c7-944a-b07b94d557f0',
+  contrastURL: 'https://abc.com',
+  userName: 'abc@abc.com',
+  serviceKey: 'KLMNOPQRST',
+  apiKey: 'PQRS1234TUV5678',
+  organizationId: '456-XYZ-892-ABC-789',
   minute: '1440',
-  projectName: 'contrast',
-  projectId: '22a30a30-a34d-43ee-b347-8fd2dc5775ad',
+  projectName: 'Test Project 2',
+  projectId: '789-EFG-456-XYZ',
 };
 
 const childNode: Vulnerability = {
