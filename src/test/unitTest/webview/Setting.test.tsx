@@ -99,18 +99,18 @@ describe('Settings', () => {
 
     fireEvent.change(contrastURL, {
       target: {
-        value: 'https://apptwo.contrastsecurity.com/Contrast/api/sast',
+        value: 'https://xyz.com',
       },
     });
     fireEvent.change(userName, {
-      target: { value: 'naveen.kumar@contrastsecurity.com' },
+      target: { value: 'xyz@xyz.com' },
     });
-    fireEvent.change(serviceKey, { target: { value: '2OTZXMTI6YYYXG2L' } });
+    fireEvent.change(serviceKey, { target: { value: 'ABCDEFGHIJ' } });
     fireEvent.change(apiKey, {
-      target: { value: 'HLgcBCLpXwuXvOM9uBEw81fIpd15xb91' },
+      target: { value: 'PQRS1234TUV5678' },
     });
     fireEvent.change(organizationId, {
-      target: { value: '3c3a73d6-78a0-46c7-944a-b07b94d557f1' },
+      target: { value: '123-XYZ-456-ABC-789' },
     });
 
     fireEvent.click(retrieveBtn);
@@ -122,12 +122,12 @@ describe('Settings', () => {
       expect.objectContaining({
         command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
         payload: expect.objectContaining({
-          apiKey: 'HLgcBCLpXwuXvOM9uBEw81fIpd15xb91',
-          contrastURL: 'https://apptwo.contrastsecurity.com/Contrast/api/sast',
-          organizationId: '3c3a73d6-78a0-46c7-944a-b07b94d557f1',
-          serviceKey: '2OTZXMTI6YYYXG2L',
+          apiKey: 'PQRS1234TUV5678',
+          contrastURL: 'https://xyz.com',
+          organizationId: '123-XYZ-456-ABC-789',
+          serviceKey: 'ABCDEFGHIJ',
           source: 'scan',
-          userName: 'naveen.kumar@contrastsecurity.com',
+          userName: 'xyz@xyz.com',
         }),
       })
     );
@@ -256,12 +256,12 @@ describe('Settings', () => {
       expect.objectContaining({
         command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
         payload: expect.objectContaining({
-          apiKey: 'HLgcBCLpXwuXvOM9uBEw81fIpd15xb91',
-          contrastURL: 'https://apptwo.contrastsecurity.com/Contrast/api/sast',
-          organizationId: '3c3a73d6-78a0-46c7-944a-b07b94d557f1',
-          serviceKey: '2OTZXMTI6YYYXG2L',
+          apiKey: 'PQRS1234TUV5678',
+          contrastURL: 'https://xyz.com',
+          organizationId: '123-XYZ-456-ABC-789',
+          serviceKey: 'ABCDEFGHIJ',
           source: 'scan',
-          userName: 'naveen.kumar@contrastsecurity.com',
+          userName: 'xyz@xyz.com',
         }),
       })
     );

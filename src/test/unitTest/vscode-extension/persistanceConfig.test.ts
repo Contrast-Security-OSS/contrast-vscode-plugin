@@ -254,14 +254,14 @@ describe('Project Configuration Functions', () => {
     const configuredProject1: ConfiguredProject = {
       id: '1',
       source: 'scan',
-      contrastURL: 'https://apptwo.security.com/Contrast/api/sast',
-      userName: 'raju.kumar@contrastsecurity.com',
-      serviceKey: '2OTZXMTI6YYYXY2KS',
-      apiKey: 'HLgcBCLpXwuXvOM9uBEw81fIpd15xb91',
-      organizationId: '2c3a73d6-78a0-46c7-944a-b07b94d557f1',
+      contrastURL: 'https://xyz.com',
+      userName: 'xyz@xyz.com',
+      serviceKey: 'ABCDEFGHIJ',
+      apiKey: 'PQRS1234TUV5678',
+      organizationId: '123-XYZ-456-ABC-789',
       minute: '1440',
-      projectName: 'RnnettesTest14',
-      projectId: '42a30a30-a34d-43ee-b347-8fd2dc5775ff',
+      projectName: 'Test Project',
+      projectId: '456-ABC-789-XYZ',
     };
 
     const updatedProject: ConfiguredProject = {
