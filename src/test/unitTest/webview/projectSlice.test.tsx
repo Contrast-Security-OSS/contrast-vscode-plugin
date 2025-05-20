@@ -2,6 +2,7 @@ import {
   addConfigureProject,
   getAllConfiguredProjects,
   getAllProjectList,
+  setCancelStateWhileDelete,
   updateConfiguredProjectDelete,
   updateConfigureProject,
 } from '../../../webview/utils/redux/slices/projectsSlice';
@@ -11,9 +12,12 @@ describe('projectSlice', () => {
   const initialState = {
     configuredProjects: null,
     allProjectList: null,
+    allApplicationList: null,
     configuredProjectDelete: null,
     addConfigureProject: null,
     updateConfigureProject: null,
+    cancelStateWhileDelete: false,
+    settingActions: false,
     /* eslint-disable @typescript-eslint/no-explicit-any */
   } as any;
 
@@ -65,5 +69,10 @@ describe('projectSlice', () => {
       id: 1,
       name: 'Updated Project',
     });
+  });
+  it('should handle cancelStateWhileDelete action', () => {
+    const action = setCancelStateWhileDelete(true);
+    const newState = ProjectReducer(initialState, action);
+    expect(newState.cancelStateWhileDelete).toEqual(true);
   });
 });

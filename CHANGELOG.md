@@ -1,5 +1,24 @@
 # Change Log
 
+## [2.0.0] - 2025-05-19
+
+### Added
+
+- Support for Contrast Assess Interactive Application Security Testing (IAST).
+- Connect to your Contrast organization and retrieve a list of applications.
+- Retrieve vulnerabilities (IAST) and display them in the IDE
+- Ability to see which line of code has a vulnerability through clear indicators
+- Ability to hover over the affected line of code to see a short description and severity of the vulnerability
+- Added indicators on screen of the total number of vulnerabilities, by severity, in the file you have opened
+- Filter the list of vulnerabilities retrieved by severity (IAST), Status (IAST) and by session metadata (IAST)
+- Set tags (IAST) and change status of a vulnerability (IAST)
+- Manually refresh the vulnerabilities of the application.
+- Fetch the Vulnerability based on the scheduled duration.
+- Contextual Redirection to contrast Teamserver to get additional vulnerability details.
+- Restrict retrieval of vulnerabilities for archived projects or applications.
+
+---
+
 ## [1.0.0] - 2025-01-06
 
 ### Added

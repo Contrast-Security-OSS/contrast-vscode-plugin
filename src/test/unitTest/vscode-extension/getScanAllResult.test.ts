@@ -9,6 +9,7 @@ import { getScanResults } from '../../../vscode-extension/api/services/apiServic
 import path from 'path';
 import { Uri } from 'vscode';
 import { loggerInstance } from '../../../vscode-extension/logging/logger';
+import * as vscode from 'vscode';
 
 jest.mock('axios');
 jest.mock('axios-retry', () => {
@@ -36,6 +37,8 @@ jest.mock('vscode', () => ({
         fileName: 'test.js',
       },
     },
+    showErrorMessage: jest.fn(),
+    showInformationMessage: jest.fn(),
   },
   TreeItem: class {
     [x: string]: { dark: Uri; light: Uri };
@@ -65,6 +68,12 @@ jest.mock('vscode', () => ({
   },
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
+  },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
   },
 }));
 
@@ -129,13 +138,13 @@ describe('getScanResults', () => {
     mockedAxios.get.mockRejectedValue(new Error('API error'));
 
     const result = await getScanResults(mockProjectId);
+    expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+      'project is archived/deleted'
+    );
 
     expect(loggerInstance.logMessage).toHaveBeenCalledTimes(1);
     expect(result).toEqual(
-      resolveFailure(
-        localeI18n.getTranslation('apiResponse.errorFetchingScanResult'),
-        500
-      )
+      resolveFailure(localeI18n.getTranslation('apiResponse.ARCHIVED'), 400)
     );
   });
 
@@ -153,10 +162,7 @@ describe('getScanResults', () => {
 
     expect(mockedAxios.get).toHaveBeenCalledTimes(0);
     expect(result).toEqual(
-      resolveFailure(
-        localeI18n.getTranslation('apiResponse.errorFetchingScanResult'),
-        500
-      )
+      resolveFailure(localeI18n.getTranslation('apiResponse.ARCHIVED'), 400)
     );
   });
 

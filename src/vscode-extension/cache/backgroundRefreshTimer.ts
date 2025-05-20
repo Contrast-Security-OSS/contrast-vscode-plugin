@@ -59,12 +59,12 @@ export async function startBackgroundTimer(projectId: string): Promise<void> {
             `${localeI18ln.getTranslation('persistResponse.autoRefreshSucess')} ${formatDate(new Date())}`
           );
           const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Auto-Refresh - Vulnerability Sync Process Completed`;
-          void loggerInstance.logMessage(LogLevel.INFO, logData);
+          void loggerInstance?.logMessage(LogLevel.INFO, logData);
         }
       } catch (err) {
         if (err instanceof Error) {
           const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Auto-Refresh - ${err.message} \n`;
-          void loggerInstance.logMessage(LogLevel.ERROR, logData);
+          void loggerInstance?.logMessage(LogLevel.ERROR, logData);
         }
         console.error(
           localeI18ln.getTranslation('apiResponse.failedToRefreshCache'),

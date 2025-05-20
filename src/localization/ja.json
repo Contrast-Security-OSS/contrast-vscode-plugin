@@ -16,11 +16,13 @@
       },
       "contrastURL": {
         "translate": "コントラストURL",
-        "placeholder": "コントラストURLを入力してください"
+        "placeholder": "コントラストURLを入力してください",
+        "note": "有効なURLを次の形式で入力してください"
       },
       "userName": {
         "translate": "ユーザー名",
-        "placeholder": "ユーザー名を入力してください"
+        "placeholder": "ユーザー名を入力してください",
+        "note": "有効なメールIDを入力してください"
       },
       "serviceKey": {
         "translate": "サービスキー",
@@ -36,6 +38,9 @@
       },
       "projectName": {
         "translate": "プロジェクト名"
+      },
+      "applicationName": {
+        "translate": "アプリケーション名"
       },
       "vulnerabilityRefreshCycle": {
         "translate": "脆弱性更新サイクル"
@@ -122,6 +127,10 @@
     "translate": "コントラストスキャン",
     "filter": {
       "translate": "フィルタ",
+      "projectName": {
+        "translate": "プロジェクト名",
+        "placeholder": "プロジェクトが見つかりません"
+      },
       "severity": {
         "translate": "重大度",
         "options": [
@@ -182,7 +191,7 @@
       },
       "buttons": {
         "run": {
-          "translate": "実行"
+          "translate": "走る"
         },
         "clear": {
           "translate": "クリア"
@@ -195,12 +204,251 @@
     "vulnerabilityReport": {
       "translate": "脆弱性レポート",
       "htmlElements": {
-        "translate": "<h1>プロジェクトの脆弱性レポートは見つかりませんでした:</h1><ol><li>アクティビティバーのContrastビューに移動します。</li><li>プロジェクトのために脆弱性を取得ボタンをクリックします。</li></ol><p>脆弱性を取得した後、この画面に戻るか、更新アイコンをクリックして最新の脆弱性レポートを確認してください。</p><p>ヒント: <span style='font-weight: 400;'>アクティビティバーのContrast Scanパネルからいつでもこの画面にアクセスできます。</span></p>"
+        "translate": "<h1>プロジェクトに脆弱性は見つかりませんでした：</h1><ol><li>「Contrast - Scan」メニューに移動します</li><li>必要なフィルターを選択して「実行ボタン」をクリックします。</li><li>「脆弱性レポート」タブで結果を確認します。</li></ol><p>脆弱性を取得した後、この画面に戻るか、最新の脆弱性レポートを見るには更新アイコンをクリックしてください。</p><p>"
       }
     },
     "tooltips": {
       "refresh": {
         "translate": "リフレッシュ"
+      }
+    }
+  },
+  "contrastAssess": {
+    "translate": "コントラスト評価",
+    "retrieveVul": {
+      "translate": "脆弱性を取得",
+      "formFields": {
+        "application": {
+          "translate": "アプリケーション",
+          "placeholder": "アプリケーションが見つかりません"
+        },
+        "server": {
+          "noServerFound": {
+            "translate": "サーバー",
+            "placeholder": "サーバーが見つかりません"
+          },
+          "selectServer": {
+            "translate": "サーバー",
+            "placeholder": "サーバーを選択してください"
+          }
+        },
+        "buildNumber": {
+          "noBuildNumberFound": {
+            "translate": "ビルド番号",
+            "placeholder": "ビルド番号が見つかりません"
+          },
+          "selectBuildNumber": {
+            "translate": "ビルド番号",
+            "placeholder": "ビルド番号を選択してください"
+          }
+        },
+        "severity": {
+          "translate": "重大度",
+          "options": [
+            {
+              "name": "critical",
+              "translate": "クリティカル"
+            },
+            {
+              "name": "high",
+              "translate": "高"
+            },
+            {
+              "name": "medium",
+              "translate": "中"
+            },
+            {
+              "name": "low",
+              "translate": "低"
+            },
+            {
+              "name": "note",
+              "translate": "メモ"
+            }
+          ]
+        },
+        "status": {
+          "translate": "ステータス",
+          "options": [
+            {
+              "name": "reported",
+              "translate": "報告済み"
+            },
+            {
+              "name": "confirmed",
+              "translate": "確認済み"
+            },
+            {
+              "name": "suspicious",
+              "translate": "疑わしい"
+            },
+            {
+              "name": "notAproblem",
+              "translate": "問題なし"
+            },
+            {
+              "name": "remediated",
+              "translate": "修正済み"
+            },
+            {
+              "name": "fixed",
+              "translate": "修正済み"
+            }
+          ]
+        },
+        "Filter": {
+          "translate": "フィルター",
+          "options": [
+            {
+              "name": "From",
+              "translate": "開始日"
+            },
+            {
+              "name": "To",
+              "translate": "終了日"
+            }
+          ]
+        },
+        "session_metadata": {
+          "translate": "セッションメタデータ",
+          "options": [
+            {
+              "name": "none-radio",
+              "translate": "なし"
+            },
+            {
+              "name": "custom-session-radio",
+              "translate": "カスタムセッション"
+            },
+            {
+              "name": "most-recent-session-radio",
+              "translate": "最新のセッション"
+            }
+          ]
+        }
+      }
+    },
+    "currentFile": {
+      "translate": "現在のファイル"
+    },
+    "vulnerabilityReport": {
+      "translate": "脆弱性レポート",
+      "htmlElements": {
+        "translate": "<h1>脆弱性は見つかりませんでした：</h1><ol><li>「Contrast - Assess」メニューに移動します</li><li>必要なフィルターを選択して「実行ボタン」をクリックします。</li><li>「脆弱性レポート」タブで結果を確認します。</li></ol><p>脆弱性を取得した後、この画面に戻るか、最新の脆弱性レポートを見るには更新アイコンをクリックしてください。</p><p>"
+      },
+      "tabs": {
+        "overView": {
+          "translate": "概要",
+          "formFields": {
+            "whatHappened": {
+              "translate": "何が起こったのか？"
+            },
+            "whatsTheRisk": {
+              "translate": "リスクは何か？"
+            },
+            "firstDetectedDate": {
+              "translate": "最初の検出日"
+            },
+            "lastDetectedDate": {
+              "translate": "最後の検出日"
+            }
+          }
+        },
+        "howToFix": {
+          "translate": "修正方法"
+        },
+        "events": {
+          "translate": "イベント"
+        },
+        "httpRequest": {
+          "translate": "HTTPリクエスト"
+        },
+        "tags": {
+          "translate": "タグ",
+          "formFields": {
+            "applyExistingTag": {
+              "translate": "既存のタグを適用"
+            },
+            "createAndApplyNewTag": {
+              "translate": "新しいタグを作成して適用"
+            },
+            "appliedTag": {
+              "translate": "適用されたタグ"
+            },
+            "tag": {
+              "translate": "タグ"
+            }
+          }
+        },
+        "markAs": {
+          "translate": "マークする",
+          "formFields": {
+            "markAs": {
+              "translate": "マークする"
+            },
+            "Reason": {
+              "translate": "理由"
+            },
+            "addComment": {
+              "translate": "コメントを追加"
+            },
+            "justification": {
+              "translate": "正当化"
+            }
+          }
+        }
+      }
+    },
+    "buttons": {
+      "refresh": {
+        "translate": "更新"
+      },
+      "clear": {
+        "translate": "クリア"
+      },
+      "run": {
+        "translate": "実行"
+      },
+      "ok": {
+        "translate": "わかりました"
+      },
+      "create": {
+        "translate": "作成"
+      }
+    },
+    "tooltips": {
+      "refresh": {
+        "translate": "更新"
+      },
+      "clear": {
+        "translate": "クリア"
+      },
+      "run": {
+        "translate": "実行"
+      },
+      "ok": {
+        "translate": "わかりました"
+      },
+      "create": {
+        "translate": "作成"
+      },
+      "redirect": {
+        "translate": "リダイレクト"
+      },
+      "delete": {
+        "translate": "消去"
+      },
+      "refreshServersAndBuildNumbers": {
+        "translate": "サーバとビルド番号を更新"
+      },
+      "clearsServersAndBuildNumbers": {
+        "translate": "サーバとビルド番号をクリア"
+      },
+      "clearsAllAppliedFilters": {
+        "translate": "適用された全てのフィルタをクリア"
+      },
+      "fetchVulnerabilities": {
+        "translate": "脆弱性を取得"
       }
     }
   },
@@ -221,7 +469,7 @@
       "translate": "スキャン結果の取得に成功しました"
     },
     "projectNotFound": {
-      "translate": "プロジェクトが見つかりません"
+      "translate": "プロジェクトが構成されていません"
     },
     "failedToFecthScanResult": {
       "translate": "スキャン結果の取得に失敗しました"
@@ -273,6 +521,90 @@
     },
     "vulnerabilityNotFound": {
       "translate": "申し訳ありませんが、このプロジェクトの脆弱性は見つかりませんでした"
+    },
+    "cacheStarted": {
+      "translate": "cache started"
+    },
+    "cacheCompleted": {
+      "translate": "cache completed"
+    },
+    "packageInfoSuccess": {
+      "translate": "Successfully retrieved package information"
+    },
+    "refineFilter": {
+      "translate": "There are more than 12,000 records. Please refine your filter criteria to fetch vulnerabilities"
+    },
+    "fecthingApplication": {
+      "translate": "Fetching application details..."
+    },
+    "fechedSuccess": {
+      "translate": "Applications fetched successfully."
+    },
+    "somethingWentWrong": {
+      "translate": "Oops! Something went wrong."
+    },
+    "serverListFetched": {
+      "translate": "ServerList fetched successfully."
+    },
+    "buildnumberFetched": {
+      "translate": "BuildNumber fetched successfully."
+    },
+    "customSessionMetaDataFetched": {
+      "translate": "CustomSessionMetaData fetched successfully."
+    },
+    "MostRecentMetaDataFetched": {
+      "translate": "MostRecentMetaData fetched successfully."
+    },
+    "getAllTags": {
+      "translate": "All Tags fetched successfully."
+    },
+    "vulnerabilitysuccessfully": {
+      "translate": "Vulnerability tagged successfully."
+    },
+    "tracesFetched": {
+      "translate": "Traces fetched successfully."
+    },
+    "storyResult": {
+      "translate": "LineNumber and FileName fetched successfully."
+    },
+    "storyText": {
+      "translate": "StoryResult fetched successfully."
+    },
+    "recommendationText": {
+      "translate": "All Recommendation Text fetched successfully."
+    },
+    "eventsResult": {
+      "translate": "All Events fetched successfully."
+    },
+    "addVulnerabilitySuccessfully": {
+      "translate": "1 Vulnerability successfully marked as Reported"
+    },
+    "assessVulnerbilitySuccess": {
+      "translate": "Successfully fetched vulnerabilities"
+    },
+    "traceIdNotFound": {
+      "translate": "Missing TraceId"
+    },
+    "httpsResult": {
+      "translate": "All Https fetched successfully."
+    },
+    "markedVulnerability": {
+      "translate": "Marked vulnerability"
+    },
+    "failedToMark": {
+      "translate": "Failed to mark vulnerability"
+    },
+    "vulnerabilityTagged": {
+      "translate": "Vulnerability tagged"
+    },
+    "failedToTag": {
+      "translate": "Failed to tag"
+    },
+    "ASSESSARCHIVED": {
+      "translate": "application is archived/deleted"
+    },
+    "ARCHIVED": {
+      "translate": "project is archived/deleted"
     }
   },
   "persistResponse": {
@@ -300,6 +632,24 @@
     "deletePreConfirm": {
       "translate": "プロジェクトを削除してもよろしいですか？"
     },
+    "applicationAddedSuccess": {
+      "translate": "アプリケーションが正常に追加されました"
+    },
+    "applicationUpdatedSuccess": {
+      "translate": "アプリケーションが正常に更新されました"
+    },
+    "applicationDeletedSuccess": {
+      "translate": "アプリケーションが正常に削除されました。"
+    },
+    "applicationNotConfigured": {
+      "translate": "アプリケーションが構成されていません。続行する前に、アプリケーションを選択して「脆弱性フィルターの取得」画面で実行してください。"
+    },
+    "applicationDeletionFailed": {
+      "translate": "アプリケーションを削除できませんでした"
+    },
+    "deletePreConfirmApplication": {
+      "translate": "本当にアプリケーションを削除しますか？"
+    },
     "organizationNotFound": {
       "translate": "組織が見つかりません"
     },
@@ -320,6 +670,30 @@
     },
     "retrievingVulnerabilities": {
       "translate": "脆弱性を取得しています"
+    },
+    "loadingFilters": {
+      "translate": "サーバー、ビルド番号、セッションメタデータのロード"
+    },
+    "tagAlreadyApplied": {
+      "translate": "タグはすでに適用されています"
+    },
+    "tagAlreadyAvailable": {
+      "translate": "同じ名前のタグが存在します。既存のタグから選択してください"
+    },
+    "vulnerabilityTagged": {
+      "translate": "脆弱性がタグ付けされました"
+    },
+    "tagLengthExceeded": {
+      "translate": "タグの長さは72文字を超えることはできません"
+    },
+    "scanInterlockWarning": {
+      "translate": "スキャン画面に切り替えると、アセス関連のキャッシュがクリアされます。続行しますか？"
+    },
+    "assessInterlockWarning": {
+      "translate": "アセス画面に切り替えると、スキャン関連のキャッシュがクリアされます。続行しますか？"
+    },
+    "wrongRelativePath": {
+      "translate": "ファイルパスが正しくありません。次のパスを基準にプロジェクトを開いてください"
     }
   },
   "contrastItems": {
@@ -331,6 +705,9 @@
     },
     "scan": {
       "translate": "Contrast - スキャン"
+    },
+    "assess": {
+      "translate": "Contrast - 出席"
     },
     "retrieve_vulnerability": {
       "translate": "脆弱性を取得"

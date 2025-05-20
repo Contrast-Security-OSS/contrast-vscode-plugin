@@ -8,15 +8,20 @@ const MAX_LOG_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_LOG_FILES = 10; // Maximum 10 files to keep
 
 export class Logger {
-  private logDir: string;
-  private logFileName: string;
-  private logFilePath: string;
+  private logDir!: string;
+  private logFileName!: string;
+  private logFilePath!: string;
 
   constructor(private context: vscode.ExtensionContext) {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-      throw new Error('Workspace folder not found. Logs cannot be saved.');
+    const listOfWorkspaceFolder = vscode.workspace;
+    if (
+      !listOfWorkspaceFolder?.workspaceFolders ||
+      listOfWorkspaceFolder.workspaceFolders.length === 0
+    ) {
+      console.error('Workspace folder not found. Logs cannot be saved.');
+      return;
     }
+    const workspaceFolder = listOfWorkspaceFolder.workspaceFolders?.[0];
 
     this.logDir = path.join(
       workspaceFolder.uri.fsPath,

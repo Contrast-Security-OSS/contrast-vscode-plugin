@@ -5,10 +5,14 @@ import React, {
 } from 'react';
 import { EXTENTION_COMMANDS } from '../vscode-extension/utils/constants/commands';
 import {
+  Events,
   Level0Entry,
   Level1Entry,
+  ListOfTagsResponse,
   ProjectSource,
+  ResponseCustomSession,
 } from '../vscode-extension/api/model/api.interface';
+import { TooltipProps } from '@mui/material';
 
 // Custom Components
 
@@ -29,6 +33,7 @@ export interface ButtonProps {
   className?: string;
   isDisable?: boolean;
   id?: string;
+  tooltip?: string;
 }
 
 // ---------------- supported locally language -----------------
@@ -40,95 +45,196 @@ export enum LOCAL_LANG {
 
 // ---------------- localization ---------------------------------
 
-export type TranslateType = { translate: string; placeholder?: string };
+export type TranslateType = {
+  translate: string;
+  placeholder?: string;
+  note?: string;
+};
 type OptionLocaleType = Array<{ name: string; translate: string }>;
-export interface LocalizationJSON {
-  contrastSettings: {
-    formFields: {
-      source?: {
-        translate: string;
-        options: [
-          {
-            name: string;
-            translate: string;
-          },
-          {
-            name: string;
-            translate: string;
-          },
-        ];
-      };
-      contrastURL?: TranslateType;
-      userName?: TranslateType;
-      serviceKey?: TranslateType;
-      apiKey?: TranslateType;
-      organizationId?: TranslateType;
-      projectName?: TranslateType;
-      vulnerabilityRefreshCycle?: TranslateType;
-    };
-    organization?: {
-      organizationName: TranslateType;
-      projectName: TranslateType;
-      type: TranslateType;
-    };
-    tooltips: {
-      edit: TranslateType;
-      delete: TranslateType;
-    };
-    buttons?: {
-      add: TranslateType;
-      cancel: TranslateType;
-      update: TranslateType;
-      retrieve: TranslateType;
-    };
-    others?: {
-      minute?: TranslateType;
-    };
-    errorMessages: {
-      contrastURL: {
-        required: TranslateType;
-        invalid: TranslateType;
-      };
-      userName: {
-        required: TranslateType;
-        invalid: TranslateType;
-      };
-      serviceKey: { required: TranslateType };
-      apiKey: { required: TranslateType };
-      organizationId: { required: TranslateType };
-      minute: { required: TranslateType };
-    };
-  };
-  contrastScan: {
-    translate: string;
-    filter: {
-      translate?: string;
-      severity: {
-        translate: string;
-        options?: OptionLocaleType;
-      };
-      status: {
-        translate: string;
-        options?: OptionLocaleType;
-      };
-      buttons: {
-        run: TranslateType;
-        clear: TranslateType;
-      };
-    };
-    currentFile: TranslateType;
-    vulnerabilityReport: {
+
+export type ContrastSettingsLocale = {
+  formFields: {
+    source?: {
       translate: string;
-      htmlElements: TranslateType;
+      options: [
+        {
+          name: string;
+          translate: string;
+        },
+        {
+          name: string;
+          translate: string;
+        },
+      ];
     };
-    tooltips: {
-      refresh: TranslateType;
+    contrastURL?: TranslateType;
+    userName?: TranslateType;
+    serviceKey?: TranslateType;
+    apiKey?: TranslateType;
+    organizationId?: TranslateType;
+    projectName?: TranslateType;
+    applicationName?: TranslateType;
+    vulnerabilityRefreshCycle?: TranslateType;
+  };
+  organization?: {
+    organizationName: TranslateType;
+    projectName: TranslateType;
+    type: TranslateType;
+  };
+  tooltips: {
+    edit: TranslateType;
+    delete: TranslateType;
+  };
+  buttons?: {
+    add: TranslateType;
+    cancel: TranslateType;
+    update: TranslateType;
+    retrieve: TranslateType;
+  };
+  others?: {
+    minute?: TranslateType;
+  };
+  errorMessages: {
+    contrastURL: {
+      required: TranslateType;
+      invalid: TranslateType;
+    };
+    userName: {
+      required: TranslateType;
+      invalid: TranslateType;
+    };
+    serviceKey: { required: TranslateType };
+    apiKey: { required: TranslateType };
+    organizationId: { required: TranslateType };
+    minute: { required: TranslateType };
+  };
+};
+export type ContrastScanLocale = {
+  translate: string;
+  filter: {
+    translate?: string;
+    projectName?: TranslateType;
+    severity: {
+      translate: string;
+      options?: OptionLocaleType;
+    };
+    status: {
+      translate: string;
+      options?: OptionLocaleType;
+    };
+    buttons: {
+      run: TranslateType;
+      clear: TranslateType;
     };
   };
+  currentFile: TranslateType;
+  vulnerabilityReport: {
+    translate: string;
+    htmlElements: TranslateType;
+  };
+  tooltips: {
+    refresh: TranslateType;
+  };
+};
+
+export type ContrastAssessLocale = {
+  translate?: string;
+  retrieveVul?: {
+    translate?: string;
+    formFields: {
+      application?: TranslateType;
+      server?: {
+        noServerFound?: TranslateType;
+        selectServer?: TranslateType;
+      };
+      buildNumber?: {
+        noBuildNumberFound?: TranslateType;
+        selectBuildNumber?: TranslateType;
+      };
+      severity?: {
+        translate: string;
+        options?: OptionLocaleType;
+      };
+      status?: {
+        translate: string;
+        options?: OptionLocaleType;
+      };
+      Filter?: {
+        translate: string;
+        options?: OptionLocaleType;
+      };
+      session_metadata?: {
+        translate: string;
+        options?: OptionLocaleType;
+      };
+    };
+  };
+  currentFile?: {
+    translate: string;
+  };
+  vulnerabilityReport?: {
+    translate: string;
+    htmlElements?: TranslateType;
+    tabs?: {
+      overView?: {
+        translate?: string;
+        formFields?: {
+          whatHappened: TranslateType;
+          whatsTheRisk: TranslateType;
+          firstDetectedDate: TranslateType;
+          lastDetectedDate: TranslateType;
+        };
+      };
+      howToFix?: TranslateType;
+      events?: TranslateType;
+      httpRequest?: TranslateType;
+      tags?: {
+        translate?: string;
+        formFields?: {
+          applyExistingTag: TranslateType;
+          createAndApplyNewTag: TranslateType;
+          appliedTag: TranslateType;
+          tag: TranslateType;
+        };
+      };
+      markAs?: {
+        translate?: string;
+        formFields?: {
+          markAs: TranslateType;
+          Reason: TranslateType;
+          addComment: TranslateType;
+          justification: TranslateType;
+        };
+      };
+    };
+  };
+  buttons?: {
+    refresh?: TranslateType;
+    clear?: TranslateType;
+    run?: TranslateType;
+    ok?: TranslateType;
+    create?: TranslateType;
+  };
+  tooltips?: {
+    refresh?: TranslateType;
+    clear?: TranslateType;
+    run?: TranslateType;
+    ok?: TranslateType;
+    redirect?: TranslateType;
+    create?: TranslateType;
+    delete?: TranslateType;
+    refreshServersAndBuildNumbers: TranslateType;
+    clearsServersAndBuildNumbers: TranslateType;
+    clearsAllAppliedFilters: TranslateType;
+    fetchVulnerabilities: TranslateType;
+  };
+};
+export interface LocalizationJSON {
+  contrastSettings: ContrastSettingsLocale;
+  contrastScan: ContrastScanLocale;
+  contrastAssess: ContrastAssessLocale;
 }
 
-export type ContrastSettingsLocale = LocalizationJSON['contrastSettings'];
-export type ContrastScanLocale = LocalizationJSON['contrastScan'];
 export type LocaleJson = ContrastScanLocale | ContrastSettingsLocale;
 
 // -----------------  Api Request & Response ----------------------------
@@ -174,7 +280,11 @@ export type ResponseData =
   | ProjectSource
   | Level0Entry[]
   | string
-  | ProjectSource[];
+  | ProjectSource[]
+  | ResponseCustomSession[]
+  | ListOfTagsResponse[]
+  | AssessFilter
+  | Events[];
 
 export interface SucessResponse {
   status: 'success';
@@ -196,7 +306,8 @@ export type ApiResponse = SucessResponse | FailureResponse;
 
 export type ScreenId =
   | EXTENTION_COMMANDS.SCAN_SCREEN
-  | EXTENTION_COMMANDS.SETTING_SCREEN;
+  | EXTENTION_COMMANDS.SETTING_SCREEN
+  | EXTENTION_COMMANDS.ASSESS_SCREEN;
 
 export type CommandRequest = {
   command: string;
@@ -217,16 +328,24 @@ export type LocaleState = {
 
 export type ScanState = {
   filters: ApiResponse | null;
+  activeProjectName: string | null;
+  validWorkspaceProjects: ValidProjectType[] | null;
+  backgroundVulnRunner: boolean;
+  manualRefreshBackgroundVulnRunner: boolean;
   activeCurrentFile: null | boolean;
   activeVulnerabilityReport: null | boolean;
+  scanRetrievelDetectAcrossIds: boolean;
 };
 
 export type ProjectState = {
   configuredProjects: ApiResponse | null;
   allProjectList: ApiResponse | null;
+  allApplicationList: ApiResponse | null;
   configuredProjectDelete: ApiResponse | null;
   addConfigureProject: ApiResponse | null;
   updateConfigureProject: ApiResponse | null;
+  cancelStateWhileDelete: boolean;
+  settingActions: boolean;
 };
 
 export type ScreenState = {
@@ -244,6 +363,7 @@ export type ReducerTypes = {
   project: ProjectState;
   vulnerability: VulReport;
   scan: ScanState;
+  assessFilter: AssessFilterState;
   theme: Record<string, number | null>;
 };
 // -------------------- React webview types and Interfaces -------------------
@@ -299,6 +419,12 @@ export type ContrastOrganizationLocales = {
 };
 
 // -------------------------------- Scan Screen ----------------------------------------
+
+export interface ValidProjectType {
+  id: string;
+  name: string;
+}
+
 export interface TabViewerProps {
   tabId: number; // Correct typing for tabId prop
 }
@@ -306,6 +432,7 @@ export interface TabViewerProps {
 export interface PopupMessage {
   message?: string;
   lastDetected_date?: string;
+  firstDetected_date?: string;
   status?: string;
   link?: string | null;
   advise?: string;
@@ -318,6 +445,7 @@ export interface Vulnerability {
   lineNumber: number;
   popupMessage: PopupMessage;
   severity: string;
+  overview?: VulnerabilityOverview;
 }
 
 export interface FileVulnerability {
@@ -345,6 +473,7 @@ export type CustomFileVulnerability = FileVulnerability & {
   scrollToLine?: boolean;
   id?: string;
   filesCount?: number;
+  overview?: VulnerabilityOverview;
 };
 
 // ------------------- Filter -------------------------------
@@ -371,8 +500,9 @@ export interface FilterStatus {
   SUSPICIOUS: boolean;
   NOT_A_PROBLEM: boolean;
   REMEDIATED: boolean;
-  REMEDIATED_AUTO_VERIFIED: boolean;
-  REOPENED: boolean;
+  REMEDIATED_AUTO_VERIFIED?: boolean;
+  REOPENED?: boolean;
+  FIXED?: boolean;
 }
 
 export interface FilterType {
@@ -405,21 +535,36 @@ export type PackageInformation = {
 
 // --------------------   Material Types --------------------
 
-type IEvent = (e: { value: string; children: React.ReactNode }) => void;
+export type IEvent = (e: {
+  value: string | string[];
+  children: React.ReactNode;
+  additionalProps?: string | object;
+}) => void;
 
 export interface IDropDown {
-  value: string;
+  value: string | string[];
   children: React.ReactElement[] | React.ReactElement; // This is correct
   onChange?: IEvent | undefined;
   id?: string;
+  placeHolder?: string;
+  isDisabled?: boolean;
+  hasSearchBox?: boolean;
+  noDataFoundMessage?: string;
+  isMultiSelect?: boolean;
+  tooltipPlacement?: TooltipProps['placement'];
+  isClearable?: boolean;
 }
 
 export interface IOption {
-  value: string;
+  value: string | string[];
   children: React.ReactNode; // Allow ReactNode instead of string
   onClick?: IEvent;
   style?: React.CSSProperties;
   id?: string;
+  additionalProps?: string | object;
+  isChecked?: boolean;
+  isMulti?: boolean;
+  tooltipPlacement?: TooltipProps['placement'];
 }
 
 export type TabProps = {
@@ -438,7 +583,8 @@ export type PersistedDTO =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { [key: string]: any }
   | { configuredProjects?: ConfiguredProject[] }
-  | { filters?: FilterType };
+  | { filters?: FilterType }
+  | { assessFilters?: AssessFilter };
 
 // -------------About-------------------------
 interface AboutPage {
@@ -456,3 +602,191 @@ export interface PackageInfo {
   IDEVersion: string;
   platform: string;
 }
+
+// ------------------------ Assess Feature Types --------------------------
+
+export type PassLocalLang = LocaleJson | null;
+export interface DateRangeOption {
+  filterId: number;
+  label: string;
+}
+
+export interface TimeSlotOption {
+  slotId: number;
+  label: string;
+}
+
+export interface DateTimeFilter {
+  range: string;
+  fromDateTime: DateTimeValue | null;
+  toDateTime: DateTimeValue | null;
+}
+
+export interface Server {
+  server_id: number;
+  name: string;
+}
+
+export interface BuildNumber {
+  keycode: string;
+  label: string;
+}
+
+export interface DateTimeValue {
+  date: string | null;
+  time: string | null;
+}
+
+export interface SessionMetaDataForRadio {
+  id: string;
+  value: string;
+  label: string;
+  isDisabled?: boolean;
+}
+
+export interface CustomSessionSystemValue {
+  value?: string;
+  count?: number;
+}
+export interface CustomSessionSystemProperty {
+  id: string;
+  label: string;
+}
+
+export type CustomSessionMetaData = CustomSessionSystemProperty & {
+  values: CustomSessionSystemValue[] | [];
+};
+
+export type MostRecentMetaData = {
+  agentSessionId: string;
+};
+
+export type AssessFilterState = {
+  configuredApplications: ApiResponse | null;
+  serverListbyOrgId: ApiResponse | null;
+  builNumber: ApiResponse | null;
+  customSessionMetaData: ApiResponse | null;
+  mostRecentMetaData: ApiResponse | null;
+  filters: ApiResponse | null;
+  allFiles: ApiResponse | null;
+  backgroundVulnRunner: boolean;
+  markAsBtnBehaviour: boolean;
+  orgTags: ApiResponse | null;
+  tagsOkBehaviour: boolean;
+  currentFile: ApiResponse | null;
+  manualRefreshBackgroundVulnRunner: boolean;
+  activeCurrentFile: ApiResponse | null;
+  refreshBackgroundVulnRunnerAcrossIds: boolean;
+};
+
+export interface VulnerabilityOverview {
+  chapters?: Array<{ type?: string; introText: string; body: string }>;
+  risk?: {
+    text?: string;
+  };
+}
+
+export interface VulnerabilityHowToFix {
+  recommendation?: {
+    text: string;
+  };
+  custom_recommendation?: {
+    text: string;
+  };
+  owasp?: string;
+  cwe?: string;
+  rule_references?: {
+    text: string;
+  };
+  custom_rule_references?: {
+    text: string;
+  };
+}
+export interface vulnerabilityEventsTree {
+  isRoot?: boolean;
+  type?: string;
+  label?: string;
+  child?: vulnerabilityEventsTree[] | [] | null;
+}
+export interface VulnerabilityEvents {
+  data: vulnerabilityEventsTree[];
+}
+
+export interface VulnerabilityHttpRequest {
+  text: string;
+}
+
+export interface VulnerabilityTags {
+  id: number;
+  label: string;
+}
+export interface AssessVulnerability {
+  id?: string;
+  traceId?: string;
+  level: number;
+  label: string;
+  lineNumber: number;
+  popupMessage: PopupMessage;
+  severity: string;
+  Substatus_keycode: string;
+  overview?: VulnerabilityOverview;
+  howToFix?: VulnerabilityHowToFix;
+  events?: VulnerabilityEvents;
+  http_request?: VulnerabilityHttpRequest;
+  tags: VulnerabilityTags[];
+}
+
+export interface AssessFileVulnerability {
+  level?: number;
+  label?: string;
+  issuesCount?: number;
+  filePath?: string;
+  fileType?: string;
+  child?: AssessVulnerability[];
+}
+
+export interface AssessProjectVulnerability {
+  level: number;
+  label: string;
+  issuesCount: number;
+  filesCount: number;
+  child: AssessFileVulnerability[];
+}
+
+export interface AssessVulnerabilitiesType {
+  orgId?: string;
+  appId?: string;
+  servers?: number | number[] | string | string[];
+  appVersionTags?: string | string[];
+  severities?: string;
+  status?: string;
+  startDate?: {
+    date?: string;
+    time?: string;
+    timeStamp?: number;
+    dateTime?: string;
+  };
+  endDate?: {
+    date?: string;
+    time?: string;
+    timeStamp?: number;
+    dateTime?: string;
+  };
+  agentSessionId?: string;
+  metadataFilters?:
+    | [
+        {
+          fieldID?: string;
+          values?: string[];
+        },
+      ]
+    | [];
+  dateFilter?: string;
+  activeSessionMetadata?: string;
+}
+export type AssessFilter = ConfiguredProject & AssessVulnerabilitiesType;
+
+export type FilterOption = {
+  keycode: string;
+  label: string;
+};

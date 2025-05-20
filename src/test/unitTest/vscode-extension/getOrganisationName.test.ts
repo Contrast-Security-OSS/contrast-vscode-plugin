@@ -17,6 +17,7 @@ jest.mock('vscode', () => ({
   },
   workspace: {
     workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    onDidChangeConfiguration: jest.fn(),
   },
   window: {
     activeTextEditor: {
@@ -53,6 +54,12 @@ jest.mock('vscode', () => ({
   },
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
+  },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
   },
 }));
 
@@ -92,7 +99,7 @@ describe('getOrganisationName', () => {
   };
 
   beforeEach(() => {
-    mockAxios = new MockAdapter(axios);
+    mockAxios = new MockAdapter(axios as any);
     mockGetAxiosClient = jest.fn();
     mockGetAxiosClient.mockReturnValue(axios);
   });

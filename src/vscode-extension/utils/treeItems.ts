@@ -1,11 +1,11 @@
 import path from 'path';
 import {
   CONSTRAST_ABOUT,
+  CONSTRAST_ASSESS,
   CONSTRAST_SCAN,
   CONSTRAST_SETTING,
-  CONTRAST_RETRIEVE_VULNERABILITIES,
 } from './constants/commands';
-import { TreeItem, Uri, workspace } from 'vscode';
+import { TreeItem, Uri } from 'vscode';
 import { localeI18ln } from '../../l10n';
 
 class ContrastTreeItem extends TreeItem {
@@ -44,17 +44,11 @@ const ContrastNavigationItems: ContrastTreeItem[] = [
     CONSTRAST_SCAN,
     'contrast-scan.png'
   ),
+  new ContrastTreeItem(
+    localeI18ln.getTranslation('contrastItems.assess') as string,
+    CONSTRAST_ASSESS,
+    'contrast-assess.png'
+  ),
 ];
-
-const folders = workspace.workspaceFolders;
-if (folders && folders.length > 0) {
-  ContrastNavigationItems.push(
-    new ContrastTreeItem(
-      `${workspace.workspaceFolders?.[0]?.name} - ${localeI18ln.getTranslation('contrastItems.retrieve_vulnerability')}`,
-      CONTRAST_RETRIEVE_VULNERABILITIES,
-      'download.svg'
-    )
-  );
-}
 
 export { ContrastNavigationItems, ContrastTreeItem };

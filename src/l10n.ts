@@ -50,6 +50,9 @@ class l10n {
       case EXTENTION_COMMANDS.SCAN_SCREEN: {
         return this.setLocale?.['contrastScan'];
       }
+      case EXTENTION_COMMANDS.ASSESS_SCREEN: {
+        return this.setLocale?.['contrastAssess'];
+      }
       default:
         return null;
     }

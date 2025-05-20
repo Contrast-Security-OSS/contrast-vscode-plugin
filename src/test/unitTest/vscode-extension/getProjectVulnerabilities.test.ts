@@ -1,5 +1,11 @@
-import { getProjectVulnerabilties } from '../../../vscode-extension/api/services/apiService';
-import { getDataFromCache } from '../../../vscode-extension/cache/cacheManager';
+import {
+  getAssessVulnerabiltiesFromCache,
+  getProjectVulnerabilties,
+} from '../../../vscode-extension/api/services/apiService';
+import {
+  getDataFromCache,
+  getDataFromCacheAssess,
+} from '../../../vscode-extension/cache/cacheManager';
 import { resolveFailure } from '../../../vscode-extension/utils/errorHandling';
 import {
   ShowInformationPopup,
@@ -29,6 +35,7 @@ jest.mock('vscode', () => ({
   },
   workspace: {
     workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    onDidChangeConfiguration: jest.fn(),
   },
   window: {
     activeTextEditor: {
@@ -66,6 +73,12 @@ jest.mock('vscode', () => ({
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
   },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
+  },
 }));
 
 jest.mock(
@@ -90,6 +103,9 @@ const mockedResolveFailure = resolveFailure as jest.MockedFunction<
 const mockedGetDataFromCache = getDataFromCache as jest.MockedFunction<
   typeof getDataFromCache
 >;
+
+const mockedGetDataFromCacheAssess =
+  getDataFromCacheAssess as jest.MockedFunction<typeof getDataFromCacheAssess>;
 const mockedShowInformationPopup = ShowInformationPopup as jest.MockedFunction<
   typeof ShowInformationPopup
 >;
@@ -101,9 +117,20 @@ describe('getProjectVulnerabilties', () => {
   beforeEach(() => {
     mockedResolveFailure.mockReset();
     mockedGetDataFromCache.mockReset();
+    mockedGetDataFromCacheAssess.mockReset();
     mockedShowInformationPopup.mockReset();
     mockedShowErrorPopup.mockReset();
   });
+
+  const requestParams = { appId: 'api123', orgId: 'org123' };
+  const params = {
+    apiKey: '0123',
+    contrastURL: 'example.com',
+    userName: 'user',
+    serviceKey: '1234',
+    organizationId: 'org123',
+    source: 'assess',
+  };
 
   it('should return failure when issues count exceeds 150000', async () => {
     const mockProjectVulnerabilities = {
@@ -190,5 +217,109 @@ describe('getProjectVulnerabilties', () => {
 
     expect(mockedShowInformationPopup).toHaveBeenCalledWith('No issues found');
     expect(response).toEqual(mockProjectVulnerabilities);
+  });
+
+  describe('getAssessVulnerabiltiesFromCache', () => {
+    it('should return failure when issues count exceeds 150000', async () => {
+      const mockProjectVulnerabilities = {
+        responseData: {
+          issuesCount: 200000,
+          status: 'failure',
+          code: 400,
+          message: 'Issue count too high',
+        },
+      } as unknown as ApiResponse;
+
+      mockedGetDataFromCacheAssess.mockResolvedValue(
+        mockProjectVulnerabilities
+      );
+
+      mockedResolveFailure.mockReturnValue({
+        message: locale.getTranslation('apiResponse.configureFilter') as string,
+        code: 400,
+        status: 'failure',
+        responseData: {},
+      });
+
+      const response = await getAssessVulnerabiltiesFromCache(
+        requestParams,
+        params
+      );
+
+      expect(mockedResolveFailure).toHaveBeenCalledWith(
+        locale.getTranslation('apiResponse.configureFilter'),
+        400
+      );
+      expect(response).toEqual({
+        message: locale.getTranslation('apiResponse.configureFilter') as string,
+        code: 400,
+        status: 'failure',
+        responseData: {},
+      });
+    });
+
+    it('should show information popup and return project vulnerabilities when response code is 200', async () => {
+      const mockProjectVulnerabilities = {
+        code: 200,
+        message: 'Data retrieved successfully',
+        responseData: {
+          issuesCount: 10000,
+          status: 'success',
+        },
+      } as unknown as ApiResponse;
+
+      mockedGetDataFromCacheAssess.mockResolvedValue(
+        mockProjectVulnerabilities
+      );
+
+      const response = await getAssessVulnerabiltiesFromCache(
+        requestParams,
+        params
+      );
+
+      expect(response).toEqual(mockProjectVulnerabilities);
+    });
+
+    it('should show error popup when response code is not 200 and issuesCount is within limits', async () => {
+      const mockProjectVulnerabilities = {
+        code: 500,
+        message: 'Internal Server Error',
+        responseData: {
+          issuesCount: 5000,
+          status: 'failure',
+        },
+      } as unknown as ApiResponse;
+
+      mockedGetDataFromCacheAssess.mockResolvedValue(
+        mockProjectVulnerabilities
+      );
+
+      const response = await getAssessVulnerabiltiesFromCache(
+        requestParams,
+        params
+      );
+      expect(loggerInstance.logMessage).toHaveBeenCalledTimes(5);
+
+      expect(response).not.toBeUndefined();
+    });
+
+    it('should handle edge case when responseData is undefined', async () => {
+      const mockProjectVulnerabilities = {
+        code: 200,
+        message: 'No issues found',
+        responseData: undefined,
+      } as unknown as ApiResponse;
+
+      mockedGetDataFromCacheAssess.mockResolvedValue(
+        mockProjectVulnerabilities
+      );
+
+      const response = await getAssessVulnerabiltiesFromCache(
+        requestParams,
+        params
+      );
+
+      expect(response).toEqual(mockProjectVulnerabilities);
+    });
   });
 });
