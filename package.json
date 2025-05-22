@@ -24,7 +24,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Contrast-Security-Inc/contrast-vscode-plugin"
+    "url": "https://github.com/Contrast-Security-OSS/contrast-vscode-plugin"
   },
   "categories": [
     "Linters",
