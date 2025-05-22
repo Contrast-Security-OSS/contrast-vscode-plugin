@@ -20,6 +20,7 @@ jest.mock('vscode', () => ({
   },
   workspace: {
     workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    onDidChangeConfiguration: jest.fn(),
   },
   window: {
     activeTextEditor: {
@@ -56,6 +57,12 @@ jest.mock('vscode', () => ({
   },
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
+  },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
   },
 }));
 
@@ -115,6 +122,7 @@ describe('resetTimer', () => {
   it('should reset the timer successfully if project is found', async () => {
     const mockProject = {
       projectId: '12345',
+      source: 'scan',
     };
 
     mockedGetByKey.mockReturnValue([mockProject]);

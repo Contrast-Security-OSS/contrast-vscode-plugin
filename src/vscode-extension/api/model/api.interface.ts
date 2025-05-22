@@ -22,6 +22,7 @@ export interface Level0Entry {
   projectId: string;
   ruleId: string;
   filePath: string;
+  labelFilePath?: string;
 }
 
 export interface Level1Entry {
@@ -153,4 +154,310 @@ export interface Params {
   status?: string;
   severity?: string;
   archived?: boolean;
+  expand?: string;
+}
+
+export interface Value {
+  value: string;
+  count: number;
+}
+
+export interface ResponseCustomSession {
+  id: string;
+  label: string;
+  values: Value[];
+}
+
+export interface ListOfTagsResponse {
+  id: number;
+  label: string;
+}
+
+export interface ListOfTags {
+  tags: ListOfTagsResponse[];
+}
+
+export interface PopupMessageVulnerability {
+  lastDetected_date: string;
+  firstDetected_date: string;
+  status: string;
+  link?: string;
+}
+
+export interface OverviewChapters {
+  type: string;
+  introText: string;
+  body: string;
+}
+
+export interface OverviewRisk {
+  text: string;
+}
+
+export interface OverviewDetails {
+  chapters: OverviewChapters[];
+  risk: OverviewRisk;
+}
+
+export interface Recommendation {
+  text: string;
+}
+
+export interface CustomRecommendation {
+  text: string;
+}
+
+export interface Rulereferences {
+  text: string;
+}
+
+export interface CustomRuleReferences {
+  text: string;
+}
+
+export interface HowToFixText {
+  recommendation: Recommendation;
+  custom_recommendation: CustomRecommendation;
+  owasp: string;
+  cwe: string;
+  rule_references: Rulereferences;
+  custom_rule_references: CustomRuleReferences;
+}
+
+export interface ChildData {
+  label: string;
+}
+
+export interface Datas {
+  label: string;
+  isRoot: boolean;
+  child: ChildData[];
+}
+
+export interface Events {
+  data: Datas[];
+}
+
+export interface HttpRequest {
+  text: string;
+}
+
+export interface Tags {
+  id: number;
+  label: string;
+}
+
+export interface Level0Vulnerability {
+  level: number;
+  traceId: string;
+  label: string;
+  labelForMapping: string;
+  language: string;
+  lineNumber: number;
+  popupMessage: PopupMessageVulnerability;
+  Substatus_keycode: string;
+  severity: string;
+  fileName: string;
+  filePath: string;
+  fileFullPath: string;
+  overview?: OverviewDetails;
+  howToFix: HowToFixText;
+  events: Events;
+  http_request?: HttpRequest;
+  tags: Tags[];
+}
+
+export interface EventLine {
+  text: string;
+}
+
+export interface EventCodeView {
+  lines: EventLine[];
+}
+
+export interface EventDataView {
+  lines: EventLine[];
+}
+
+export interface EventItem {
+  type: string;
+  description: string;
+  codeView: EventCodeView;
+  dataView: EventDataView;
+}
+
+export interface EventCategory {
+  label: string;
+  isRoot: boolean;
+  data: Event[];
+}
+
+export interface Level1Vulnerability {
+  level: number;
+  label: string;
+  issuesCount: number;
+  filePath: string;
+  fileType: string;
+  child: Level0Vulnerability[];
+}
+
+export interface Level2Vulnerability {
+  level: number;
+  label: string;
+  issuesCount: number;
+  filesCount: number;
+  child: Level1Vulnerability[];
+}
+
+export interface SourceJsonVulnerability {
+  app_version_tags: any[];
+  bugtracker_tickets: any[];
+  category: string;
+  category_label: string;
+  closed_time: any;
+  confidence: string;
+  confidence_label: string;
+  default_severity: string;
+  default_severity_label: string;
+  discovered: number;
+  evidence: any;
+  first_time_seen: number;
+  hasParentApp: boolean;
+  impact: string;
+  impact_label: string;
+  instance_uuid: string;
+  language: string;
+  last_time_seen: number;
+  last_vuln_time_seen: number;
+  license: string;
+  likelihood: string;
+  likelihood_label: string;
+  organization_name: string;
+  reported_to_bug_tracker: boolean;
+  reported_to_bug_tracker_time: any;
+  rule_name: string;
+  rule_title: string;
+  severity: string;
+  severity_label: string;
+  status: string;
+  sub_status: string;
+  sub_title: string;
+  substatus_keycode: any;
+  tags: any[];
+  title: string;
+  total_traces_received: number;
+  uuid: string;
+  violations: any[];
+  visible: boolean;
+}
+
+export interface VulnerabilitiesWithFilterResponse {
+  success: boolean;
+  messages: string[];
+  traces: SourceJsonVulnerability[];
+}
+
+export interface VulnerabilityByAppIdResponse {
+  success: boolean;
+  messages: string[];
+  story: Story;
+}
+
+export interface ChapterBodyFormatVariables {
+  lineNumber?: number;
+  fileName: string;
+  fileType: string;
+  filePath: string;
+  className: string;
+  html2377811419: string;
+}
+
+export interface Chapters {
+  bodyFormatVariables?: ChapterBodyFormatVariables;
+  introText: string;
+  type: string;
+  body: string;
+}
+
+export interface Story {
+  chapters: Chapters[];
+  risk: OverviewRisk;
+}
+
+export interface GetAssessVulenarabilityRequest {
+  orgId: string;
+  appId: string;
+  servers?: string | string[];
+  appVersionTags?: string | string[];
+  severities?: string;
+  status?: string;
+  startDate?: number;
+  endDate?: number;
+  agentSessionId?: string;
+  metadataFilters?: {
+    fieldID: string;
+    values: string[];
+  };
+}
+
+export interface AssessRequest {
+  orgId: string;
+  appId: string;
+  servers?: number | number[] | string | string[];
+  appVersionTags?: string | string[];
+  severities?: string;
+  status?: string;
+  startDate?: number;
+  endDate?: number;
+  agentSessionId?: string;
+  metadataFilters?: [
+    {
+      fieldID: string;
+      values: string[];
+    },
+  ];
+}
+
+export interface addMarkByOrgIdParams {
+  orgId: string;
+  traceId: string[];
+  status: string;
+  note: string;
+  substatus?: string;
+}
+
+export interface addMarkByOrgIdReqParams {
+  traces: string[];
+  status: string;
+  note: string;
+  substatus?: string;
+}
+
+export interface updateTagsByTraceIdParams {
+  traceId: string;
+  tags: string[];
+}
+
+export interface updateParams {
+  traceId: string[];
+  status: string;
+  note: string;
+  substatus?: string;
+}
+export interface FinalFilter {
+  servers?: number[] | string[];
+  appVersionTags?: number[] | string[];
+  severities?: number[] | string[];
+  status?: number[] | string[];
+  startDate?: number;
+  endDate?: number;
+  agentSessionId?: string;
+  metadataFilters?: Array<{ fieldID?: string; values?: Array<string> }>;
+  activeSessionMetadata?: string;
+}
+export interface newData {
+  [x: string]: any;
+  id: string;
+  name: string;
+  archieve: boolean;
 }

@@ -55,6 +55,12 @@ jest.mock('vscode', () => ({
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
   },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
+  },
 }));
 
 jest.mock('../../../vscode-extension/api/services/apiService', () => ({
@@ -117,7 +123,7 @@ describe('VS Code Extension Plugin Tests', () => {
   beforeEach(() => {
     const contrastURL = 'sfsf';
     const result = getAxiosClient(contrastURL);
-    mockAxios = new MockAdapter(axios);
+    mockAxios = new MockAdapter(axios as any);
     mockGetAxiosClient = jest.fn();
     mockGetAxiosClient.mockReturnValue(result);
 

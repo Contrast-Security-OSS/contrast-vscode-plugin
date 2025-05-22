@@ -21,6 +21,10 @@ import {
   ReducerTypes,
   LocalizationJSON,
 } from '../../../common/types';
+import ContrastStore from '../../utils/redux/store';
+import { setCancelStateWhileDelete } from '../../utils/redux/slices/projectsSlice';
+import { Tooltip } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
 
 interface UnConfiguredProject {
   name: string;
@@ -46,8 +50,29 @@ function Setting() {
     (state: ReducerTypes) => state.project.allProjectList
   );
 
+  const getAllApplicationList = useSelector(
+    (state: ReducerTypes) => state.project.allApplicationList
+  );
+
   const deleteResponse = useSelector(
     (state: ReducerTypes) => state.project.configuredProjectDelete
+  );
+
+  const cancelStateWhileDelete = useSelector(
+    (state: ReducerTypes) => state.project.cancelStateWhileDelete
+  );
+
+  const fetchSettingActions = useSelector(
+    (state: ReducerTypes) => state.project.settingActions
+  );
+
+  const fetchRefreshBackgroundVulnRunnerAcrossIds = useSelector(
+    (state: ReducerTypes) =>
+      state.assessFilter.refreshBackgroundVulnRunnerAcrossIds
+  );
+
+  const fetchScanRetrievelDetectAcrossIds = useSelector(
+    (state: ReducerTypes) => state.scan.scanRetrievelDetectAcrossIds
   );
 
   const getConfiguredProjects = useSelector(
@@ -63,7 +88,10 @@ function Setting() {
 
   // ------------------------ use States ----------------------------------------
 
-  // const [selectedRow, setSelectedRow] = useState(null);
+  const [isDisabledSource, setIsDisabledSource] = useState(false);
+
+  const [activeProjectId, cloneActiveProjectId] = useState<string | null>(null);
+
   const [i18nFields, updateI18nFields] =
     useState<ContrastSettingsLocales>(settingLocale);
 
@@ -82,13 +110,17 @@ function Setting() {
     save: true,
   });
 
+  const [saveButton, updateSaveButton] = useState(true);
+
   const [cancelButton, updateCancelButton] = useState(false);
 
   const [defaultParamterPatch, updateDefaultParamsPatch] = useState(true);
 
+  const [instanceBehaviour, setInstanceBehaviour] = useState(false);
+
   const [primaryConfigurationParams, setPrimaryConfigurationParams] =
     useState<PrimaryConfig>({
-      source: 'scan',
+      source: 'assess',
       contrastURL: '',
       userName: '',
       serviceKey: '',
@@ -253,9 +285,9 @@ function Setting() {
         source,
         userName,
         projectName,
+        applicationName,
         vulnerabilityRefreshCycle,
       } = formFields;
-      // const { minute } = others ;
 
       updateI18nFields({
         apiKey,
@@ -264,6 +296,7 @@ function Setting() {
         serviceKey,
         source,
         projectName,
+        applicationName,
         userName,
         vulnerabilityRefreshCycle,
         minute: others?.minute,
@@ -276,8 +309,91 @@ function Setting() {
   useEffect(() => {
     if (getAllProjectList !== null && getAllProjectList.responseData !== null) {
       const content = getAllProjectList.responseData as UnConfiguredProject[];
-      const filteredProjects: UnConfiguredProject[] =
-        filterUnConfiguredProject(content);
+      const filteredProjects: UnConfiguredProject[] = filterUnConfiguredProject(
+        content,
+        'scan'
+      );
+      let id: string = '';
+      let project: string = '';
+
+      if (activeConfiguredProject !== null) {
+        filteredProjects.push({
+          name: activeConfiguredProject.projectName,
+          id: activeConfiguredProject.projectId as string,
+        });
+        setListOfProjects(filteredProjects);
+        id = activeConfiguredProject.projectId ?? '';
+        project = activeConfiguredProject.projectName ?? '';
+      } else {
+        setListOfProjects(filteredProjects);
+        id = filteredProjects[0]?.id as string; // Ensure id is always a string
+        project = filteredProjects[0]?.name ?? ''; // Ensure project is always a string
+      }
+
+      setPrimaryConfigureValidation({
+        apiKey: {
+          ...primaryConfigureValidation.apiKey,
+          valid: true,
+          touched: true,
+        },
+        contrastURL: {
+          ...primaryConfigureValidation.contrastURL,
+          valid: true,
+          touched: true,
+        },
+        organizationId: {
+          ...primaryConfigureValidation.organizationId,
+          valid: true,
+          touched: true,
+        },
+        serviceKey: {
+          ...primaryConfigureValidation.serviceKey,
+          valid: true,
+          touched: true,
+        },
+        source: {
+          ...primaryConfigureValidation.source,
+          valid: true,
+          touched: true,
+        },
+        userName: {
+          ...primaryConfigureValidation.userName,
+          valid: true,
+          touched: true,
+        },
+      });
+      updateCancelButton(false);
+
+      setSecondaryConfigurationParams({
+        ...secondaryConfigurationParams,
+        id: id,
+        project: project,
+      });
+
+      setSecondaryConfigureValidation({
+        ...secondaryConfigureValidation,
+        projectName: { touched: true, valid: true },
+        projectId: { touched: true, valid: true },
+      });
+    }
+    updateCommonButton({
+      ...commonButton,
+      retreive: false,
+    });
+    setIsDisabledSource(false);
+  }, [getAllProjectList]);
+
+  useEffect(() => {
+    if (
+      getAllApplicationList !== null &&
+      getAllApplicationList.responseData !== null
+    ) {
+      const content =
+        getAllApplicationList.responseData as UnConfiguredProject[];
+      const filteredProjects: UnConfiguredProject[] = filterUnConfiguredProject(
+        content,
+        'assess'
+      );
       let id: string = '';
       let project: string = '';
 
@@ -328,11 +444,6 @@ function Setting() {
         },
       });
 
-      updateCommonButton({
-        ...commonButton,
-        retreive: false,
-      });
-
       updateCancelButton(false);
 
       setSecondaryConfigurationParams({
@@ -344,9 +455,15 @@ function Setting() {
       setSecondaryConfigureValidation({
         ...secondaryConfigureValidation,
         projectName: { touched: true, valid: true },
+        projectId: { touched: true, valid: true },
       });
     }
-  }, [getAllProjectList]);
+    updateCommonButton({
+      ...commonButton,
+      retreive: false,
+    });
+    setIsDisabledSource(false);
+  }, [getAllApplicationList]);
 
   useEffect(() => {
     setListOfProjects([]);
@@ -429,7 +546,6 @@ function Setting() {
     if (editResponse !== null) {
       const content = editResponse.responseData;
       if (content !== null) {
-        // handleClear();
         setListOfProjects([]);
         updateDeselect(true);
         updateCancelButton(false);
@@ -455,6 +571,7 @@ function Setting() {
         });
       }
     }
+    setIsDisabledSource(false);
   }, [editResponse]);
 
   useEffect(() => {
@@ -471,6 +588,55 @@ function Setting() {
     }
   }, [deleteResponse]);
 
+  useEffect(() => {
+    if (
+      commonButton.save === false &&
+      cancelStateWhileDelete === false &&
+      fetchSettingActions === false &&
+      fetchRefreshBackgroundVulnRunnerAcrossIds === false &&
+      fetchScanRetrievelDetectAcrossIds === false
+    ) {
+      updateSaveButton(false);
+    } else {
+      updateSaveButton(true);
+    }
+
+    updateCancelButton(cancelStateWhileDelete);
+  }, [
+    cancelStateWhileDelete,
+    commonButton,
+    fetchSettingActions,
+    fetchRefreshBackgroundVulnRunnerAcrossIds,
+    fetchScanRetrievelDetectAcrossIds,
+  ]);
+
+  useEffect(() => {
+    setInstanceBehaviour(fetchSettingActions);
+    if (fetchSettingActions === false) {
+      webviewPostMessage({
+        command: WEBVIEW_COMMANDS.SETTING_GET_CONFIGURE_PROJECTS,
+        payload: [],
+        screen: WEBVIEW_SCREENS.SETTING,
+      });
+      updateDeselect(true);
+      setSecondaryConfigurationParams({
+        project: '',
+        minute: '1440',
+        id: '',
+      });
+
+      setSecondaryConfigureValidation({
+        projectName: { touched: false, valid: false },
+        minute: {
+          touched: false,
+          valid: true,
+          message: i18nFields.errorMessages.minute.required.translate,
+        },
+      });
+      setListOfProjects([]);
+      setActionButton(0);
+    }
+  }, [fetchSettingActions]);
   // ------------------------------ Methods ----------------------------------
 
   const primaryValidator = (name: keyof PrimaryConfig, value: string) => {
@@ -498,8 +664,7 @@ function Setting() {
       case 'contrastURL':
         {
           if (value.length > 0) {
-            const urlPattern =
-              /^(https?:\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/\S*)?$/;
+            const urlPattern = /^(https:\/\/)([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/;
             isValid = urlPattern.test(value);
             message = isValid
               ? ''
@@ -587,9 +752,8 @@ function Setting() {
     if (name === 'minute') {
       if (
         value === '' ||
-        (/^\d+$/.test(value) && +value > 0 && +value <= 4332)
+        (/^\d+$/.test(value) && +value > 0 && +value <= 4320)
       ) {
-        //  return;
         setSecondaryConfigurationParams({
           ...secondaryConfigurationParams,
           [name]: value.trim(),
@@ -599,15 +763,18 @@ function Setting() {
     }
   };
 
-  const filterUnConfiguredProject = (content: UnConfiguredProject[]) => {
+  const filterUnConfiguredProject = (
+    content: UnConfiguredProject[],
+    source: 'scan' | 'assess'
+  ) => {
     if (configuredProjectsList?.length > 0 && configuredProjectsList !== null) {
-      const projectName = configuredProjectsList.map(
-        (val: ConfiguredProject) => {
-          return val.projectName;
-        }
-      );
+      const projectName = configuredProjectsList
+        .filter((item) => item.source === source)
+        .map((val: ConfiguredProject) => {
+          return val.projectName.trim();
+        });
       const filterData = content.filter((val: { name: string }) => {
-        return !projectName.includes(val.name);
+        return !projectName.includes(val.name.trim());
       });
       return filterData;
     }
@@ -615,11 +782,28 @@ function Setting() {
   };
 
   const getAllProjects = () => {
-    webviewPostMessage({
-      command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
-      payload: primaryConfigurationParams,
-      screen: WEBVIEW_SCREENS.SETTING,
+    setIsDisabledSource(true);
+    setListOfProjects([]);
+    setSecondaryConfigurationParams({
+      ...secondaryConfigurationParams,
+      project: '',
+      id: '',
     });
+    if (primaryConfigurationParams.source === 'scan') {
+      webviewPostMessage({
+        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
+        payload: primaryConfigurationParams,
+        screen: WEBVIEW_SCREENS.SETTING,
+      });
+    }
+
+    if (primaryConfigurationParams.source === 'assess') {
+      webviewPostMessage({
+        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_APPLICATIONS,
+        payload: primaryConfigurationParams,
+        screen: WEBVIEW_SCREENS.SETTING,
+      });
+    }
     updateCommonButton({
       ...commonButton,
       retreive: true,
@@ -637,6 +821,12 @@ function Setting() {
 
     if (actionButton !== 0) {
       newProject = { ...newProject, id: activeConfiguredProject?.id };
+      if (activeConfiguredProject === null) {
+        newProject = {
+          ...newProject,
+          id: activeProjectId as string,
+        };
+      }
     }
     switch (actionButton) {
       case 0:
@@ -660,7 +850,6 @@ function Setting() {
         break;
       case 2:
         {
-          // handleClear();
           webviewPostMessage({
             command: WEBVIEW_COMMANDS.SETTING_GET_CONFIGURE_PROJECTS,
             payload: [],
@@ -680,7 +869,7 @@ function Setting() {
     updateDeselect(true);
     updateDefaultParamsPatch(true);
     setPrimaryConfigurationParams({
-      source: 'scan',
+      source: 'assess',
       contrastURL: '',
       userName: '',
       serviceKey: '',
@@ -737,11 +926,14 @@ function Setting() {
   };
 
   const onDelete = (e: ConfiguredProject) => {
-    webviewPostMessage({
-      command: WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT,
-      payload: e,
-      screen: WEBVIEW_SCREENS.SETTING,
-    });
+    if (instanceBehaviour === false) {
+      ContrastStore.dispatch(setCancelStateWhileDelete(true));
+      webviewPostMessage({
+        command: WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT,
+        payload: e,
+        screen: WEBVIEW_SCREENS.SETTING,
+      });
+    }
   };
 
   const getSelectedProject = (selectedConfiguredProject: ConfiguredProject) => {
@@ -750,6 +942,7 @@ function Setting() {
       save: true,
       retreive: true,
     });
+    setIsDisabledSource(true);
     updateCancelButton(true);
     if (selectedConfiguredProject !== null) {
       const {
@@ -764,6 +957,7 @@ function Setting() {
       setActionButton(1);
 
       updateActiveConfiguredProject(selectedConfiguredProject);
+      cloneActiveProjectId(selectedConfiguredProject.id as string);
       setPrimaryConfigurationParams({
         apiKey: selectedConfiguredProject.apiKey,
         contrastURL: selectedConfiguredProject.contrastURL,
@@ -781,23 +975,61 @@ function Setting() {
 
       setListOfProjects([]);
 
-      webviewPostMessage({
-        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
-        payload: {
-          apiKey: apiKey,
-          contrastURL: contrastURL,
-          organizationId: organizationId,
-          serviceKey: serviceKey,
-          source: source,
-          userName: userName,
-        },
-        screen: WEBVIEW_SCREENS.SETTING,
-      });
+      if (source === 'scan') {
+        webviewPostMessage({
+          command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
+          payload: {
+            apiKey: apiKey,
+            contrastURL: contrastURL,
+            organizationId: organizationId,
+            serviceKey: serviceKey,
+            source: source,
+            userName: userName,
+          },
+          screen: WEBVIEW_SCREENS.SETTING,
+        });
+      }
+
+      if (source === 'assess') {
+        webviewPostMessage({
+          command: WEBVIEW_COMMANDS.SETTING_GET_ALL_APPLICATIONS,
+          payload: {
+            apiKey: apiKey,
+            contrastURL: contrastURL,
+            organizationId: organizationId,
+            serviceKey: serviceKey,
+            source: source,
+            userName: userName,
+          },
+          screen: WEBVIEW_SCREENS.SETTING,
+        });
+      }
     } else {
       setActionButton(0);
     }
   };
 
+  const handleSource = (e: { value: string | string[] }) => {
+    setListOfProjects([]);
+    updateActiveConfiguredProject(null);
+    setSecondaryConfigureValidation({
+      ...secondaryConfigureValidation,
+      projectId: {
+        ...secondaryConfigureValidation['projectId'],
+        valid: false,
+        touched: false,
+      },
+      projectName: {
+        ...secondaryConfigureValidation['projectName'],
+        valid: false,
+        touched: false,
+      },
+    });
+    setPrimaryConfigurationParams({
+      ...primaryConfigurationParams,
+      source: e.value as string,
+    });
+  };
   return (
     <>
       <div className="settingFormDiv">
@@ -810,19 +1042,17 @@ function Setting() {
                   <ContrastDropdown
                     id="source"
                     value={primaryConfigurationParams.source}
-                    onChange={(e: { value: string }) => {
-                      setPrimaryConfigurationParams({
-                        ...primaryConfigurationParams,
-                        source: e.value,
-                      });
+                    onChange={(e: { value: string | string[] }) => {
+                      handleSource(e);
                     }}
+                    isDisabled={isDisabledSource}
                   >
                     <ContrastOption id="scan" value={'scan'}>
                       Scan
                     </ContrastOption>
-                    {/* <ContrastOption id="assess" value={'assess'}>
+                    <ContrastOption id="assess" value={'assess'}>
                       Assess
-                    </ContrastOption> */}
+                    </ContrastOption>
                   </ContrastDropdown>
                 </div>
               </td>
@@ -831,14 +1061,26 @@ function Setting() {
               <td>{i18nFields.contrastURL?.translate}</td>
               <td>
                 <div className="form-field">
-                  <Input
-                    id="contrastURL"
-                    type="text"
-                    value={primaryConfigurationParams.contrastURL}
-                    name="contrastURL"
-                    placeholder={i18nFields.contrastURL?.placeholder ?? ''}
-                    onChange={primaryHandleInput}
-                  />
+                  <div className="withHelpIcon">
+                    <Input
+                      id="contrastURL"
+                      type="text"
+                      value={primaryConfigurationParams.contrastURL}
+                      name="contrastURL"
+                      placeholder={i18nFields.contrastURL?.placeholder ?? ''}
+                      onChange={primaryHandleInput}
+                    />
+                    <Tooltip
+                      title={`${i18nFields.contrastURL?.note}: https://<instance-url>.com`}
+                      children={
+                        <InfoIcon
+                          fontSize="small"
+                          color="primary"
+                          style={{ cursor: 'pointer' }}
+                        ></InfoIcon>
+                      }
+                    ></Tooltip>
+                  </div>
                   <ThrowError
                     fieldData={primaryConfigureValidation['contrastURL']}
                   />
@@ -850,14 +1092,26 @@ function Setting() {
               <td>{i18nFields?.userName?.translate}</td>
               <td>
                 <div className="form-field">
-                  <Input
-                    id="userName"
-                    name="userName"
-                    type="text"
-                    value={primaryConfigurationParams.userName}
-                    placeholder={i18nFields.userName?.placeholder ?? ''}
-                    onChange={primaryHandleInput}
-                  />
+                  <div className="withHelpIcon">
+                    <Input
+                      id="userName"
+                      name="userName"
+                      type="text"
+                      value={primaryConfigurationParams.userName}
+                      placeholder={i18nFields.userName?.placeholder ?? ''}
+                      onChange={primaryHandleInput}
+                    />
+                    <Tooltip
+                      title={i18nFields.userName?.note}
+                      children={
+                        <InfoIcon
+                          fontSize="small"
+                          color="primary"
+                          style={{ cursor: 'pointer' }}
+                        ></InfoIcon>
+                      }
+                    ></Tooltip>
+                  </div>
                   <ThrowError
                     fieldData={primaryConfigureValidation['userName']}
                   />
@@ -939,19 +1193,30 @@ function Setting() {
             </tr>
 
             <tr>
-              <td>{i18nFields.projectName?.translate}</td>
+              <td>
+                {primaryConfigurationParams.source === 'scan'
+                  ? i18nFields.projectName?.translate
+                  : null}
+                {primaryConfigurationParams.source === 'assess'
+                  ? i18nFields.applicationName?.translate
+                  : null}
+              </td>
               <td>
                 <div className="project-dropdown">
                   <ContrastDropdown
                     id="projects"
                     value={secondaryConfigurationParams.id}
-                    onChange={(e: { children: ReactNode; value: string }) => {
+                    onChange={(e: {
+                      children: ReactNode;
+                      value: string | string[];
+                    }) => {
                       setSecondaryConfigurationParams({
                         ...secondaryConfigurationParams,
                         project: String(e.children),
-                        id: e.value,
+                        id: e.value as string,
                       });
                     }}
+                    hasSearchBox={true}
                   >
                     {listOfProjects !== null && listOfProjects.length > 0
                       ? listOfProjects.map((item: UnConfiguredProject) => (
@@ -1006,7 +1271,7 @@ function Setting() {
 
         <div className="org-add-update">
           <Button
-            isDisable={commonButton.save}
+            isDisable={saveButton}
             id="add-project"
             title={
               actionButton === 0

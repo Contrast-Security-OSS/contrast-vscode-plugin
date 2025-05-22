@@ -5,6 +5,7 @@ import {
 } from '../../common/types';
 
 const configuredProject1: ConfiguredProject = {
+  id: '01',
   source: 'scan',
   contrastURL: 'https://xyz.com',
   userName: 'xyz@xyz.com',
@@ -16,6 +17,7 @@ const configuredProject1: ConfiguredProject = {
   projectId: '456-ABC-789-XYZ',
 };
 const configuredProject2: ConfiguredProject = {
+  id: '02',
   source: 'scan',
   contrastURL: 'https://abc.com',
   userName: 'abc@abc.com',

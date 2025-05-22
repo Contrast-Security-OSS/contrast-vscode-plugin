@@ -17,11 +17,13 @@
       },
       "contrastURL": {
         "translate": "Contrast URL",
-        "placeholder": "Enter Contrast URL"
+        "placeholder": "Enter Contrast URL",
+        "note": "Please enter a valid URL in the format"
       },
       "userName": {
         "translate": "User Name",
-        "placeholder": "Enter User Name"
+        "placeholder": "Enter User Name",
+        "note": "Please enter the valid Email-ID"
       },
       "serviceKey": {
         "translate": "Service Key",
@@ -37,6 +39,9 @@
       },
       "projectName": {
         "translate": "Project Name"
+      },
+      "applicationName": {
+        "translate": "Application Name"
       },
       "vulnerabilityRefreshCycle": {
         "translate": "Vulnerability Refresh Cycle"
@@ -123,6 +128,10 @@
     "translate": "Contrast Scan",
     "filter": {
       "translate": "Filter",
+      "projectName": {
+        "translate": "Project Name",
+        "placeholder": "No project found"
+      },
       "severity": {
         "translate": "Severity",
         "options": [
@@ -183,7 +192,7 @@
       },
       "buttons": {
         "run": {
-          "translate": "OK"
+          "translate": "Run"
         },
         "clear": {
           "translate": "Clear"
@@ -196,12 +205,251 @@
     "vulnerabilityReport": {
       "translate": "Vulnerability Report",
       "htmlElements": {
-        "translate": "<h1>No vulnerabilities found for the project:</h1><ol><li>Go to the Contrast view in the Activity Bar.</li><li>Click the Retrieve Vulnerability button for the project.</li></ol><p>After retrieving vulnerabilities, return to this screen or else click on refresh icon to see the latest vulnerability report.</p><p>Tip: <span style='font-weight: 400;'>You can access this screen anytime via the Contrast Scan panel in the Activity Bar.</span></p>"
+        "translate": "<h1>No vulnerabilities found for the project:</h1><ol><li>Navigate to the Contrast - Scan menu</li><li>Select the necessary filters and click Run Button.</li><li>View the results in the Vulnerability Report tab.</li></ol><p>After retrieving vulnerabilities, return to this screen or else click on refresh icon to see the latest vulnerability report.</p><p>"
       }
     },
     "tooltips": {
       "refresh": {
         "translate": "Refresh"
+      }
+    }
+  },
+  "contrastAssess": {
+    "translate": "Contrast Assess",
+    "retrieveVul": {
+      "translate": "Retrieve Vulnerability",
+      "formFields": {
+        "application": {
+          "translate": "Application",
+          "placeholder": "No Applications Found"
+        },
+        "server": {
+          "noServerFound": {
+            "translate": "Server",
+            "placeholder": "No Servers Found"
+          },
+          "selectServer": {
+            "translate": "Server",
+            "placeholder": "Select Server"
+          }
+        },
+        "buildNumber": {
+          "noBuildNumberFound": {
+            "translate": "Build Number",
+            "placeholder": "No Build Numbers Found"
+          },
+          "selectBuildNumber": {
+            "translate": "Build Number",
+            "placeholder": "Select Build Number"
+          }
+        },
+        "severity": {
+          "translate": "Severity",
+          "options": [
+            {
+              "name": "critical",
+              "translate": "Critical"
+            },
+            {
+              "name": "high",
+              "translate": "High"
+            },
+            {
+              "name": "medium",
+              "translate": "Medium"
+            },
+            {
+              "name": "low",
+              "translate": "Low"
+            },
+            {
+              "name": "note",
+              "translate": "Note"
+            }
+          ]
+        },
+        "status": {
+          "translate": "Status",
+          "options": [
+            {
+              "name": "reported",
+              "translate": "Reported"
+            },
+            {
+              "name": "confirmed",
+              "translate": "Confirmed"
+            },
+            {
+              "name": "suspicious",
+              "translate": "Suspicious"
+            },
+            {
+              "name": "notAproblem",
+              "translate": "Not a problem"
+            },
+            {
+              "name": "remediated",
+              "translate": "Remediated"
+            },
+            {
+              "name": "fixed",
+              "translate": "Fixed"
+            }
+          ]
+        },
+        "Filter": {
+          "translate": "Filter",
+          "options": [
+            {
+              "name": "From",
+              "translate": "From"
+            },
+            {
+              "name": "To",
+              "translate": "To"
+            }
+          ]
+        },
+        "session_metadata": {
+          "translate": "Session Metadata",
+          "options": [
+            {
+              "name": "none-radio",
+              "translate": "None"
+            },
+            {
+              "name": "custom-session-radio",
+              "translate": "Custom Session"
+            },
+            {
+              "name": "most-recent-session-radio",
+              "translate": "Most recent session"
+            }
+          ]
+        }
+      }
+    },
+    "currentFile": {
+      "translate": "Current File"
+    },
+    "vulnerabilityReport": {
+      "translate": "Vulnerability Report",
+      "htmlElements": {
+        "translate": "<h1>No vulnerabilities found:</h1><ol><li>Navigate to the Contrast - Assess menu</li><li>Select the necessary filters and click Run Button.</li><li>View the results in the Vulnerability Report tab.</li></ol><p>After retrieving vulnerabilities, return to this screen or else click on refresh icon to see the latest vulnerability report.</p><p>"
+      },
+      "tabs": {
+        "overView": {
+          "translate": "Overview",
+          "formFields": {
+            "whatHappened": {
+              "translate": "What happened?"
+            },
+            "whatsTheRisk": {
+              "translate": "What's the risk?"
+            },
+            "firstDetectedDate": {
+              "translate": "First Detected Date"
+            },
+            "lastDetectedDate": {
+              "translate": "Last Detected Date"
+            }
+          }
+        },
+        "howToFix": {
+          "translate": "How To Fix"
+        },
+        "events": {
+          "translate": "Events"
+        },
+        "httpRequest": {
+          "translate": "Http Request"
+        },
+        "tags": {
+          "translate": "tags",
+          "formFields": {
+            "applyExistingTag": {
+              "translate": "Apply existing tag"
+            },
+            "createAndApplyNewTag": {
+              "translate": "Create and apply a new tag "
+            },
+            "appliedTag": {
+              "translate": "Applied tag"
+            },
+            "tag": {
+              "translate": "Tag"
+            }
+          }
+        },
+        "markAs": {
+          "translate": "Mark as",
+          "formFields": {
+            "markAs": {
+              "translate": "Mark as"
+            },
+            "Reason": {
+              "translate": "Reason"
+            },
+            "addComment": {
+              "translate": "Add Comment"
+            },
+            "justification": {
+              "translate": "Justification"
+            }
+          }
+        }
+      }
+    },
+    "buttons": {
+      "refresh": {
+        "translate": "Refresh"
+      },
+      "clear": {
+        "translate": "Clear"
+      },
+      "run": {
+        "translate": "Run"
+      },
+      "ok": {
+        "translate": "Ok"
+      },
+      "create": {
+        "translate": "Create"
+      }
+    },
+    "tooltips": {
+      "refresh": {
+        "translate": "Refresh"
+      },
+      "clear": {
+        "translate": "Clear"
+      },
+      "run": {
+        "translate": "Run"
+      },
+      "ok": {
+        "translate": "Ok"
+      },
+      "create": {
+        "translate": "Create"
+      },
+      "delete": {
+        "translate": "Delete"
+      },
+      "redirect": {
+        "translate": "Redirect"
+      },
+      "refreshServersAndBuildNumbers": {
+        "translate": "Refresh servers and buildNumbers"
+      },
+      "clearsServersAndBuildNumbers": {
+        "translate": "Clears servers and buildNumbers"
+      },
+      "clearsAllAppliedFilters": {
+        "translate": "Clears all applied filters"
+      },
+      "fetchVulnerabilities": {
+        "translate": "Fetch vulnerabilities"
       }
     }
   },
@@ -222,7 +470,7 @@
       "translate": "Scan results fetched successfully"
     },
     "projectNotFound": {
-      "translate": "Project not found"
+      "translate": "Project not Configured"
     },
     "failedToFecthScanResult": {
       "translate": "Failed to fetch scan results"
@@ -286,6 +534,78 @@
     },
     "refineFilter": {
       "translate": "There are more than 12,000 records. Please refine your filter criteria to fetch vulnerabilities"
+    },
+    "fecthingApplication": {
+      "translate": "Fetching application details..."
+    },
+    "fechedSuccess": {
+      "translate": "Applications fetched successfully."
+    },
+    "somethingWentWrong": {
+      "translate": "Oops! Something went wrong."
+    },
+    "serverListFetched": {
+      "translate": "ServerList fetched successfully."
+    },
+    "buildnumberFetched": {
+      "translate": "BuildNumber fetched successfully."
+    },
+    "customSessionMetaDataFetched": {
+      "translate": "CustomSessionMetaData fetched successfully."
+    },
+    "MostRecentMetaDataFetched": {
+      "translate": "MostRecentMetaData fetched successfully."
+    },
+    "getAllTags": {
+      "translate": "All Tags fetched successfully."
+    },
+    "vulnerabilitysuccessfully": {
+      "translate": "Vulnerability tagged successfully."
+    },
+    "tracesFetched": {
+      "translate": "Traces fetched successfully."
+    },
+    "storyResult": {
+      "translate": "LineNumber and FileName fetched successfully."
+    },
+    "storyText": {
+      "translate": "StoryResult fetched successfully."
+    },
+    "recommendationText": {
+      "translate": "All Recommendation Text fetched successfully."
+    },
+    "eventsResult": {
+      "translate": "All Events fetched successfully."
+    },
+    "addVulnerabilitySuccessfully": {
+      "translate": "1 Vulnerability successfully marked as Reported"
+    },
+    "assessVulnerbilitySuccess": {
+      "translate": "Successfully fetched vulnerabilities"
+    },
+    "traceIdNotFound": {
+      "translate": "Missing TraceId"
+    },
+    "httpsResult": {
+      "translate": "All Https fetched successfully."
+    },
+    "markedVulnerability": {
+      "translate": "Marked vulnerability"
+    },
+    "failedToMark": {
+      "translate": "Failed to mark vulnerability"
+    },
+    "vulnerabilityTagged": {
+      "translate": "Vulnerability tagged"
+    },
+    "failedToTag": {
+      "translate": "Failed to tag"
+    },
+    "ASSESSARCHIVED": {
+      "translate": "application is archived/deleted"
+    },
+    "ARCHIVED": {
+      "translate": "project is archived/deleted"
     }
   },
   "persistResponse": {
@@ -313,6 +633,24 @@
     "deletePreConfirm": {
       "translate": "Are you sure you want to delete the Project?"
     },
+    "applicationAddedSuccess": {
+      "translate": "Application Added Successfully"
+    },
+    "applicationUpdatedSuccess": {
+      "translate": "Application Updated Successfully"
+    },
+    "applicationDeletedSuccess": {
+      "translate": "Application deleted successfully."
+    },
+    "applicationNotConfigured": {
+      "translate": "Application is not configured. Please select an application and run it in the Retrieve Vulnerability Filter screen before proceeding."
+    },
+    "applicationDeletionFailed": {
+      "translate": "Unable to delete Application"
+    },
+    "deletePreConfirmApplication": {
+      "translate": "Are you sure you want to delete the Application?"
+    },
     "organizationNotFound": {
       "translate": "Organization ID not found"
     },
@@ -333,6 +671,30 @@
     },
     "retrievingVulnerabilities": {
       "translate": "Retrieving vulnerabilities"
+    },
+    "loadingFilters": {
+      "translate": "Loading servers, build numbers and session metadata"
+    },
+    "tagAlreadyApplied": {
+      "translate": "Tag already applied"
+    },
+    "tagAlreadyAvailable": {
+      "translate": "Tag with the same name exists select from Existing tags"
+    },
+    "vulnerabilityTagged": {
+      "translate": "Vulnerability tagged"
+    },
+    "tagLengthExceeded": {
+      "translate": "Tag length cannot be more than 72 characters"
+    },
+    "scanInterlockWarning": {
+      "translate": "Switching to the Scan screen will clear the Assess-related cache. Do you want to proceed?"
+    },
+    "assessInterlockWarning": {
+      "translate": "Switching to the Assess screen will clear the Scan-related cache. Do you want to proceed?"
+    },
+    "wrongRelativePath": {
+      "translate": "Incorrect file path detected. Please open the project relative to"
     }
   },
   "contrastItems": {
@@ -344,6 +706,9 @@
     },
     "scan": {
       "translate": "Contrast - Scan"
+    },
+    "assess": {
+      "translate": "Contrast - Assess"
     },
     "retrieve_vulnerability": {
       "translate": "Retrieve Vulnerability"

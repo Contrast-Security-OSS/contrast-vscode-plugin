@@ -5,6 +5,7 @@ import { ProjectReducer } from './slices/projectsSlice';
 import { vulnerabilityReducer } from './slices/vulReport';
 import { ScanReducer } from './slices/ScanFilter';
 import { ThemeReducer } from './slices/contrastTheme';
+import { AssessFilterReducer } from './slices/assessFilter';
 export const ContrastStore = configureStore({
   reducer: {
     i10ln: LocaleReducer,
@@ -13,6 +14,7 @@ export const ContrastStore = configureStore({
     vulnerability: vulnerabilityReducer,
     scan: ScanReducer,
     theme: ThemeReducer,
+    assessFilter: AssessFilterReducer,
   },
 });
 export default ContrastStore;

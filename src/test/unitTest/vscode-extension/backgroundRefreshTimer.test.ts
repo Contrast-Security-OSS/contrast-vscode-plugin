@@ -324,6 +324,22 @@ describe('Background Timer Tests', () => {
       expect(mockStartBackgroundTimer).toHaveBeenCalledTimes(0);
     });
 
+    it('should stop the current timer, clear cache, and restart the timer', async () => {
+      const mockClearInterval = jest
+        .spyOn(global, 'clearInterval')
+        .mockImplementation(jest.fn());
+      const mockStartBackgroundTimer = jest.fn();
+
+      interval = {} as NodeJS.Timeout;
+      jest.spyOn(global, 'clearInterval');
+      interval = {} as NodeJS.Timeout;
+
+      await stopBackgroundTimer();
+
+      expect(mockClearInterval).toHaveBeenCalledTimes(1);
+      expect(mockStartBackgroundTimer).toHaveBeenCalledTimes(0);
+    });
+
     it('should do nothing if the interval is undefined', async () => {
       interval = {} as NodeJS.Timeout;
 

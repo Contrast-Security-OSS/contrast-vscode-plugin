@@ -19,6 +19,11 @@ describe('scanSlice', () => {
     filters: null,
     activeCurrentFile: null,
     activeVulnerabilityReport: null,
+    scanRetrievelDetectAcrossIds: false,
+    activeProjectName: null,
+    backgroundVulnRunner: false,
+    manualRefreshBackgroundVulnRunner: false,
+    validWorkspaceProjects: [],
   };
 
   const store = configureStore({

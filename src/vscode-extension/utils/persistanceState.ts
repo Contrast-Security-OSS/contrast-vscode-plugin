@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import {
+  AssessFilter,
   ConfiguredProject,
   FilterType,
   PersistedDTO,
@@ -15,7 +16,7 @@ class PersistenceState {
   async set(
     token: string,
     key: keyof PersistedDTO, // Restrict the key to properties of PersistedDTO
-    payload: FilterType | ConfiguredProject[]
+    payload: FilterType | ConfiguredProject[] | AssessFilter
   ): Promise<boolean> {
     const getTokenData: PersistedDTO = this.get(token) as PersistedDTO;
 

@@ -1,0 +1,52 @@
+/* Scan Features - Layout & Styling */
+
+.scan-features {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  margin-top: 10px;
+
+  .feature {
+    display: flex;
+    flex-direction: row;
+
+    .label {
+      width: 130px;
+    }
+
+    .feature-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .project-dropdown {
+      width: 200px;
+    }
+
+    .filter-feature {
+      display: flex;
+      flex-direction: row;
+      gap: 50px;
+
+      .date-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .date-inner-container {
+          display: flex;
+          flex-direction: row;
+          gap: 10px;
+          align-items: center;
+
+          .date-datetime {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+          }
+        }
+      }
+    }
+  }
+}

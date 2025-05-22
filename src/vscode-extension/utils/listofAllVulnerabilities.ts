@@ -1,7 +1,10 @@
 import { TextEditor, window } from 'vscode';
 import { openVulFile } from './vulnerabilityDecorator';
-import { getVulnerabilitybyFile } from '../api/services/apiService';
-import { getFilePathuri } from './helper';
+import {
+  getAssessVulnerabilitybyFile,
+  getVulnerabilitybyFile,
+} from '../api/services/apiService';
+import { featureController, getFilePathuri, isNotNull } from './helper';
 import { localeI18ln } from '../../l10n';
 import { closeStatusBarItem } from './statusBarSeverity';
 import { CustomFileVulnerability } from '../../common/types';
@@ -21,24 +24,54 @@ const listofAllVulnerabilities = async (e: TextEditor) => {
   if (e === undefined || e === null) {
     return;
   }
-  const activeTexEditor = await window.showTextDocument(e.document);
+  // const activeTexEditor = await window.showTextDocument(e.document);
+  const activeTexEditor = e;
   if (activeTexEditor === undefined || activeTexEditor === null) {
     return;
   }
 
-  const fileName = getFilePathuri(activeTexEditor.document.fileName);
-  if (fileName !== null && fileName !== undefined) {
-    const vulnerabilities = await getFileFromCache(fileName);
-    if (vulnerabilities !== null && vulnerabilities !== undefined) {
-      await openVulFile(vulnerabilities as CustomFileVulnerability);
-    } else {
-      closeStatusBarItem();
-      window.showWarningMessage(
-        `${localeI18ln.getTranslation('persistResponse.vulnerabilityNotFound')}`
-      );
-    }
-  } else {
+  const activeFeatureController = featureController.getSlot();
+
+  let fileName = await getFilePathuri(activeTexEditor.document.fileName);
+  if (fileName === undefined || fileName === null) {
     closeStatusBarItem();
+    return;
+  }
+  switch (activeFeatureController) {
+    case 'scan':
+      {
+        const vulnerabilities = await getFileFromCache(fileName);
+        if (isNotNull(vulnerabilities)) {
+          await openVulFile(vulnerabilities as CustomFileVulnerability, 'scan');
+        } else {
+          closeStatusBarItem();
+          window.showWarningMessage(
+            `${localeI18ln.getTranslation('persistResponse.vulnerabilityNotFound')}`
+          );
+        }
+      }
+      break;
+    case 'assess':
+      {
+        fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+        const vulnerabilities = await getAssessVulnerabilitybyFile(fileName);
+        if (
+          isNotNull(vulnerabilities) &&
+          isNotNull(vulnerabilities?.responseData) &&
+          vulnerabilities.code === 200
+        ) {
+          await openVulFile(
+            vulnerabilities.responseData as CustomFileVulnerability,
+            'assess'
+          );
+        } else {
+          closeStatusBarItem();
+          window.showWarningMessage(
+            `${localeI18ln.getTranslation('persistResponse.vulnerabilityNotFound')}`
+          );
+        }
+      }
+      break;
   }
   // }
 };

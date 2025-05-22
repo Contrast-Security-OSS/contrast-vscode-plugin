@@ -14,6 +14,9 @@ import {
 } from '../../../vscode-extension/utils/constants/commands';
 import { Tooltip } from '@mui/material';
 import { ContrastScanLocale, ReducerTypes } from '../../../common/types';
+import ScanImg from '../../../../assets/contrast-scan.png';
+import ContrastStore from '../../utils/redux/store';
+import { setActiveCurrentFile } from '../../utils/redux/slices/ScanFilter';
 function TabViewer({ tabId }: { tabId: number }) {
   switch (tabId) {
     case 1:
@@ -38,22 +41,23 @@ function ContrastScan() {
 
   const i18nData = useSelector((state: ReducerTypes) => state.i10ln.data);
 
-  const [refreshTooltip, updateTooltip] = useState('Refresh');
-  const getAllVulFromState = useSelector(
-    (state: ReducerTypes) => state.vulnerability.allFiles
+  const fetchBackgroundVulnRunner = useSelector(
+    (state: ReducerTypes) => state.scan.backgroundVulnRunner
   );
 
-  const [isRefresh, setisRefresh] = useState(true);
+  const fetchManualRefreshBackgroundVulnRunner = useSelector(
+    (state: ReducerTypes) => state.scan.manualRefreshBackgroundVulnRunner
+  );
 
-  useEffect(() => {
-    setisRefresh(true);
-  }, [getAllVulFromState]);
+  const [refreshTooltip, updateTooltip] = useState('Refresh');
 
-  const [tabId, setTabId] = useState(3);
+  const [refreshState, setRefreshState] = useState(false);
+
+  const [tabId, setTabId] = useState(1);
   const [tabs, setTabs] = useState([
-    { id: 1, title: 'Filter', active: false },
+    { id: 1, title: 'Filter', active: true },
     { id: 2, title: 'Current File', active: false },
-    { id: 3, title: 'Vulnerability Report', active: true },
+    { id: 3, title: 'Vulnerability Report', active: false },
   ]);
   const [title, setTitle] = useState('Contrast Scan');
 
@@ -84,6 +88,7 @@ function ContrastScan() {
   useEffect(() => {
     if (activeCurrentFile !== null && activeCurrentFile !== undefined) {
       handleTabChange(2);
+      ContrastStore.dispatch(setActiveCurrentFile(null));
     }
   }, [activeCurrentFile]);
 
@@ -93,8 +98,20 @@ function ContrastScan() {
       activeVulnerabilityReport !== undefined
     ) {
       handleTabChange(3);
+      ContrastStore.dispatch(setActiveCurrentFile(null));
     }
   }, [activeVulnerabilityReport]);
+
+  useEffect(() => {
+    if (
+      fetchBackgroundVulnRunner === false &&
+      fetchManualRefreshBackgroundVulnRunner === false
+    ) {
+      setRefreshState(false);
+    } else {
+      setRefreshState(true);
+    }
+  }, [fetchBackgroundVulnRunner, fetchManualRefreshBackgroundVulnRunner]);
 
   function handleTabChange(id: number) {
     setTabId(id);
@@ -107,37 +124,46 @@ function ContrastScan() {
   }
 
   function handleRefresh() {
-    if (isRefresh) {
-      webviewPostMessage({
-        command: WEBVIEW_COMMANDS.SCAN_MANUAL_REFRESH,
-        payload: null,
-        screen: WEBVIEW_SCREENS.SCAN,
-      });
-      setisRefresh(false);
-    }
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCAN_MANUAL_REFRESH_BACKGROUND_RUNNER,
+      payload: true,
+      screen: WEBVIEW_SCREENS.SCAN,
+    });
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCAN_MANUAL_REFRESH,
+      payload: null,
+      screen: WEBVIEW_SCREENS.SCAN,
+    });
   }
 
   return (
     <div>
-      <div style={{ fontWeight: 'bold' }}>{title}</div>
-      <div className="c-assess-panel">
+      <div className="panel-primary-header">
+        <div style={{ fontWeight: 'bold' }}>{title}</div>
+        <div className="imgContainer">
+          <img src={ScanImg} alt="Scan image is missed" />
+        </div>
+      </div>
+      <div className="c-assess-panel" style={{ marginTop: '10px' }}>
         <div className="c-assess-panel-header">
           <TabGroup onTabChange={handleTabChange}>
             {tabs.map((tab) => (
               <Tab key={tab.id} title={tab.title} isActive={tab.active} />
             ))}
           </TabGroup>
-          <div
-            style={{ height: '20px', width: '20px' }}
-            onClick={handleRefresh}
-          >
-            <Tooltip
-              title={refreshTooltip}
-              children={
-                <CachedIcon style={{ cursor: 'pointer' }} fontSize="small" />
-              }
-            ></Tooltip>
-          </div>
+          <button className="manual-refresh" disabled={refreshState}>
+            <div
+              style={{ height: '20px', width: '20px' }}
+              onClick={handleRefresh}
+            >
+              <Tooltip
+                title={refreshTooltip}
+                children={
+                  <CachedIcon style={{ cursor: 'pointer' }} fontSize="small" />
+                }
+              ></Tooltip>
+            </div>
+          </button>
         </div>
         <div style={{ padding: '5px' }}>
           <TabViewer tabId={tabId} />

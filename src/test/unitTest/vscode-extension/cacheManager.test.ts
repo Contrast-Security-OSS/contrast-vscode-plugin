@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { localeI18ln } from '../../../l10n';
 import { PersistenceInstance } from '../../../vscode-extension/utils/persistanceState';
-import { getScanResults } from '../../../vscode-extension/api/services/apiService';
+import { getProjectById } from '../../../vscode-extension/api/services/apiService';
 import {
   clearCacheByProjectId,
   disposeCache,
@@ -9,18 +9,29 @@ import {
   getCacheSize,
   getDataFromCache,
   getDataOnlyFromCache,
-  refreshCache,
+  getDataOnlyFromCacheAssess,
   updateAdvice,
 } from '../../../vscode-extension/cache/cacheManager';
 import { resolveFailure } from '../../../vscode-extension/utils/errorHandling';
 
-import { getOpenedFolderName } from '../../../vscode-extension/utils/commonUtil';
+import {
+  getCacheFilterData,
+  getOpenedFolderName,
+} from '../../../vscode-extension/utils/commonUtil';
 import { Uri } from 'vscode';
 import path from 'path';
+import { stopBackgroundTimerAssess } from '../../../vscode-extension/cache/backgroundRefreshTimerAssess';
+import {
+  ShowErrorPopup,
+  ShowInformationPopup,
+} from '../../../vscode-extension/commands/ui-commands/messageHandler';
+import { stopBackgroundTimer } from '../../../vscode-extension/cache/backgroundRefreshTimer';
 
 const cacheManager = require('cache-manager');
 
-jest.mock('../../../vscode-extension/api/services/apiService');
+jest.mock('../../../vscode-extension/api/services/apiService', () => ({
+  getScanResults: jest.fn(),
+}));
 jest.mock('../../../vscode-extension/utils/persistanceState');
 jest.mock('../../../vscode-extension/utils/errorHandling');
 jest.mock('../../../vscode-extension/utils/commonUtil');
@@ -29,6 +40,14 @@ jest.mock('../../../vscode-extension/cache/backgroundRefreshTimer', () => ({
   stopBackgroundTimer: jest.fn(),
 }));
 
+jest.mock(
+  '../../../vscode-extension/cache/backgroundRefreshTimerAssess',
+  () => ({
+    startBackgroundTimerAssess: jest.fn(),
+    stopBackgroundTimerAssess: jest.fn(),
+  })
+);
+
 jest.mock('vscode', () => ({
   env: {
     language: 'en',
@@ -36,6 +55,16 @@ jest.mock('vscode', () => ({
   },
   workspace: {
     workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+  },
+  window: {
+    activeTextEditor: {
+      document: {
+        fileName: 'test.js',
+      },
+    },
+    showErrorMessage: jest.fn(),
+    ShowErrorPopup: jest.fn(),
+    showInformationMessage: jest.fn(),
   },
   TreeItem: class {
     [x: string]: { dark: Uri; light: Uri };
@@ -64,6 +93,12 @@ jest.mock('vscode', () => ({
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
   },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
+  },
 }));
 
 jest.mock('cache-manager', () => ({
@@ -73,6 +108,7 @@ jest.mock('cache-manager', () => ({
     del: jest.fn(),
     reset: jest.fn(),
   }),
+  clearCacheByProjectId: jest.fn(),
 }));
 
 const memoryCache = cacheManager.caching({
@@ -83,6 +119,7 @@ const memoryCache = cacheManager.caching({
 
 jest.mock('../../../vscode-extension/utils/commonUtil', () => ({
   getOpenedFolderName: jest.fn(),
+  getCacheFilterData: jest.fn(),
 }));
 
 jest.mock(
@@ -125,12 +162,45 @@ jest.mock(
   })
 );
 
+jest.mock(
+  '../../../vscode-extension/persistence/PersistenceConfigSetting',
+  () => ({
+    GetAssessFilter: jest.fn(),
+  })
+);
+
+jest.mock(
+  '../../../vscode-extension/commands/ui-commands/messageHandler',
+  () => ({
+    ShowInformationPopupWithOptions: jest.fn(),
+    ShowInformationPopup: jest.fn(),
+    ShowErrorPopup: jest.fn(),
+  })
+);
+
+jest.mock('../../../vscode-extension/api/services/apiService', () => ({
+  getProjectById: jest.fn(),
+  getOrganisationName: jest.fn(),
+  getApplicationById: jest.fn(),
+}));
+
+const mockedShowErrorPopup = ShowErrorPopup as jest.MockedFunction<
+  typeof ShowErrorPopup
+>;
+
+jest.mock('../../../vscode-extension/utils/encryptDecrypt', () => ({
+  encrypt: jest.fn((key) => `encrypted-${key}`),
+  decrypt: jest.fn(),
+}));
+
 describe('Cache Management Tests', () => {
   const projectId = '12345';
   const projectName = 'Test Project';
+  const source = 'scan';
   const mockProject = {
     projectId,
     projectName,
+    source,
   };
   const persistedData = [mockProject];
   const scanId = 'scan123';
@@ -144,23 +214,7 @@ describe('Cache Management Tests', () => {
     memoryCache.get.mockClear();
     memoryCache.del.mockClear();
     memoryCache.reset.mockClear();
-  });
-
-  describe('refreshCache', () => {
-    it('should fetch data from the API and set it in memory cache', async () => {
-      const mockScanResults = { vulnerabilities: [] };
-      (getScanResults as jest.Mock).mockResolvedValue(mockScanResults);
-
-      await refreshCache(projectId);
-
-      expect(getScanResults).toHaveBeenCalledWith(projectId);
-    });
-
-    it('should throw an error if fetching data fails', async () => {
-      (getScanResults as jest.Mock).mockRejectedValue(new Error('API error'));
-
-      await expect(refreshCache(projectId)).rejects.toThrowError('API error');
-    });
+    mockedShowErrorPopup.mockReset();
   });
 
   describe('clearCacheByProjectId', () => {
@@ -197,18 +251,109 @@ describe('Cache Management Tests', () => {
       expect(cacheSize).toBe(2);
     });
 
+    it('should fetch data and reset cache if data is null or undefined', async () => {
+      (memoryCache.get as jest.Mock).mockResolvedValue(null);
+
+      await getDataFromCache();
+
+      expect(stopBackgroundTimer).toHaveBeenCalledTimes(1);
+    });
+
     it('should handle cache data size larger than the limit', async () => {
       const largeCacheData = { vulnerabilities: new Array(1000).fill({}) };
       memoryCache.get.mockResolvedValue(largeCacheData);
 
       const cacheSize = getCacheSize(projectId);
 
-      // expect(cacheSize / (1024 * 1024)).toBe(0.0000019073486328125);
       expect(cacheSize / (1024 * 1024)).toBeGreaterThan(0);
     });
   });
 
   describe('getDataFromCache', () => {
+    const projectId = '12345';
+    const mockActiveApplication = { appId: 'activeApp123', archived: false };
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    let mockData: any;
+
+    it('should handle archived applications and show error popup', async () => {
+      const archivedMockData = {
+        applications: [{ appId: 'archivedApp123', archived: true }],
+      };
+      memoryCache.get.mockResolvedValue(archivedMockData);
+      (getProjectById as jest.Mock).mockResolvedValue(true);
+
+      await getDataFromCache();
+
+      expect(ShowInformationPopup).toHaveBeenCalledWith(
+        'project is archived/deleted'
+      );
+      expect(stopBackgroundTimerAssess).toHaveBeenCalled();
+      expect(memoryCache.reset).toHaveBeenCalled();
+    });
+
+    it('should stop background timer and clear cache for archived applications', async () => {
+      const archivedMockData = {
+        applications: [{ appId: 'archivedApp123', archived: true }],
+      };
+      memoryCache.get.mockResolvedValue(archivedMockData);
+      (getProjectById as jest.Mock).mockResolvedValue(true);
+
+      const result = await getDataFromCache();
+
+      expect(result).toEqual(
+        resolveFailure('Archived applications found', 400)
+      );
+      expect(memoryCache.del).toHaveBeenCalledWith('archivedApp123');
+    });
+
+    it('should not enter the archived block when no archived applications are found', async () => {
+      mockData = {
+        applications: [mockActiveApplication],
+      };
+
+      memoryCache.get.mockResolvedValue(mockData);
+
+      const result = await getDataFromCache();
+
+      expect(ShowInformationPopup).not.toHaveBeenCalled();
+      expect(stopBackgroundTimerAssess).not.toHaveBeenCalled();
+      expect(memoryCache.reset).not.toHaveBeenCalled();
+
+      expect(result).toEqual(mockData);
+    });
+
+    it('should not enter the archived block if applications array is empty', async () => {
+      mockData = {
+        applications: [],
+      };
+
+      memoryCache.get.mockResolvedValue(mockData);
+
+      const result = await getDataFromCache();
+
+      expect(ShowInformationPopup).not.toHaveBeenCalled();
+      expect(stopBackgroundTimerAssess).not.toHaveBeenCalled();
+      expect(memoryCache.reset).not.toHaveBeenCalled();
+
+      expect(result).toEqual(mockData);
+    });
+
+    it('should handle case where applications is undefined or null', async () => {
+      mockData = {
+        applications: undefined,
+      };
+
+      memoryCache.get.mockResolvedValue(mockData);
+
+      const result = await getDataFromCache();
+
+      expect(ShowInformationPopup).not.toHaveBeenCalled();
+      expect(stopBackgroundTimerAssess).not.toHaveBeenCalled();
+      expect(memoryCache.reset).not.toHaveBeenCalled();
+
+      expect(result).toEqual(mockData);
+    });
+
     it('should return data from cache if available', async () => {
       const mockCacheData = { vulnerabilities: [] };
       memoryCache.get.mockResolvedValue(mockCacheData);
@@ -219,33 +364,14 @@ describe('Cache Management Tests', () => {
       expect(data).toEqual(mockCacheData);
     });
 
-    it('should call refreshCache if data is not available in the cache', async () => {
-      memoryCache.get.mockResolvedValue(null);
-
-      const mockScanResults = { vulnerabilities: [] };
-      (getScanResults as jest.Mock).mockResolvedValue(mockScanResults);
+    it('should return data from cache if available', async () => {
+      const mockCacheData = { vulnerabilities: [] };
+      memoryCache.get.mockResolvedValue(mockCacheData);
 
       const data = await getDataFromCache();
 
-      expect(data).not.toBe(mockScanResults);
-      expect(getScanResults).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return failure if cache exceeds size limit', async () => {
-      const largeCacheData = { vulnerabilities: new Array(1000).fill({}) };
-      memoryCache.get.mockResolvedValue(largeCacheData);
-      (getScanResults as jest.Mock).mockResolvedValue(largeCacheData);
-
-      const cacheSize = getCacheSize(projectId);
-      if (cacheSize / (1024 * 1024) > 10) {
-        const response = await getDataFromCache();
-        expect(response).toEqual(
-          resolveFailure(
-            localeI18ln.getTranslation('apiResponse.configureFilter'),
-            400
-          )
-        );
-      }
+      expect(memoryCache.get).toHaveBeenCalledTimes(1);
+      expect(data).toEqual(mockCacheData);
     });
 
     it('should handle project not found error gracefully', async () => {
@@ -372,6 +498,91 @@ describe('Cache Management Tests', () => {
 
       expect(memoryCache.get).toHaveBeenCalledWith(scanId);
       expect(result).toEqual(null);
+    });
+  });
+
+  describe('getDataOnlyFromCacheAssess Tests', () => {
+    const mockFilter = {
+      apiKey: '0123',
+      contrastURL: 'example.com',
+      userName: 'user',
+      serviceKey: '1234',
+      organizationId: 'org123',
+      source: 'assess',
+    };
+
+    (getCacheFilterData as jest.Mock).mockResolvedValue({
+      responseData: mockFilter,
+    });
+
+    it('should return data from the cache if available', async () => {
+      (getCacheFilterData as jest.Mock).mockResolvedValue({
+        responseData: mockFilter,
+      });
+      const mockCacheData = { vulnerabilities: [] };
+      memoryCache.get.mockResolvedValue(mockCacheData);
+
+      const result = await getDataOnlyFromCacheAssess();
+
+      expect(memoryCache.get).toHaveBeenCalledTimes(1);
+
+      expect(result).toEqual(mockCacheData);
+    });
+
+    it('should return failure if data is not found in the cache', async () => {
+      memoryCache.get.mockResolvedValue(null);
+
+      const result = await getDataOnlyFromCacheAssess();
+
+      expect(memoryCache.get).toHaveBeenCalledTimes(1);
+
+      expect(result).toEqual(
+        resolveFailure(
+          localeI18ln.getTranslation('apiResponse.vulnerabilityNotFound'),
+          400
+        )
+      );
+    });
+
+    it('should return failure if the project is not found in persisted data', async () => {
+      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue([]);
+      memoryCache.get.mockResolvedValue(null);
+
+      const result = await getDataOnlyFromCacheAssess();
+
+      expect(result).toEqual(
+        resolveFailure(
+          localeI18ln.getTranslation('apiResponse.projectNotFound'),
+          400
+        )
+      );
+    });
+
+    it('should call resolveFailure when no project is found in persisted data', async () => {
+      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue([]);
+      memoryCache.get.mockResolvedValue(null);
+
+      const result = await getDataOnlyFromCacheAssess();
+
+      expect(result).toEqual(
+        resolveFailure(
+          localeI18ln.getTranslation('apiResponse.projectNotFound'),
+          400
+        )
+      );
+    });
+
+    it('should handle empty cache gracefully', async () => {
+      memoryCache.get.mockResolvedValue(null);
+
+      const result = await getDataOnlyFromCacheAssess();
+
+      expect(result).toEqual(
+        resolveFailure(
+          localeI18ln.getTranslation('apiResponse.vulnerabilityNotFound'),
+          400
+        )
+      );
     });
   });
 });

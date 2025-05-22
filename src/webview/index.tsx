@@ -17,6 +17,9 @@ import {
   getAllProjectList,
   updateConfiguredProjectDelete,
   updateConfigureProject,
+  getAllApplicationList,
+  setCancelStateWhileDelete,
+  setSettingActions,
 } from './utils/redux/slices/projectsSlice';
 import {
   getAllFilesVulnerability,
@@ -25,8 +28,30 @@ import {
 import {
   getFilters,
   setActiveCurrentFile,
+  setActiveProjectName,
+  setScanBackgroundRunner,
+  setScanManualRefreshBackgroundRunner,
+  setScanRetrievelDetectAcrossIds,
+  setValidWorkspaceProjects,
   setVulnerabilityReport,
 } from './utils/redux/slices/ScanFilter';
+import {
+  getBuildNumber,
+  getCustomSessionMetaData,
+  getMostRecentMetaData,
+  getServerListbyOrgId,
+  getConfiguredApplications,
+  getAssessFilters,
+  getAssessAllFilesVulnerability,
+  setBackgroundRunner,
+  setMarkAsOkBehaviour,
+  getOrganizationTags,
+  setTagsOkBehaviour,
+  getAssessCurrentFileVulnerability,
+  setManualRefreshBackgroundRunner,
+  setAssessActiveCurrentFile,
+  setRefreshBackgroundRunnerAcrossIds,
+} from './utils/redux/slices/assessFilter';
 import { setContrastTheme } from './utils/redux/slices/contrastTheme';
 
 const root: HTMLElement | null = document.getElementById('root');
@@ -54,6 +79,11 @@ const handleMessage = (event: MessageEvent): void => {
         ContrastStore.dispatch(setScreen(EXTENTION_COMMANDS.SCAN_SCREEN));
       }
       break;
+    case EXTENTION_COMMANDS.ASSESS_SCREEN:
+      {
+        ContrastStore.dispatch(setScreen(EXTENTION_COMMANDS.ASSESS_SCREEN));
+      }
+      break;
     case EXTENTION_COMMANDS.L10N:
       {
         ContrastStore.dispatch(setLocale(data));
@@ -69,9 +99,24 @@ const handleMessage = (event: MessageEvent): void => {
         ContrastStore.dispatch(getAllProjectList(data));
       }
       break;
+    case WEBVIEW_COMMANDS.SETTING_GET_ALL_APPLICATIONS: // New
+      {
+        ContrastStore.dispatch(getAllApplicationList(data));
+      }
+      break;
     case WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT:
       {
         ContrastStore.dispatch(updateConfiguredProjectDelete(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SETTING_CANCEL_STATE_WHILE_DELETE:
+      {
+        ContrastStore.dispatch(setCancelStateWhileDelete(false));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SETTING_ACTIONS:
+      {
+        ContrastStore.dispatch(setSettingActions(data));
       }
       break;
     case WEBVIEW_COMMANDS.SETTING_ADD_PROJECT_TO_CONFIGURE:
@@ -96,6 +141,29 @@ const handleMessage = (event: MessageEvent): void => {
       break;
 
     // Scan
+    case WEBVIEW_COMMANDS.SCAN_ACTIVE_PROJECT_NAME:
+      {
+        ContrastStore.dispatch(setActiveProjectName(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCAN_VALID_CONFIGURED_PROJECTS:
+      {
+        ContrastStore.dispatch(setValidWorkspaceProjects(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.SCAN_BACKGROUND_RUNNER:
+      {
+        ContrastStore.dispatch(setScanBackgroundRunner(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.SCAN_MANUAL_REFRESH_BACKGROUND_RUNNER:
+      {
+        ContrastStore.dispatch(setScanManualRefreshBackgroundRunner(data));
+      }
+      break;
+
     case WEBVIEW_COMMANDS.SCAN_UPDATE_FILTERS:
       {
         ContrastStore.dispatch(getFilters(data));
@@ -125,6 +193,123 @@ const handleMessage = (event: MessageEvent): void => {
     case CONTRAST_THEME:
       {
         ContrastStore.dispatch(setContrastTheme(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCAN_RETRIEVEL_DETECT_ACROSS_IDS:
+      {
+        ContrastStore.dispatch(setScanRetrievelDetectAcrossIds(data));
+      }
+      break;
+
+    // Assess
+    case WEBVIEW_COMMANDS.GET_CONFIGURED_APPLICATIONS:
+      {
+        ContrastStore.dispatch(getConfiguredApplications(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.GET_SERVER_LIST_BY_ORG_ID:
+      {
+        ContrastStore.dispatch(getServerListbyOrgId(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.GET_BUILD_NUMBER:
+      {
+        ContrastStore.dispatch(getBuildNumber(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.GET_CUSTOM_SESSION_METADATA:
+      {
+        ContrastStore.dispatch(getCustomSessionMetaData(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.GET_MOST_RECENT_METADATA:
+      {
+        ContrastStore.dispatch(getMostRecentMetaData(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.ASSESS_GET_FILTERS:
+      {
+        ContrastStore.dispatch(getAssessFilters(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.ASSESS_UPDATE_FILTERS:
+      {
+        ContrastStore.dispatch(getAssessFilters(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_GET_ALL_FILES_VULNERABILITY:
+      {
+        ContrastStore.dispatch(getAssessAllFilesVulnerability(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_GET_INITIAL_ALL_FILES_VULNERABILITY:
+      {
+        if (data !== null) {
+          ContrastStore.dispatch(getAssessAllFilesVulnerability(data));
+        }
+      }
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_BACKGROUND_RUNNER:
+      {
+        ContrastStore.dispatch(setBackgroundRunner(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.ASSESS_UPDATE_VULNERABILITY: {
+      if (data !== null) {
+        ContrastStore.dispatch(getAssessAllFilesVulnerability(data));
+      }
+    }
+    case WEBVIEW_COMMANDS.ASSESS_MANUAL_REFRESH:
+      {
+        if (data !== null) {
+          ContrastStore.dispatch(getAssessAllFilesVulnerability(data));
+        }
+      }
+      break;
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_ADD_MARK:
+      {
+        ContrastStore.dispatch(setMarkAsOkBehaviour(false));
+        if (data !== null) {
+          ContrastStore.dispatch(getAssessAllFilesVulnerability(data));
+        }
+      }
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_ORG_TAGS:
+      {
+        ContrastStore.dispatch(getOrganizationTags(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_TAG_OK_BEHAVIOUR:
+      {
+        ContrastStore.dispatch(setTagsOkBehaviour(false));
+        if (data !== null) {
+          ContrastStore.dispatch(getAssessAllFilesVulnerability(data));
+        }
+      }
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_GET_CURRENTFILE_VUL:
+      {
+        ContrastStore.dispatch(getAssessCurrentFileVulnerability(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.ASSESS_MANUAL_REFRESH_BACKGROUND_RUNNER:
+      {
+        ContrastStore.dispatch(setManualRefreshBackgroundRunner(data));
+      }
+      break;
+    case EXTENTION_COMMANDS.ASSESS_CURRENT_FILE:
+      {
+        ContrastStore.dispatch(setAssessActiveCurrentFile(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.ASSESS_REFRESH_BACKGROUND_RUNNER_ACROSS_IDS:
+      {
+        ContrastStore.dispatch(setRefreshBackgroundRunnerAcrossIds(data));
       }
       break;
     default:

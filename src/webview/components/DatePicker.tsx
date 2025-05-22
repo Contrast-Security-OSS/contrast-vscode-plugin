@@ -36,8 +36,10 @@ const DatePicker: FC<DatePickerProps> = ({
   }, [min, max]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentValue(e.target.value);
-    onDateChange?.(e.target.value);
+    if (e.target.value.length > 0) {
+      setCurrentValue(e.target.value);
+      onDateChange?.(e.target.value);
+    }
   };
 
   return (
@@ -49,6 +51,9 @@ const DatePicker: FC<DatePickerProps> = ({
       disabled={disabled}
       className="date-picker"
       ref={inputRef}
+      onKeyDown={(e) => {
+        e.preventDefault();
+      }}
     />
   );
 };

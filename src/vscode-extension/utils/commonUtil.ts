@@ -1,9 +1,10 @@
-import * as vscode from 'vscode';
 import { localeI18ln } from '../../l10n';
 import {
   ArtifactLocation,
   Level0Entry,
+  Level0Vulnerability,
   Level1Entry,
+  Level1Vulnerability,
   ProjectSource,
   SourceJson,
   Vulnerability,
@@ -11,24 +12,34 @@ import {
 import { PersistenceInstance } from '../utils/persistanceState';
 import { SETTING_KEYS, TOKEN } from './constants/commands';
 import {
+  ApiResponse,
+  AssessFilter,
   ConfiguredProject,
   FilterSeverity,
   FilterStatus,
   FilterType,
   PersistedDTO,
+  PrimaryConfig,
 } from '../../common/types';
 import path from 'path';
+import { resolveFailure, resolveSuccess } from './errorHandling';
+import { GetAssessFilter } from '../persistence/PersistenceConfigSetting';
+import { currentWorkspaceProjectManager, featureController } from './helper';
 
 export async function getVulnerabilitiesRefreshCycle(
-  projectId: string
+  projectId: string,
+  isScan: boolean = true
 ): Promise<number> {
   const persistedData = PersistenceInstance.getByKey(
     TOKEN.SETTING,
     SETTING_KEYS.CONFIGPROJECT as keyof PersistedDTO
   ) as ConfiguredProject[];
 
+  const scanType = isScan ? 'scan' : 'assess';
+
   const project = persistedData?.find(
-    (project: ConfiguredProject) => project.projectId === projectId
+    (project: ConfiguredProject) =>
+      project.projectId === projectId && project.source === scanType
   );
   if (project === null || project === undefined) {
     throw new Error(localeI18ln.getTranslation('apiResponse.projectNotFound'));
@@ -116,13 +127,10 @@ export function getAllArtifactUris(sourceItem: SourceJson): Level0Entry[] {
         let filePath =
           location.location?.physicalLocation?.artifactLocation?.uri;
         const pathParts =
-          location.location?.physicalLocation?.artifactLocation?.uri.split(
-            '\\'
-          );
-        const startIndex = pathParts.indexOf(getOpenedFolderName());
-        if (startIndex > 0) {
+          location.location?.physicalLocation?.artifactLocation?.uri.split('/');
+        const startIndex = pathParts.indexOf(onlyGetOpenedFolderName());
+        if (startIndex >= 0) {
           filePath = pathParts.slice(startIndex + 1).join(path.sep);
-          // filePath = filePath.replace("WebGoat.NET", "WebGoat.NET.zip");
         }
 
         filePath = path.normalize(filePath);
@@ -134,7 +142,8 @@ export function getAllArtifactUris(sourceItem: SourceJson): Level0Entry[] {
 
         const project = persistedData?.find(
           (project: ConfiguredProject) =>
-            project.projectId === sourceItem.projectId
+            project.projectId === sourceItem.projectId &&
+            project.source === 'scan'
         );
 
         const item: Level0Entry = {
@@ -157,6 +166,8 @@ export function getAllArtifactUris(sourceItem: SourceJson): Level0Entry[] {
           ruleId: sourceItem.ruleId,
           lineNumber: location.location?.physicalLocation?.region?.startLine,
           filePath: filePath,
+          labelFilePath:
+            location.location?.physicalLocation?.artifactLocation?.uri,
         };
         uris.push(item);
       }
@@ -210,17 +221,12 @@ export function getScanedResultFinalJson(data: SourceJson[]): ProjectSource {
         (group) => group.filePath === item.filePath
       );
       if (!filegroup) {
-        let filePath = item.filePath;
-        const pathParts = item.filePath.split('/');
-        const startIndex = pathParts.indexOf(getOpenedFolderName() as string);
-        if (startIndex > 0) {
-          filePath = pathParts.slice(startIndex + 1).join(path.sep);
-        }
-        filePath = path.normalize(filePath);
+        const filePath = item.filePath;
+
         filegroup = {
           level: 1,
           filePath: filePath,
-          label: filePath,
+          label: item.labelFilePath ?? '',
           issuesCount: 0,
           fileType: item.language,
           child: [],
@@ -287,17 +293,35 @@ export function filterCriticalVulnerabilitiesLineNumber(
   };
 }
 
-export function getOpenedFolderName(): string | undefined {
-  const workspaceFolders = vscode.workspace.workspaceFolders;
+export function onlyGetOpenedFolderName() {
+  const projectName = currentWorkspaceProjectManager.getSlot();
+  return projectName && projectName !== 'none' ? projectName : undefined;
+}
 
-  if (workspaceFolders && workspaceFolders.length > 0) {
-    // Get the name of the first opened folder
-    const folderUri = workspaceFolders[0].uri;
-    const folderName = folderUri.path?.split('/').pop(); // Extract the folder name from the URI path
-    return folderName;
+export async function getOpenedFolderName(): Promise<string | undefined> {
+  const feature = featureController.getSlot();
+  const projectName = currentWorkspaceProjectManager.getSlot();
+
+  if (feature === 'none') {
+    return undefined;
   }
+  if (feature === 'scan') {
+    return projectName && projectName !== 'none' ? projectName : undefined;
+  }
+  if (feature === 'assess') {
+    const assessFilter = await GetAssessFilter();
+    if (
+      assessFilter === null ||
+      assessFilter === undefined ||
+      assessFilter.responseData === null ||
+      assessFilter.status === 'failure'
+    ) {
+      return '';
+    }
+    const { projectName } = assessFilter.responseData as AssessFilter;
 
-  return undefined;
+    return projectName && projectName !== 'none' ? projectName : undefined;
+  }
 }
 
 export function extractLastNumber(str: string): number {
@@ -312,3 +336,86 @@ export function extractLastNumber(str: string): number {
 }
 
 export const DateTime = new Date().toISOString();
+
+export function groupByFileName(
+  vulnerabilities: Level0Vulnerability[]
+): Record<string, Level0Vulnerability[]> {
+  return vulnerabilities.reduce(
+    (acc, item) => {
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (!acc[item.labelForMapping]) {
+        acc[item.labelForMapping] = [];
+      }
+      acc[item.labelForMapping].push(item);
+      return acc;
+    },
+    {} as Record<string, Level0Vulnerability[]>
+  );
+}
+
+export function validateParams(
+  params: PrimaryConfig
+): { validParams: PrimaryConfig } | ApiResponse {
+  const { apiKey, contrastURL, userName, serviceKey, organizationId, source } =
+    params;
+
+  if (
+    !apiKey ||
+    !contrastURL ||
+    !userName ||
+    !serviceKey ||
+    !organizationId ||
+    !source
+  ) {
+    return resolveFailure(
+      localeI18ln.getTranslation('apiResponse.missingOneOrMoreError'),
+      400
+    );
+  }
+
+  return {
+    validParams: {
+      apiKey,
+      contrastURL,
+      userName,
+      serviceKey,
+      organizationId,
+      source,
+    },
+  };
+}
+
+export const handleErrorResponse = (message: string, status: number) => {
+  return resolveFailure(localeI18ln.getTranslation(message), status);
+};
+
+export function moveUnmappedVulnerabilities(
+  level1Vulnerabilities: Level1Vulnerability[],
+  word: string
+) {
+  level1Vulnerabilities.map((item: Level1Vulnerability, index) => {
+    if (item.label.toLowerCase() === word.toLowerCase()) {
+      level1Vulnerabilities.splice(index, 1);
+      level1Vulnerabilities.push(item);
+    }
+  });
+  return level1Vulnerabilities;
+}
+
+export async function getCacheFilterData(): Promise<ApiResponse> {
+  const persist = await GetAssessFilter();
+
+  if (
+    persist === undefined ||
+    persist === null ||
+    persist.responseData === null ||
+    persist.responseData === undefined
+  ) {
+    return resolveFailure(
+      localeI18ln.getTranslation('apiResponse.projectNotFound'),
+      400
+    );
+  }
+
+  return resolveSuccess('success', 200, persist.responseData);
+}

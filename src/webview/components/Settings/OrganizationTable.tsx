@@ -10,6 +10,7 @@ import {
 } from '../../../common/types';
 import { organizationLocale } from '../../utils/constant';
 import { Tooltip } from '@mui/material';
+import { customToolTipStyle } from '../../utils/helper';
 
 interface OrganizationTable {
   dataSource: ConfiguredProject[];
@@ -32,6 +33,22 @@ const OrganizationTable = ({
     null
   );
 
+  const cancelStateWhileDelete = useSelector(
+    (state: ReducerTypes) => state.project.cancelStateWhileDelete
+  );
+  const fetchSettingActions = useSelector(
+    (state: ReducerTypes) => state.project.settingActions
+  );
+
+  const fetchRefreshBackgroundVulnRunnerAcrossIds = useSelector(
+    (state: ReducerTypes) =>
+      state.assessFilter.refreshBackgroundVulnRunnerAcrossIds
+  );
+
+  const fetchScanRetrievelDetectAcrossIds = useSelector(
+    (state: ReducerTypes) => state.scan.scanRetrievelDetectAcrossIds
+  );
+
   const activeLanguage = useSelector((state: ReducerTypes) => state.i10ln.data);
   const [localesFields, updateLocaleFields] =
     useState<ContrastOrganizationLocales>(organizationLocale);
@@ -41,11 +58,29 @@ const OrganizationTable = ({
     delete: false,
   });
 
+  const [instanceBehaviour, setInstanceBehaviour] = useState(false);
+
   // -------------------------- use effects -----------------------------
 
   useEffect(() => {
     setSelectedRow(null);
   }, [dataSource]);
+
+  useEffect(() => {
+    if (
+      fetchSettingActions === false &&
+      fetchRefreshBackgroundVulnRunnerAcrossIds === false &&
+      fetchScanRetrievelDetectAcrossIds === false
+    ) {
+      setInstanceBehaviour(false);
+    } else {
+      setInstanceBehaviour(true);
+    }
+  }, [
+    fetchSettingActions,
+    fetchRefreshBackgroundVulnRunnerAcrossIds,
+    fetchScanRetrievelDetectAcrossIds,
+  ]);
 
   useEffect(() => {
     if (activeLanguage !== null && activeLanguage !== undefined) {
@@ -74,7 +109,11 @@ const OrganizationTable = ({
   };
 
   const onrowChange = (rowIndex: ConfiguredProject) => {
-    if (rowIndex !== null) {
+    if (
+      rowIndex !== null &&
+      cancelStateWhileDelete === false &&
+      fetchSettingActions === false
+    ) {
       setSelectedRow(rowIndex);
     }
   };
@@ -99,7 +138,7 @@ const OrganizationTable = ({
                 <EditOutlinedIcon
                   fontSize="small"
                   style={
-                    !editorOptions.edit
+                    !editorOptions.edit && instanceBehaviour === false
                       ? {
                           color: '#4CAF50',
                           cursor: 'pointer',
@@ -111,11 +150,13 @@ const OrganizationTable = ({
                   }
                   className="editIcon"
                   onClick={() => {
-                    updateEditorOptions({
-                      ...editorOptions,
-                      delete: true,
-                    });
-                    updateConfiguredProject(selectedRow as ConfiguredProject);
+                    if (instanceBehaviour === false) {
+                      updateEditorOptions({
+                        ...editorOptions,
+                        delete: true,
+                      });
+                      updateConfiguredProject(selectedRow as ConfiguredProject);
+                    }
                   }}
                 />
               }
@@ -132,7 +173,7 @@ const OrganizationTable = ({
                   fontSize="small"
                   className="deleteIcon"
                   style={
-                    !editorOptions.delete
+                    !editorOptions.delete && instanceBehaviour === false
                       ? {
                           color: '#F44336',
                           cursor: 'pointer',
@@ -143,11 +184,13 @@ const OrganizationTable = ({
                         }
                   }
                   onClick={() => {
-                    updateEditorOptions({
-                      ...editorOptions,
-                      edit: true,
-                    });
-                    onDelete(selectedRow as ConfiguredProject);
+                    if (instanceBehaviour === false) {
+                      updateEditorOptions({
+                        ...editorOptions,
+                        edit: true,
+                      });
+                      onDelete(selectedRow as ConfiguredProject);
+                    }
                   }}
                 />
               }
@@ -182,9 +225,28 @@ const OrganizationTable = ({
                     }}
                   >
                     <td id="project-added-to-config">
-                      {row?.organizationName}
+                      <Tooltip
+                        title={
+                          row?.organizationName !== undefined &&
+                          row?.organizationName?.length > 25
+                            ? row?.organizationName
+                            : ''
+                        }
+                        children={<span>{row?.organizationName}</span>}
+                        slotProps={customToolTipStyle}
+                        placement="bottom-start"
+                      />
                     </td>
-                    <td id="project-added-to-config">{row?.projectName}</td>
+                    <td id="project-added-to-config">
+                      <Tooltip
+                        title={
+                          row?.projectName.length > 25 ? row?.projectName : ''
+                        }
+                        children={<span>{row?.projectName}</span>}
+                        slotProps={customToolTipStyle}
+                        placement="bottom-start"
+                      />
+                    </td>
                     <td>{row?.source}</td>
                   </tr>
                 ))

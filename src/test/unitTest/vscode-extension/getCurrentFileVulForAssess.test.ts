@@ -1,0 +1,273 @@
+import {
+  resolveFailure,
+  resolveSuccess,
+} from '../../../vscode-extension/utils/errorHandling';
+
+import {
+  getDataFromCache,
+  getDataOnlyFromCacheAssess,
+} from '../../../vscode-extension/cache/cacheManager';
+
+import { ApiResponse } from '../../../common/types';
+import { l10n } from '../../../l10n';
+import { getAssessVulnerabilitybyFile } from '../../../vscode-extension/api/services/apiService';
+import path from 'path';
+import { Uri } from 'vscode';
+
+// Mocks
+jest.mock('../../../vscode-extension/utils/errorHandling');
+jest.mock('../../../vscode-extension/cache/cacheManager');
+
+jest.mock('vscode', () => ({
+  env: {
+    language: 'en',
+    appName: 'VSCode',
+  },
+  workspace: {
+    workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    onDidChangeConfiguration: jest.fn(),
+  },
+  window: {
+    activeTextEditor: {
+      document: {
+        fileName: 'test.js',
+      },
+    },
+  },
+  TreeItem: class {
+    [x: string]: { dark: Uri; light: Uri };
+    constructor(
+      label: { dark: Uri; light: Uri },
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      command: any = null,
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      icon: any = null
+    ) {
+      this.label = label;
+      if (command !== null) {
+        this.command = {
+          title: label,
+          command: command,
+        } as any;
+      }
+      if (icon !== null) {
+        const projectRoot = path.resolve(__dirname, '..');
+        const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
+        this.iconPath = {
+          dark: iconPath,
+          light: iconPath,
+        };
+      }
+    }
+  },
+  Uri: {
+    file: jest.fn().mockReturnValue('mockUri'),
+  },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
+  },
+}));
+
+jest.mock(
+  '../../../vscode-extension/commands/ui-commands/webviewHandler',
+  () => ({
+    ContrastPanelInstance: {
+      postMessage: jest.fn(),
+    },
+  })
+);
+
+const locale = new l10n('en');
+
+const mockedResolveFailure = resolveFailure as jest.MockedFunction<
+  typeof resolveFailure
+>;
+const mockedResolveSuccess = resolveSuccess as jest.MockedFunction<
+  typeof resolveSuccess
+>;
+const mockedGetDataFromCache =
+  getDataOnlyFromCacheAssess as jest.MockedFunction<typeof getDataFromCache>;
+
+interface FileData {
+  label: string;
+  vulnerabilities: [];
+}
+
+describe('getVulnerabilitybyFile', () => {
+  beforeEach(() => {
+    mockedResolveFailure.mockReset();
+    mockedResolveSuccess.mockReset();
+    mockedGetDataFromCache.mockReset();
+  });
+
+  it('should return failure if file is not found in cache data', async () => {
+    const fileName = 'testFile.js';
+
+    mockedGetDataFromCache.mockResolvedValue({
+      responseData: {
+        child: [{ label: 'anotherFile.js', vulnerabilities: [] }],
+      },
+    } as unknown as ApiResponse);
+
+    mockedResolveFailure.mockReturnValue({
+      message: locale.getTranslation('apiResponse.fileNotFound') as string,
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+
+    const response = await getAssessVulnerabilitybyFile(fileName);
+
+    expect(mockedResolveFailure).toHaveBeenCalledWith(
+      locale.getTranslation('apiResponse.fileNotFound'),
+      400
+    );
+    expect(response).toEqual({
+      message: locale.getTranslation('apiResponse.fileNotFound') as string,
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+  });
+
+  it('should return the file data if file is found', async () => {
+    const mockFileData: FileData = {
+      label: 'testFile.js',
+      vulnerabilities: [],
+    };
+
+    mockedGetDataFromCache.mockResolvedValue({
+      responseData: {
+        child: [{ label: 'testFile.js', vulnerabilities: [] }],
+      },
+    } as unknown as ApiResponse);
+
+    mockedResolveSuccess.mockReturnValue({
+      message: locale.getTranslation('apiResponse.projectsFetchedSuccessful'),
+      code: 200,
+      status: 'success',
+      responseData: mockFileData,
+    } as unknown as ApiResponse);
+
+    expect(mockedGetDataFromCache).toHaveBeenCalledTimes(0);
+    expect(mockedResolveSuccess).toHaveBeenCalledTimes(0);
+  });
+
+  it('should return failure if no project is found in persisted data (edge case)', async () => {
+    const fileName = 'testFile.js';
+
+    mockedGetDataFromCache.mockResolvedValue({
+      responseData: {
+        child: [{ label: 'anotherFile.js', vulnerabilities: [] }],
+      },
+    } as unknown as ApiResponse);
+
+    mockedResolveFailure.mockReturnValue({
+      message: locale.getTranslation('apiResponse.fileNotFound') as string,
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+
+    const response = await getAssessVulnerabilitybyFile(fileName);
+
+    expect(mockedResolveFailure).toHaveBeenCalledWith(
+      locale.getTranslation('apiResponse.fileNotFound'),
+      400
+    );
+    expect(response).toEqual({
+      message: locale.getTranslation('apiResponse.fileNotFound') as string,
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+  });
+
+  it('should handle empty child array gracefully (no files in project)', async () => {
+    const fileName = 'testFile.js';
+
+    mockedGetDataFromCache.mockResolvedValue({
+      responseData: {
+        child: [],
+      },
+    } as unknown as ApiResponse);
+
+    mockedResolveFailure.mockReturnValue({
+      message: locale.getTranslation('apiResponse.fileNotFound') as string,
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+
+    const response = await getAssessVulnerabilitybyFile(fileName);
+
+    expect(mockedResolveFailure).toHaveBeenCalledWith(
+      locale.getTranslation('apiResponse.fileNotFound'),
+      400
+    );
+    expect(response).toEqual({
+      message: locale.getTranslation('apiResponse.fileNotFound') as string,
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+  });
+
+  it('should return the file data if file is found', async () => {
+    const mockFileData: FileData = {
+      label: 'testFile.js',
+      vulnerabilities: [],
+    };
+
+    mockedGetDataFromCache.mockResolvedValue({
+      responseData: {
+        child: [{ label: 'testFile.js', vulnerabilities: [] }],
+      },
+    } as unknown as ApiResponse);
+
+    mockedResolveSuccess.mockReturnValue({
+      message: locale.getTranslation('apiResponse.projectsFetchedSuccessful'),
+      code: 200,
+      status: 'success',
+      responseData: mockFileData,
+    } as unknown as ApiResponse);
+
+    const response = await getAssessVulnerabilitybyFile('testFile.js');
+
+    expect(mockedResolveSuccess).toHaveBeenCalledTimes(1);
+    expect(response).toEqual({
+      message: locale.getTranslation('apiResponse.projectsFetchedSuccessful'),
+      code: 200,
+      status: 'success',
+      responseData: mockFileData,
+    });
+  });
+  it('should return failure if getAssessVulnerabilitybyFile does not return status 200', async () => {
+    const fileName = 'test.js';
+    mockedGetDataFromCache.mockResolvedValue({
+      responseData: {
+        child: [],
+      },
+    } as unknown as ApiResponse);
+
+    mockedResolveFailure.mockReturnValue({
+      message: 'Some error',
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+
+    const response = await getAssessVulnerabilitybyFile(fileName);
+
+    expect(mockedResolveFailure).toHaveBeenCalledTimes(1);
+    expect(response).toEqual({
+      message: 'Some error',
+      code: 400,
+      status: 'failure',
+      responseData: {},
+    });
+  });
+});

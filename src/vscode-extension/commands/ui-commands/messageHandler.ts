@@ -28,8 +28,9 @@ function messageHandler(res: CommandResponse) {
     WEBVIEW_COMMANDS.SETTING_ADD_PROJECT_TO_CONFIGURE,
     WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
     WEBVIEW_COMMANDS.SETTING_UPDATE_CONFIGURE_PROJECT,
-    WEBVIEW_COMMANDS.SCAN_UPDATE_FILTERS,
     WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT,
+    WEBVIEW_COMMANDS.ASSESS_GET_ALL_FILES_VULNERABILITY,
+    WEBVIEW_COMMANDS.ASSESS_MANUAL_REFRESH,
   ];
   if (
     messageCommands.includes(res.command as WEBVIEW_COMMANDS) &&
@@ -42,7 +43,8 @@ function messageHandler(res: CommandResponse) {
       const { responseData, code } = res.data;
       const response = responseData as { child: Array<Object> };
       if (
-        res.command === WEBVIEW_COMMANDS.SCAN_MANUAL_REFRESH &&
+        (res.command === WEBVIEW_COMMANDS.SCAN_MANUAL_REFRESH ||
+          res.command === WEBVIEW_COMMANDS.ASSESS_MANUAL_REFRESH) &&
         code === 200 &&
         responseData !== null &&
         responseData !== undefined &&

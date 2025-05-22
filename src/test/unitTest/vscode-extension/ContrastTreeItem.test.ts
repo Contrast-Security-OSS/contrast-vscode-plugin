@@ -47,6 +47,12 @@ jest.mock('vscode', () => ({
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
   },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
+  },
 }));
 
 describe('ContrastTreeItem', () => {

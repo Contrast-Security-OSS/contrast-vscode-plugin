@@ -1,4 +1,12 @@
-/* styles.css */
+@import url('./material/material.scss');
+
+/* Mixin for transparent radio button inner */
+@mixin radio-transparent-inner {
+  input[type='radio']:not(:checked) + .checkbox-outer > .checkbox-inner {
+    background-color: transparent;
+  }
+}
+
 :root {
   --input-background-light: #efefef;
   --input-placeholder-foreground-light: #989898;
@@ -26,19 +34,27 @@
   --checkbox-background: #3c3c3c;
   --foreground: #cccccc;
   --checkbox-border: #888888;
+  --disabled-text: #a0a0a0;
+  --disabled-background: #f5f5f5;
+  --disabled-border: #d0d0d0;
+  --disabled-opacity: 0.5;
+  --disabled-cursor: not-allowed;
 }
 
+/* Light Theme */
 .root-div-light {
-  //input
-  input {
+  input,
+  .custom-text-area > textarea {
     background-color: var(--input-background-light);
     color: var(--input-color-light);
     border: 1px solid var(--input-background-dark) !important;
   }
+
   & ::placeholder {
     background-color: var(--input-background-light);
     color: var(--input-placeholder-foreground-light);
   }
+
   .org-div {
     table td {
       color: var(--input-color-light);
@@ -48,33 +64,116 @@
     color: var(--foreground-light);
     border: 1px solid var(--foreground-light);
   }
-
   //checkbox
   .checkbox > .wrapper > .control {
     background: #cdcdcd;
   }
+
   .checked-indicator {
     fill: var(--input-background-dark);
   }
+
+  .checkbox-outer {
+    border-color: #000000 !important;
+  }
+
+  input[type='radio']:checked + .checkbox-outer {
+    border-color: #5a5a5a;
+    background-color: #4daafc;
+    .checkbox-inner {
+      background-color: #ffffff;
+    }
+  }
+
+  @include radio-transparent-inner;
+
+  .dropdown {
+    background: var(--dropdown-background-light);
+    color: var(--foreground-light);
+  }
+
+  .dropdown-option {
+    color: var(--input-color-light);
+  }
+
+  .dropdown > .listBox {
+    background: var(--dropdown-background-light);
+  }
+
+  .dropdown-option:hover {
+    background: rgb(88 178 239) !important;
+    border-color: #007fd4;
+  }
+
+  .c-assess-panel > .c-assess-panel-header {
+    color: white;
+  }
+  .assess-split-panel-header {
+    color: white;
+  }
 }
+
+/* Dark Theme */
 .root-div-dark {
-  //input
-  input {
+  input,
+  .custom-text-area > textarea {
     background-color: var(--input-background-dark);
     color: var(--input-placeholder-foreground-dark);
     border: 1px solid var(--input-background-dark) !important;
   }
+
   & ::placeholder {
     background-color: var(--input-background-dark);
     color: var(--input-placeholder-foreground-dark);
   }
-
   //checkbox
   .checkbox > .wrapper > .control {
     background: var(--checkbox-background);
   }
+
+  .checkbox-outer {
+    border-color: #c7c6c6;
+  }
+
+  input[type='radio']:checked + .checkbox-outer {
+    border-color: #c7c6c6;
+    background-color: #4daafc;
+    .checkbox-inner {
+      background-color: white;
+    }
+  }
+
+  @include radio-transparent-inner;
+
+  .dropdown {
+    background: var(--dropdown-background-dark);
+    color: var(--foreground-dark);
+  }
+
+  .dropdown-option {
+    color: var(--foreground-dark);
+  }
+
+  .dropdown > .listBox {
+    background: var(--dropdown-background-dark);
+  }
+
+  .dropdown-option:hover {
+    background: #094771 !important;
+    border-color: #007fd4;
+  }
 }
 
+/* Disabled State */
+.disabled {
+  color: var(--disabled-text) !important;
+  background-color: var(--disabled-background) !important;
+  cursor: var(--disabled-cursor) !important;
+  opacity: var(--disabled-opacity) !important;
+  pointer-events: none;
+}
+
+/* General Utility Classes */
 .mt_5 {
   margin-top: 5px;
 }
@@ -87,34 +186,14 @@
   width: 80px;
 }
 
-input {
-  height: calc(var(--input-height) * 1px);
-  padding: 2px 5px;
-}
-
-input:focus {
-  border-color: var(
-    --link-active-foreground
-  ) !important; /* Apply the border color on focus */
-  outline: none !important;
-  border-width: 1px !important; /* Ensure the width is set */
-  border-style: solid !important; /* Define the border style to ensure it is applied */
-}
-
-.settingFormTable {
-  width: 430px;
-}
-
 .settingFormTable1 {
   width: 670px;
-}
-.custom-button {
-  padding: 3px 9px;
-  outline: none;
-  color: white;
-  border: 1px solid var(--link-active-foreground);
-  border-radius: 3px;
-  cursor: pointer;
+  .source-dropdown {
+    width: 100px;
+  }
+  .project-dropdown {
+    width: 103%;
+  }
 }
 
 .btn-blue {
@@ -124,47 +203,66 @@ input:focus {
 .float-right {
   float: right;
 }
+
+/* Table & Layout */
 .org-div {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: end;
-}
 
-.org-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 7px;
-  padding: 5px 0px;
+  .org-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 7px;
+    padding: 5px 0px;
+  }
+
+  .editor-transparent {
+    background: none;
+    outline: none;
+    border: none;
+
+    &:disabled {
+      background-color: unset;
+    }
+  }
 }
 
 .table-container {
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid #2b2b2b;
-}
-.org-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+
+  .org-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    th {
+      position: sticky;
+      top: 0;
+      color: white;
+      background-color: #2b2b2b;
+      z-index: 1;
+      padding: 8px;
+    }
+
+    td {
+      border: 1px solid #2b2b2b;
+      padding: 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    #project-added-to-config {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
-.org-table th {
-  position: sticky;
-  top: 0;
-  color: white;
-  background-color: #2b2b2b;
-  z-index: 1;
-  padding: 8px;
-}
-
-.org-table td {
-  border: 1px solid #2b2b2b;
-  padding: 8px;
-  text-align: center;
-  vertical-align: middle;
-}
-
+/* Buttons */
 .lightblue {
   background-color: blue;
 }
@@ -182,8 +280,9 @@ input:focus {
   margin-top: 10px;
 }
 
+/* Error Messages */
 .error-message {
-  color: rgba(255, 0, 0, 0.568); /* Set the error message color */
+  color: rgba(255, 0, 0, 0.568);
   padding: 1px 0px;
   font-size: 10px;
 }
@@ -193,16 +292,26 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Input Fields */
 td {
   width: 300px;
+
   .form-field {
     display: flex;
     flex-direction: column;
     width: 100%;
+
+    .withHelpIcon {
+      display: flex;
+      flex-direction: row;
+      gap: 5px;
+      align-items: center;
+    }
     input {
       width: 100%;
     }
   }
+
   .minute-form-field {
     width: 110px;
     display: flex;
@@ -212,113 +321,53 @@ td {
   }
 }
 
-/* button checkbox and tab */
-.c-button-group {
-  display: flex;
-  flex-direction: row;
-  white-space: nowrap;
-  gap: 4px;
-}
-
-.c-tag-group {
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
-  padding: 3px;
-}
-
-.active-tab {
-  height: 1px;
-  width: 100%;
-  background-color: #0078d4;
-}
-
-.tab {
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 2px 10px;
-}
-
-.c-assess-panel {
-  border: 1px solid #2b2b2b;
-  margin-top: 10px;
-  height: 400px;
-  max-height: 400px;
-  overflow: auto;
-}
-
-.c-assess-panel-header {
-  position: sticky;
-  top: 0;
+.panel-primary-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #2b2b2b;
-  padding: 0px 5px;
-  background-color: var(--foreground-light);
+  .imgContainer {
+    margin-right: 6px;
+    height: 20px;
+    object-fit: contain;
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
 
-.retrieveVul-container {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
+/* Panel */
+.c-assess-panel {
+  border: 1px solid #2b2b2b;
+
   min-height: 300px;
-}
-
-.retrieveVul-container > .leftVulPanel {
-  width: 50%;
-  height: 100%;
-}
-
-.retrieveVul-container > .rightVulPanel {
+  height: 475px;
+  max-height: 475px;
   overflow: auto;
-  width: 50%;
-  height: 100%;
-}
 
-/* checkbox  */
-.disabled {
-  cursor: not-allowed !important;
-  opacity: 0.6;
-}
-
-.checked-indicator {
-  width: 100%;
-  height: 100%;
-  display: block;
-  fill: var(--foreground);
-  pointer-events: none;
-}
-
-.checkbox {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-.checkbox > .wrapper {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  align-items: center;
-}
-.checkbox > .wrapper > .control {
-  width: calc(var(--design-unit) * 4px + 2px);
-  height: calc(var(--design-unit) * 4px + 2px);
-  box-sizing: border-box;
-  border-radius: calc(var(--checkbox-corner-radius) * 1px);
-  border: calc(var(--border-width) * 1px) solid var(--checkbox-border);
-  outline: none;
-  cursor: pointer;
-  transition:
-    background-color 0.3s,
-    border-color 0.3s;
-}
-
-.checkbox-input {
-  display: none;
+  .c-assess-panel-header {
+    z-index: 2;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2b2b2b;
+    padding: 0px 5px;
+    background-color: var(--foreground-light);
+  }
+  .manual-refresh {
+    background-color: unset;
+    color: inherit;
+    padding: unset;
+    outline: unset;
+    border: unset;
+    &:disabled {
+      color: gray;
+      cursor: not-allowed !important;
+    }
+  }
 }
 
 /* Vulnerability Report */
@@ -332,6 +381,7 @@ td {
   padding: 5px;
   width: fit-content;
 }
+
 .pane-header:hover {
   background-color: rgba(128, 128, 128, 0.192);
 }
@@ -340,6 +390,7 @@ td {
   h1 {
     font-size: 15px;
   }
+
   p:first-of-type {
     margin-top: 25px;
     margin-bottom: 0;
@@ -351,67 +402,26 @@ td {
   }
 }
 
-// ---- filter --------------
-.scan-features {
+@import url('./screens/scan.scss');
+@import url('./screens/assess.scss');
+
+input {
+  height: calc(var(--input-height) * 1px);
+  padding: 2px 5px;
+}
+
+input:focus {
+  border-color: var(
+    --link-active-foreground
+  ) !important; /* Apply the border color on focus */
+  outline: none !important;
+  border-width: 1px !important; /* Ensure the width is set */
+  border-style: solid !important; /* Define the border style to ensure it is applied */
+}
+
+.dropdown-option-label {
   display: flex;
-  flex-direction: column;
-  gap: 25px;
-
-  .feature {
-    display: flex;
-    flex-direction: row;
-
-    .label {
-      width: 130px;
-    }
-
-    .feature-fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .filter-feature {
-      display: flex;
-      flex-direction: row;
-      gap: 50px;
-
-      .date-container {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-
-        .date-inner-container {
-          display: flex;
-          flex-direction: row;
-          gap: 10px;
-          align-items: center;
-
-          .date-datetime {
-            display: flex;
-            flex-direction: row;
-            gap: 10px;
-          }
-        }
-      }
-    }
-  }
-}
-
-// datepicker
-
-.date-picker {
-  height: 18px;
-  font-size: 12px;
-  min-width: 110px;
-}
-
-.editor-transparent {
-  background: none;
-  outline: none;
-  border: none;
-  &:disabled {
-    background-color: unset;
-  }
+  flex-direction: row;
+  gap: 3px;
+  align-items: center;
 }

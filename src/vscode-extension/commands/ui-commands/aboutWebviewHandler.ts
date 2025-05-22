@@ -43,7 +43,7 @@ class AboutWebviewPanel {
       ? (webviewPanel.iconPath = Uri.joinPath(
           globalExtentionUri.extensionUri,
           'assets',
-          'contrastIcon.png'
+          'CS_logo_white_bg.jpg'
         ))
       : null;
   }

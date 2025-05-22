@@ -20,7 +20,12 @@ import {
   ReducerTypes,
   SeverityOptionsType,
   StatusOptionsType,
+  ValidProjectType,
 } from '../../../../../common/types';
+import {
+  ContrastDropdown,
+  ContrastOption,
+} from '../../../../components/DropDown';
 
 function Filter() {
   // -------------------- Selectors ----------------------
@@ -28,7 +33,24 @@ function Filter() {
     (state: ReducerTypes) => state.scan.filters
   );
 
+  const fetchValidWorkspaceProjectNames = useSelector(
+    (state: ReducerTypes) => state.scan.validWorkspaceProjects
+  );
+
+  const fetchActiveProject = useSelector(
+    (state: ReducerTypes) => state.scan.activeProjectName
+  );
+
+  const fetchBackgroundVulnRunner = useSelector(
+    (state: ReducerTypes) => state.scan.backgroundVulnRunner
+  );
+
+  const fetchManualRefreshBackgroundVulnRunner = useSelector(
+    (state: ReducerTypes) => state.scan.manualRefreshBackgroundVulnRunner
+  );
+
   const i18nData = useSelector((state: ReducerTypes) => state.i10ln.data);
+
   // --------------------- States -------------------------
   const [severity, updateSeverity] = useState<FilterSeverity>(
     FilterData.severity
@@ -37,10 +59,57 @@ function Filter() {
   const [severityOptions, setSeverityOptions] =
     useState<SeverityOptionsType>(SeverityOptions);
   const [statusOptions, setStatusOptions] = useState<StatusOptionsType>([
-    ...StatusOptions,
+    ...StatusOptions.filter((item) => item.type !== 'FIXED'),
   ]);
   const [filterLocale, updateFilterLocale] = useState(FilterLocale);
+  const [runState, setRunState] = useState(true);
+  const [validWorkspaceProjectNames, setValidWorkspaceProjectNames] = useState<
+    ValidProjectType[]
+  >([]);
+  const [activeWorkspaceProjectName, setActiveWorkspaceProjectName] =
+    useState<string>('');
   // ------------------- Effects ----------------------------------
+  useEffect(() => {
+    if (
+      Array.isArray(fetchValidWorkspaceProjectNames) &&
+      fetchValidWorkspaceProjectNames.length > 0
+    ) {
+      setValidWorkspaceProjectNames(fetchValidWorkspaceProjectNames);
+      let activeProjectId = fetchValidWorkspaceProjectNames[0]?.id;
+      if (
+        fetchActiveProject !== null &&
+        fetchValidWorkspaceProjectNames.filter(
+          (item) => item.id === fetchActiveProject
+        ).length > 0
+      ) {
+        activeProjectId = fetchActiveProject;
+      }
+      setActiveWorkspaceProjectName(activeProjectId);
+    } else {
+      setValidWorkspaceProjectNames([]);
+    }
+  }, [fetchValidWorkspaceProjectNames, fetchActiveProject]);
+
+  useEffect(() => {}, [fetchActiveProject]);
+
+  useEffect(() => {
+    if (
+      fetchValidWorkspaceProjectNames !== null &&
+      fetchValidWorkspaceProjectNames !== undefined &&
+      fetchValidWorkspaceProjectNames.length > 0 &&
+      fetchBackgroundVulnRunner === false &&
+      fetchManualRefreshBackgroundVulnRunner === false
+    ) {
+      setRunState(false);
+    } else {
+      setRunState(true);
+    }
+  }, [
+    fetchBackgroundVulnRunner,
+    fetchValidWorkspaceProjectNames,
+    fetchManualRefreshBackgroundVulnRunner,
+  ]);
+
   useEffect(() => {
     if (i18nData !== null && 'filter' in i18nData) {
       const { severity, status } = i18nData?.filter;
@@ -61,13 +130,25 @@ function Filter() {
       updateFilterLocale(i18nData.filter);
     }
   }, [i18nData]);
+
   useEffect(() => {
     webviewPostMessage({
       command: WEBVIEW_COMMANDS.SCAN_GET_FILTERS,
       payload: [],
       screen: WEBVIEW_SCREENS.SCAN,
     });
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCAN_VALID_CONFIGURED_PROJECTS,
+      payload: [],
+      screen: WEBVIEW_SCREENS.SCAN,
+    });
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCAN_ACTIVE_PROJECT_NAME,
+      payload: [],
+      screen: WEBVIEW_SCREENS.SCAN,
+    });
   }, []);
+
   useEffect(() => {
     if (
       getPersistFilters !== null &&
@@ -90,6 +171,7 @@ function Filter() {
       });
     }
   }, [getPersistFilters]);
+
   // ------------------- Methods ---------------------------------
   const handleModify = (): void => {
     const payload: FilterType = {
@@ -97,11 +179,18 @@ function Filter() {
       status,
     };
     webviewPostMessage({
-      command: WEBVIEW_COMMANDS.SCAN_UPDATE_FILTERS,
-      payload: payload,
+      command: WEBVIEW_COMMANDS.SCAN_BACKGROUND_RUNNER,
+      payload: true,
       screen: WEBVIEW_SCREENS.SCAN,
     });
-    handleClear();
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCAN_UPDATE_FILTERS,
+      payload: {
+        activeWorkspaceProjectName,
+        ...payload,
+      },
+      screen: WEBVIEW_SCREENS.SCAN,
+    });
   };
 
   const handleClear = (): void => {
@@ -123,6 +212,35 @@ function Filter() {
     <>
       <div style={{ maxWidth: '900px' }}>
         <div className="scan-features">
+          <div className="feature">
+            <div className="label">{filterLocale.projectName?.translate}</div>
+            <div className="project-dropdown">
+              {validWorkspaceProjectNames !== null &&
+              validWorkspaceProjectNames.length > 0 ? (
+                <ContrastDropdown
+                  id="source"
+                  value={activeWorkspaceProjectName}
+                  onChange={(e: { value: string | string[] }) => {
+                    setActiveWorkspaceProjectName(e.value as string);
+                  }}
+                  hasSearchBox={true}
+                  noDataFoundMessage="No Projects Found"
+                >
+                  {validWorkspaceProjectNames?.map((item) => {
+                    return (
+                      <ContrastOption id={item.id} value={item.id}>
+                        {item.name}
+                      </ContrastOption>
+                    );
+                  })}
+                </ContrastDropdown>
+              ) : (
+                <span style={{ color: 'red' }}>
+                  {filterLocale.projectName?.placeholder}
+                </span>
+              )}
+            </div>
+          </div>
           <div className="feature">
             <div className="label">{filterLocale.severity.translate}</div>
             <div className="feature-fields">
@@ -157,7 +275,7 @@ function Filter() {
                     onChange={() =>
                       updateStatus({
                         ...status,
-                        [item.type]: !status[item.type],
+                        [item.type]: !(status[item.type] ?? false),
                       })
                     }
                   >
@@ -174,6 +292,7 @@ function Filter() {
             title={filterLocale.buttons.run.translate}
             color="btn-blue"
             onClick={handleModify}
+            isDisable={runState}
           />
           <Button
             title={filterLocale.buttons.clear.translate}

@@ -23,6 +23,7 @@ jest.mock('vscode', () => ({
   },
   workspace: {
     workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    onDidChangeConfiguration: jest.fn(),
   },
   TreeItem: class {
     [x: string]: { dark: Uri; light: Uri };
@@ -52,6 +53,12 @@ jest.mock('vscode', () => ({
   },
   Uri: {
     file: jest.fn().mockReturnValue('mockUri'),
+  },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
   },
 }));
 

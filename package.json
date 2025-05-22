@@ -1,15 +1,15 @@
 {
-  "name": "com-contrastsecurity-vscode",
+  "name": "com-contrastsecurity-ide",
   "displayName": "Contrast IDE",
-  "description": "By integrating the Contrast Security Visual Studio Code extension into your IDE you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your last vulnerability scan data, with actionable information on each of the vulnerabilities found",
-  "version": "1.0.0",
+  "description": "By integrating the Contrast Security Visual Studio Code extension into your IDE you can quickly map vulnerabilities to your source code directly at the file and line number by importing your IAST or SAST vulnerabilities from your latest sessions or scans, providing real-time actionable insight and remediatal guidance on each of the vulnerability found",
+  "version": "2.0.0",
   "publisher": "ContrastSecurityIDE",
   "aboutPage": {
     "title": "About Plugin",
-    "content": "<p class='about-ul'>By integrating the Contrast Security Visual Studio Code extension into your IDE, you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your last vulnerability scan data, with actionable information on each of the vulnerabilities found.</p><p>The IDE plugin provides these <strong>features</strong> : </p><ul class='about-ul'><li><strong>Comprehensive vulnerability analysis : </strong> The extension allows you to connect your IDE to the Contrast Platform and analyze scanned repositories directly within the IDE. View vulnerability summaries at the file and line level, highlighting risks and providing short remediation guidance. Follow links to the Contrast Platform for detailed how-to-fix information, including insights from Secure Code Warrior.</li><br><li><strong>Broad language and framework support : </strong> Contrast Security covers commonly supported languages.</li></ul>"
+    "content": "<p class='about-ul'>By integrating the Contrast Security Visual Studio Code extension into your IDE you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your IAST or SAST vulnerabilities from your latest sessions or scans getting actionable information on each of the vulnerabilities found.</p><p>The IDE plugin provides the following <strong>features</strong> : </p><ul class='about-ul'><li><strong>Comprehensive vulnerability analysis : </strong> The extension allows you to connect your IDE to the Contrast Platform and analyse any of your IAST Applications or SAST projects directly within the IDE. See vulnerability summaries right at the file and line number, highlighting the risk and providing a short summary of remediation you can take or follow the link back to the Contrast platform.</li><br><li><strong>Broad language and framework support : </strong> Contrast Security covers commonly supported languages.</li></ul>"
   },
   "engines": {
-    "vscode": "^1.93.0"
+    "vscode": "^1.96.0"
   },
   "os": [
     "win32",
@@ -19,7 +19,7 @@
   "bugs": {
     "url": "https://support.contrastsecurity.com/hc/en-us"
   },
-  "icon": "assets/contrastIcon.png",
+  "icon": "assets/CS_logo_white_bg.jpg",
   "pricing": "Free",
   "license": "Apache-2.0",
   "repository": {
@@ -56,7 +56,8 @@
     "commands": [
       {
         "command": "contrast.setting",
-        "title": "Contrast Settings"
+        "title": "Contrast Settings",
+        "enablement": "contrast.tab.blocker"
       },
       {
         "command": "contrast.scan",
@@ -64,8 +65,8 @@
         "enablement": "contrast.tab.blocker"
       },
       {
-        "command": "contrast.retrieveVul",
-        "title": "Retrieve Vulnerability",
+        "command": "contrast.assess",
+        "title": "Contrast Assess",
         "enablement": "contrast.tab.blocker"
       },
       {
@@ -77,7 +78,7 @@
       "activitybar": [
         {
           "id": "ContrastActivityBar",
-          "icon": "/assets/contrastIcon.png",
+          "icon": "/assets/CS_logo_RGB_IDE.svg",
           "title": "Contrast"
         }
       ],
@@ -120,6 +121,9 @@
             "ERROR"
           ],
           "description": "Set the logging level for the extension."
+        },
+        "contrastSecurity.globalSharing": {
+          "type": "string"
         }
       }
     }
@@ -154,7 +158,8 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "@types/redux-mock-store": "^1.0.6",
-    "@types/vscode": "^1.93.0",
+    "@types/uuid": "^10.0.0",
+    "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
     "@vscode/test-cli": "^0.0.10",

@@ -1,4 +1,4 @@
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import ContrastStore from '../../../webview/utils/redux/store';
 import Setting from '../../../webview/screens/Setting/Setting';
@@ -27,7 +27,7 @@ describe('Settings', () => {
     const organizationId = container.querySelector('#organizationId');
     const projectList = container.querySelector('#projects');
 
-    expect(source).toHaveTextContent('Scan');
+    expect(source).toHaveTextContent('Assess');
     expect(contrastURL).toHaveTextContent('');
     expect(userName).toHaveTextContent('');
     expect(serviceKey).toHaveTextContent('');
@@ -38,7 +38,7 @@ describe('Settings', () => {
     // Fire events on elements and validate behavior
     if (source) {
       fireEvent.click(source);
-      expect(source).toHaveTextContent('Scan');
+      expect(source).toHaveTextContent('Assess');
     }
 
     if (contrastURL) {
@@ -117,16 +117,16 @@ describe('Settings', () => {
 
     (webviewPostMessage as jest.Mock).mockReturnValue(true);
 
-    expect(webviewPostMessage).toHaveBeenCalledTimes(3);
+    expect(webviewPostMessage).toHaveBeenCalledTimes(5);
     expect(webviewPostMessage).toHaveBeenCalledWith(
       expect.objectContaining({
-        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
+        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_APPLICATIONS,
         payload: expect.objectContaining({
           apiKey: 'PQRS1234TUV5678',
           contrastURL: 'https://xyz.com',
           organizationId: '123-XYZ-456-ABC-789',
           serviceKey: 'ABCDEFGHIJ',
-          source: 'scan',
+          source: 'assess',
           userName: 'xyz@xyz.com',
         }),
       })
@@ -251,16 +251,16 @@ describe('Settings', () => {
 
     (webviewPostMessage as jest.Mock).mockReturnValue(true);
 
-    expect(webviewPostMessage).toHaveBeenCalledTimes(7);
+    expect(webviewPostMessage).toHaveBeenCalledTimes(13);
     expect(webviewPostMessage).toHaveBeenCalledWith(
       expect.objectContaining({
-        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_PROJECTS,
+        command: WEBVIEW_COMMANDS.SETTING_GET_ALL_APPLICATIONS,
         payload: expect.objectContaining({
           apiKey: 'PQRS1234TUV5678',
           contrastURL: 'https://xyz.com',
           organizationId: '123-XYZ-456-ABC-789',
           serviceKey: 'ABCDEFGHIJ',
-          source: 'scan',
+          source: 'assess',
           userName: 'xyz@xyz.com',
         }),
       })
@@ -336,7 +336,7 @@ describe('Settings', () => {
     if (saveButton) {
       fireEvent.click(saveButton);
 
-      expect(webviewPostMessage).toHaveBeenCalledTimes(11);
+      expect(webviewPostMessage).toHaveBeenCalledTimes(21);
     } else {
       console.error('error a new project');
     }
@@ -367,5 +367,51 @@ describe('Settings', () => {
     fireEvent.change(input, { target: { name: 'minute', value: '5000' } });
 
     expect(input).toHaveValue('1440');
+  });
+
+  xit("Should update the dropdown label to 'Assess' and display 'Application Name' when 'Assess' is selected.", async () => {
+    const { container, getByText } = render(
+      <Provider store={ContrastStore}>
+        <Setting />
+      </Provider>
+    );
+
+    const source = container.querySelector('#source');
+    expect(source).toBeInTheDocument();
+
+    fireEvent.click(source!);
+
+    const assessOption = await waitFor(() => getByText('Assess'));
+    fireEvent.click(assessOption);
+
+    await waitFor(() => {
+      expect(source).toHaveTextContent('Assess');
+    });
+    await waitFor(() => {
+      expect(getByText('Application Name')).toBeInTheDocument();
+    });
+  });
+
+  xit("Should update the dropdown label to 'Scan' and display 'Project Name' when 'Assess' is selected.", async () => {
+    const { container, getByText } = render(
+      <Provider store={ContrastStore}>
+        <Setting />
+      </Provider>
+    );
+
+    const source = container.querySelector('#source');
+    expect(source).toBeInTheDocument();
+
+    fireEvent.click(source!);
+
+    const assessOption = await waitFor(() => getByText('Scan'));
+    fireEvent.click(assessOption);
+
+    await waitFor(() => {
+      expect(source).toHaveTextContent('Scan');
+    });
+    await waitFor(() => {
+      expect(getByText('Project Name')).toBeInTheDocument();
+    });
   });
 });
