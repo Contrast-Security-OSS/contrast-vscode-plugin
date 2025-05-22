@@ -664,7 +664,7 @@ export type MostRecentMetaData = {
 export type AssessFilterState = {
   configuredApplications: ApiResponse | null;
   serverListbyOrgId: ApiResponse | null;
-  builNumber: ApiResponse | null;
+  buildNumber: ApiResponse | null;
   customSessionMetaData: ApiResponse | null;
   mostRecentMetaData: ApiResponse | null;
   filters: ApiResponse | null;

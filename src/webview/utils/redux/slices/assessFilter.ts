@@ -3,7 +3,7 @@ import { AssessFilterState } from '../../../../common/types';
 
 const assessFilterState: AssessFilterState = {
   configuredApplications: null,
-  builNumber: null,
+  buildNumber: null,
   customSessionMetaData: null,
   mostRecentMetaData: null,
   serverListbyOrgId: null,
@@ -29,8 +29,8 @@ const assessFilterSlice = createSlice({
     getServerListbyOrgId: (state, action) => {
       state.serverListbyOrgId = action.payload;
     },
-    getBuilNumber: (state, action) => {
-      state.builNumber = action.payload;
+    getBuildNumber: (state, action) => {
+      state.buildNumber = action.payload;
     },
     getCustomSessionMetaData: (state, action) => {
       state.customSessionMetaData = action.payload;
@@ -74,7 +74,7 @@ const assessFilterSlice = createSlice({
 export const {
   getConfiguredApplications,
   getServerListbyOrgId,
-  getBuilNumber,
+  getBuildNumber,
   getCustomSessionMetaData,
   getMostRecentMetaData,
   getAssessFilters,

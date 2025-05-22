@@ -55,7 +55,7 @@ export enum WEBVIEW_COMMANDS {
   // Assess
   GET_CONFIGURED_APPLICATIONS = 'getConfiguredApplications',
   GET_SERVER_LIST_BY_ORG_ID = 'getServerListbyOrgId',
-  GET_BUILD_NUMBER = 'getBuilNumber',
+  GET_BUILD_NUMBER = 'getBuildNumber',
   GET_CUSTOM_SESSION_METADATA = 'getCustomSessionMetaData',
   GET_MOST_RECENT_METADATA = 'getMostRecentMetaData',
   COMMON_MESSAGE = 'commonMessage',

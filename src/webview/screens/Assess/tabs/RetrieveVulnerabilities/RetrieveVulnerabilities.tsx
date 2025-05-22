@@ -49,7 +49,7 @@ import { RadioGroup } from '../../../../components/RadioGroup';
 import { useDateTime } from '../../../../hooks/useDateTime';
 import ContrastStore from '../../../../utils/redux/store';
 import {
-  getBuilNumber,
+  getBuildNumber,
   getCustomSessionMetaData,
   getMostRecentMetaData,
   getServerListbyOrgId,
@@ -100,7 +100,7 @@ function RetrieveVulnerabilties() {
   );
 
   const fetchBuildNumber = useSelector(
-    (state: ReducerTypes) => state.assessFilter.builNumber
+    (state: ReducerTypes) => state.assessFilter.buildNumber
   );
 
   const fetchCustomSessionMetaData = useSelector(
@@ -481,7 +481,7 @@ function RetrieveVulnerabilties() {
       }
     } else {
       ContrastStore.dispatch(getServerListbyOrgId(null));
-      ContrastStore.dispatch(getBuilNumber(null));
+      ContrastStore.dispatch(getBuildNumber(null));
       ContrastStore.dispatch(getCustomSessionMetaData(null));
       ContrastStore.dispatch(getMostRecentMetaData(null));
     }

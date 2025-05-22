@@ -36,7 +36,7 @@ import {
   setVulnerabilityReport,
 } from './utils/redux/slices/ScanFilter';
 import {
-  getBuilNumber,
+  getBuildNumber,
   getCustomSessionMetaData,
   getMostRecentMetaData,
   getServerListbyOrgId,
@@ -214,7 +214,7 @@ const handleMessage = (event: MessageEvent): void => {
       break;
     case WEBVIEW_COMMANDS.GET_BUILD_NUMBER:
       {
-        ContrastStore.dispatch(getBuilNumber(data));
+        ContrastStore.dispatch(getBuildNumber(data));
       }
       break;
     case WEBVIEW_COMMANDS.GET_CUSTOM_SESSION_METADATA:

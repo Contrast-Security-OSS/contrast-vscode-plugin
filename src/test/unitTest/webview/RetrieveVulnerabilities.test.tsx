@@ -5,7 +5,7 @@ import { configureStore, Store, UnknownAction } from '@reduxjs/toolkit';
 import {
   AssessFilterReducer,
   getAssessFilters,
-  getBuilNumber,
+  getBuildNumber,
   getConfiguredApplications,
   getCustomSessionMetaData,
   getServerListbyOrgId,
@@ -66,7 +66,7 @@ describe('Retrieve Vulnerabilities', () => {
     data: Array<Record<string, string | number>>
   ) => {
     store.dispatch(
-      getBuilNumber({
+      getBuildNumber({
         code: 200,
         responseData: data,
       })
@@ -185,7 +185,7 @@ describe('Retrieve Vulnerabilities', () => {
 
     await waitFor(() => {
       expect(webviewPostMessage).toHaveBeenCalledWith({
-        command: 'getBuilNumber',
+        command: 'getBuildNumber',
         payload: { ...configuredProject2, source: 'assess' },
         screen: 'CONFIGURE_ASSESS',
       });
@@ -265,7 +265,7 @@ describe('Retrieve Vulnerabilities', () => {
           });
 
           expect(webviewPostMessage).toHaveBeenCalledWith({
-            command: 'getBuilNumber',
+            command: 'getBuildNumber',
             payload: { ...configuredProject2, source: 'assess' },
             screen: 'CONFIGURE_ASSESS',
           });
