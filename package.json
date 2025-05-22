@@ -1,5 +1,5 @@
 {
-  "name": "com-contrastsecurity-ide",
+  "name": "com-contrastsecurity-vscode",
   "displayName": "Contrast IDE",
   "description": "By integrating the Contrast Security Visual Studio Code extension into your IDE you can quickly map vulnerabilities to your source code directly at the file and line number by importing your IAST or SAST vulnerabilities from your latest sessions or scans, providing real-time actionable insight and remediatal guidance on each of the vulnerability found",
   "version": "2.0.0",
