@@ -170,7 +170,7 @@ describe('getVulnerabilitiesRefreshCycle', () => {
           severity: '',
           filePath: '',
           howToFix: {
-            recommendation: { text: '' },
+            recommendation: { formattedText: '' },
             custom_recommendation: { text: '' },
             owasp: '',
             cwe: '',
@@ -212,7 +212,7 @@ describe('getVulnerabilitiesRefreshCycle', () => {
           severity: '',
           filePath: '',
           howToFix: {
-            recommendation: { text: '' },
+            recommendation: { formattedText: '' },
             custom_recommendation: { text: '' },
             owasp: '',
             cwe: '',
@@ -259,7 +259,7 @@ describe('getVulnerabilitiesRefreshCycle', () => {
           severity: '',
           filePath: '',
           howToFix: {
-            recommendation: { text: '' },
+            recommendation: { formattedText: '' },
             custom_recommendation: { text: '' },
             owasp: '',
             cwe: '',
@@ -296,7 +296,7 @@ describe('getVulnerabilitiesRefreshCycle', () => {
           severity: '',
           filePath: '',
           howToFix: {
-            recommendation: { text: '' },
+            recommendation: { formattedText: '' },
             custom_recommendation: { text: '' },
             owasp: '',
             cwe: '',
@@ -338,7 +338,7 @@ describe('getVulnerabilitiesRefreshCycle', () => {
           severity: '',
           filePath: '',
           howToFix: {
-            recommendation: { text: '' },
+            recommendation: { formattedText: '' },
             custom_recommendation: { text: '' },
             owasp: '',
             cwe: '',
@@ -377,7 +377,7 @@ describe('getVulnerabilitiesRefreshCycle', () => {
           severity: '',
           filePath: '',
           howToFix: {
-            recommendation: { text: '' },
+            recommendation: { formattedText: '' },
             custom_recommendation: { text: '' },
             owasp: '',
             cwe: '',

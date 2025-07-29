@@ -24,8 +24,15 @@ jest.mock('vscode', () => ({
     language: 'en',
     appName: 'VSCode',
   },
+  commands: {
+    registerCommand: jest.fn(),
+  },
+  languages: {
+    registerHoverProvider: jest.fn(),
+  },
   workspace: {
     workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    onDidChangeConfiguration: jest.fn(),
   },
   window: {
     showInformationMessage: jest.fn(),
@@ -67,6 +74,38 @@ jest.mock('cache-manager', () => ({
     reset: jest.fn(),
   }),
 }));
+
+jest.mock('../../../vscode-extension/utils/commonUtil', () => ({
+  getOpenedFolderName: jest.fn(),
+  getCacheFilterData: jest.fn(),
+}));
+
+jest.mock(
+  '../../../vscode-extension/commands/ui-commands/openActivityBar',
+  () => ({
+    registerContrastActivityBar: {
+      postMessage: jest.fn(),
+    },
+  })
+);
+
+jest.mock('../../../vscode-extension/utils/toggleContrastPanel', () => ({
+  toggleContrastPanel: jest.fn(),
+}));
+
+jest.mock('../../../vscode-extension/utils/commonUtil', () => ({
+  getOpenedFolderName: jest.fn(),
+  getCacheFilterData: jest.fn(),
+}));
+
+jest.mock(
+  '../../../vscode-extension/commands/ui-commands/openActivityBar',
+  () => ({
+    registerContrastActivityBar: {
+      postMessage: jest.fn(),
+    },
+  })
+);
 
 jest.mock(
   '../../../vscode-extension/commands/ui-commands/webviewHandler',

@@ -6,11 +6,11 @@ import {
   sessionMetaDatas,
   SeverityOptions,
   StatusOptions,
-} from '../../../../utils/constant';
+} from '../../../../../utils/constant';
 import {
   ContrastDropdown,
   ContrastOption,
-} from '../../../../components/DropDown';
+} from '../../../../../components/DropDown';
 import {
   AssessFilter,
   AssessVulnerabilitiesType,
@@ -30,30 +30,32 @@ import {
   SeverityOptionsType,
   StatusOptionsType,
   TimeSlotOption,
-} from '../../../../../common/types';
-import { Button } from '../../../../components/Button';
-import { ContrastCheckbox } from '../../../../components/Checkbox';
-import { DatePicker } from '../../../../components/DatePicker';
+} from '../../../../../../common/types';
+import { Button } from '../../../../../components/Button';
+import { ContrastCheckbox } from '../../../../../components/Checkbox';
+import { DatePicker } from '../../../../../components/DatePicker';
 import {
   convertTimeFormat,
   getTimeRange,
   getCurrentDateString,
-} from '../../../../utils/helper';
+} from '../../../../../utils/helper';
 import { useSelector } from 'react-redux';
 import {
   WEBVIEW_COMMANDS,
   WEBVIEW_SCREENS,
-} from '../../../../../vscode-extension/utils/constants/commands';
-import { webviewPostMessage } from '../../../../utils/postMessage';
-import { RadioGroup } from '../../../../components/RadioGroup';
-import { useDateTime } from '../../../../hooks/useDateTime';
-import ContrastStore from '../../../../utils/redux/store';
+} from '../../../../../../vscode-extension/utils/constants/commands';
+import { webviewPostMessage } from '../../../../../utils/postMessage';
+import { RadioGroup } from '../../../../../components/RadioGroup';
+import { useDateTime } from '../../../../../hooks/useDateTime';
+import ContrastStore from '../../../../../utils/redux/store';
 import {
+  getAssessEnvironmentsList,
+  getAssessTagsList,
   getBuildNumber,
   getCustomSessionMetaData,
   getMostRecentMetaData,
   getServerListbyOrgId,
-} from '../../../../utils/redux/slices/assessFilter';
+} from '../../../../../utils/redux/slices/assessFilter';
 
 interface ApplicationEventRes {
   value: string | string[];
@@ -63,6 +65,8 @@ const initialState = {
   application: true,
   server: true,
   buildNumber: true,
+  environments: true,
+  tags: true,
   dateTime: true,
   noneSessionMetaData: true,
   customSessionMetaData: true,
@@ -72,7 +76,7 @@ const initialState = {
 type FieldKeys = keyof typeof initialState;
 type Action = { key: FieldKeys; value: boolean };
 
-function RetrieveVulnerabilties() {
+function AssessFilterComponent() {
   // ----------- useSelector -----------------
   const i18nData = useSelector((state: ReducerTypes) => state.i10ln.data);
 
@@ -81,10 +85,6 @@ function RetrieveVulnerabilties() {
   );
   const fetchBackgroundVulnRunner = useSelector(
     (state: ReducerTypes) => state.assessFilter.backgroundVulnRunner
-  );
-  const fetchManualRefreshBackgroundVulnRunner = useSelector(
-    (state: ReducerTypes) =>
-      state.assessFilter.manualRefreshBackgroundVulnRunner
   );
 
   const fetchRefreshBackgroundVulnRunnerAcrossIds = useSelector(
@@ -103,6 +103,14 @@ function RetrieveVulnerabilties() {
     (state: ReducerTypes) => state.assessFilter.buildNumber
   );
 
+  const fetchEnvironments = useSelector(
+    (state: ReducerTypes) => state.assessFilter.assessEnvironments
+  );
+
+  const fetchTags = useSelector(
+    (state: ReducerTypes) => state.assessFilter.assessTags
+  );
+
   const fetchCustomSessionMetaData = useSelector(
     (state: ReducerTypes) => state.assessFilter.customSessionMetaData
   );
@@ -119,6 +127,8 @@ function RetrieveVulnerabilties() {
   );
   const [serverList, setServerList] = useState<Server[]>([]);
   const [buildNumberList, setBuildNumberList] = useState<BuildNumber[]>([]);
+  const [tagsList, setTagsList] = useState<BuildNumber[]>([]);
+  const [environmentList, setEnvironmentsList] = useState<BuildNumber[]>([]);
   const [sessionMetaData, setSessionMetaData] = useReducer(
     (
       state: typeof sessionMetaDatas,
@@ -159,6 +169,8 @@ function RetrieveVulnerabilties() {
     useState<ApplicationEventRes>();
   const [activeServer, setActiveServer] = useState<string[]>([]);
   const [activeBuildNumber, setActiveBuildNumber] = useState<string>('');
+  const [activeEnvironment, setActiveEnvironment] = useState<string[]>([]);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [activeSessionMetadata, setActiveSessionMetadata] = useState('1');
   const [customSessionMetadata, cloneCustomSessionMetadata] =
     useState<CustomSessionMetaData[]>();
@@ -272,18 +284,18 @@ function RetrieveVulnerabilties() {
     if (i18nData === null || i18nData === undefined) {
       return;
     }
-    const { retrieveVul, tooltips, buttons } =
+    const { filters, tooltips, buttons } =
       i18nData as unknown as ContrastAssessLocale;
-    if (retrieveVul === null) {
+    if (filters.assess === null) {
       return;
     }
 
     updateFilterLocale({
-      retrieveVul,
+      filters,
       buttons,
       tooltips,
     });
-    const formFields = retrieveVul?.formFields;
+    const formFields = filters?.assess?.formFields;
     const i18nSeverityOptions = severityOptions.map((item, index) => {
       return {
         ...item,
@@ -300,7 +312,7 @@ function RetrieveVulnerabilties() {
     setStatusOptions(i18nStatusOptions);
     const sessionMetaData = [...sessionMetaDatas];
     sessionMetaData.forEach((meta) => {
-      retrieveVul?.formFields?.session_metadata?.options?.forEach((item) => {
+      filters.assess?.formFields?.session_metadata?.options?.forEach((item) => {
         if (meta.id === item.name) {
           meta.label = item.translate;
         }
@@ -421,9 +433,12 @@ function RetrieveVulnerabilties() {
       });
       clearServer();
       clearBuildNumber();
+      clearEnvironment();
+      clearTags();
       setActiveBuildNumber('');
+      setActiveEnvironment([]);
       setActiveServer([]);
-
+      setActiveTags([]);
       updateSeverity(FilterData.severity);
       updateStatus({
         REPORTED: FilterData.status.REPORTED,
@@ -452,7 +467,7 @@ function RetrieveVulnerabilties() {
           disabled: true,
         });
         setRefreshState({
-          ...runState,
+          ...refreshState,
           disabled: true,
         });
       }
@@ -482,6 +497,8 @@ function RetrieveVulnerabilties() {
     } else {
       ContrastStore.dispatch(getServerListbyOrgId(null));
       ContrastStore.dispatch(getBuildNumber(null));
+      ContrastStore.dispatch(getAssessEnvironmentsList(null));
+      ContrastStore.dispatch(getAssessTagsList(null));
       ContrastStore.dispatch(getCustomSessionMetaData(null));
       ContrastStore.dispatch(getMostRecentMetaData(null));
     }
@@ -547,6 +564,68 @@ function RetrieveVulnerabilties() {
       setActiveBuildNumber('');
     }
   }, [fetchBuildNumber]);
+
+  useEffect(() => {
+    if (
+      fetchEnvironments !== null &&
+      fetchEnvironments !== undefined &&
+      fetchEnvironments.responseData !== null &&
+      (fetchEnvironments.responseData as Array<object>).length > 0
+    ) {
+      const response = fetchEnvironments?.responseData as BuildNumber[];
+      setEnvironmentsList(response);
+      setAreFieldsDisabled({ key: 'environments', value: false });
+      if (response.length > 0) {
+        if (dataPersist.isPersisiting && dataPersist?.data !== null) {
+          const { environments } = dataPersist?.data;
+          if (environments !== null && environments !== undefined) {
+            const getEnvironment = environments;
+            setActiveEnvironment(getEnvironment);
+          } else {
+            setAreFieldsDisabled({ key: 'environments', value: true });
+            setEnvironmentsList([]);
+            setActiveEnvironment([]);
+          }
+        } else {
+          setActiveEnvironment([response[0].keycode]);
+        }
+      }
+    } else {
+      setEnvironmentsList([]);
+      setActiveEnvironment([]);
+    }
+  }, [fetchEnvironments, getPersistFilters]);
+
+  useEffect(() => {
+    if (
+      fetchTags !== null &&
+      fetchTags !== undefined &&
+      fetchTags.responseData !== null &&
+      (fetchTags.responseData as Array<object>).length > 0
+    ) {
+      const response = fetchTags?.responseData as BuildNumber[];
+      setAreFieldsDisabled({ key: 'tags', value: false });
+      setTagsList(response);
+      if (response.length > 0) {
+        if (dataPersist.isPersisiting && dataPersist?.data !== null) {
+          const { tags } = dataPersist?.data;
+          if (tags !== null && tags !== undefined) {
+            const getTags = tags;
+            setActiveTags(getTags);
+          } else {
+            setAreFieldsDisabled({ key: 'tags', value: true });
+            setTagsList([]);
+            setActiveTags([]);
+          }
+        } else {
+          setActiveTags([response[0].keycode]);
+        }
+      }
+    } else {
+      setTagsList([]);
+      setActiveTags([]);
+    }
+  }, [fetchTags]);
 
   useEffect(() => {
     if (
@@ -695,7 +774,6 @@ function RetrieveVulnerabilties() {
         ...prevState,
         disabled:
           fetchBackgroundVulnRunner ||
-          fetchManualRefreshBackgroundVulnRunner ||
           fetchRefreshBackgroundVulnRunnerAcrossIds ||
           state.fetching,
       }));
@@ -705,7 +783,7 @@ function RetrieveVulnerabilties() {
     updateState(setRunState, runState);
   }, [
     fetchBackgroundVulnRunner,
-    fetchManualRefreshBackgroundVulnRunner,
+
     fetchRefreshBackgroundVulnRunnerAcrossIds,
     refreshState.fetching,
     buildClearState.fetching,
@@ -731,6 +809,17 @@ function RetrieveVulnerabilties() {
     setActiveBuildNumber('');
     setBuildNumberList([]);
   };
+
+  const clearEnvironment = () => {
+    setActiveEnvironment([]);
+    setEnvironmentsList([]);
+  };
+
+  const clearTags = () => {
+    setActiveTags([]);
+    setTagsList([]);
+  };
+
   const clearSessionMetadata = () => {
     setDefaultSessionMetadata({
       systemProperties: [],
@@ -775,6 +864,8 @@ function RetrieveVulnerabilties() {
       });
       setAreFieldsDisabled({ key: 'server', value: true });
       setAreFieldsDisabled({ key: 'buildNumber', value: true });
+      setAreFieldsDisabled({ key: 'environments', value: true });
+      setAreFieldsDisabled({ key: 'tags', value: true });
       webviewPostMessage({
         command: WEBVIEW_COMMANDS.GET_SERVER_LIST_BY_ORG_ID,
         payload: additionalProps,
@@ -783,6 +874,18 @@ function RetrieveVulnerabilties() {
 
       webviewPostMessage({
         command: WEBVIEW_COMMANDS.GET_BUILD_NUMBER,
+        payload: additionalProps,
+        screen: WEBVIEW_SCREENS.ASSESS,
+      });
+
+      webviewPostMessage({
+        command: WEBVIEW_COMMANDS.GET_ASSESS_ENVIRONMENTS,
+        payload: additionalProps,
+        screen: WEBVIEW_SCREENS.ASSESS,
+      });
+
+      webviewPostMessage({
+        command: WEBVIEW_COMMANDS.GET_ASSESS_TAGS,
         payload: additionalProps,
         screen: WEBVIEW_SCREENS.ASSESS,
       });
@@ -807,6 +910,8 @@ function RetrieveVulnerabilties() {
   ) => {
     setServerList([]);
     setBuildNumberList([]);
+    setEnvironmentsList([]);
+    setTagsList([]);
     if (projectChangesCount > 0) {
       setDataPersist({
         data: null,
@@ -836,6 +941,14 @@ function RetrieveVulnerabilties() {
     setActiveServer(e.value as string[]);
   };
 
+  const handleEnvironmentChange = (e: { value: string | string[] }) => {
+    setActiveEnvironment(e.value as string[]);
+  };
+
+  const handleTagsChange = (e: { value: string | string[] }) => {
+    setActiveTags(e.value as string[]);
+  };
+
   const handleBuildNumberChange = (e: { value: string | string[] }) => {
     setActiveBuildNumber(e.value as string);
   };
@@ -847,16 +960,13 @@ function RetrieveVulnerabilties() {
     });
     setServerList([]);
     setBuildNumberList([]);
+    setEnvironmentsList([]);
+    setTagsList([]);
+
     setActiveServer([]);
     setActiveBuildNumber('');
-    webviewPostMessage({
-      command: WEBVIEW_COMMANDS.COMMON_MESSAGE,
-      payload: {
-        data: 'loadingFilters',
-        time: Math.random() * 10,
-      },
-      screen: WEBVIEW_SCREENS.ASSESS,
-    });
+    setActiveEnvironment([]);
+    setActiveTags([]);
     cloneCustomSessionMetadata([]);
     clearSessionMetadata();
     if (currentApplication !== undefined) {
@@ -876,17 +986,30 @@ function RetrieveVulnerabilties() {
     });
   };
 
+  const clearReduxData = () => {
+    ContrastStore.dispatch(getServerListbyOrgId(null));
+    ContrastStore.dispatch(getBuildNumber(null));
+    ContrastStore.dispatch(getAssessEnvironmentsList(null));
+    ContrastStore.dispatch(getAssessTagsList(null));
+    ContrastStore.dispatch(getCustomSessionMetaData(null));
+    ContrastStore.dispatch(getMostRecentMetaData(null));
+  };
+
   const handleBuildClearChange = () => {
     setDataPersist({
       data: null,
       isPersisiting: false,
     });
     clearBuildNumber();
-
     clearServer();
+    clearEnvironment();
+    clearTags();
 
     setAreFieldsDisabled({ key: 'buildNumber', value: true });
     setAreFieldsDisabled({ key: 'server', value: true });
+    setAreFieldsDisabled({ key: 'environments', value: true });
+    setAreFieldsDisabled({ key: 'tags', value: true });
+    clearReduxData();
   };
 
   const handleDateRangeFilterUpdate = (e: { value: string | string[] }) => {
@@ -1031,12 +1154,23 @@ function RetrieveVulnerabilties() {
   };
 
   const handleClearAll = () => {
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.COMMON_MESSAGE,
+      payload: {
+        data: 'vulnerabilityClear',
+        time: Math.random() * 10,
+      },
+      screen: WEBVIEW_SCREENS.ASSESS,
+    });
+
     setDataPersist({
       data: null,
       isPersisiting: false,
     });
+    clearEnvironment();
     clearServer();
     clearBuildNumber();
+    clearTags();
     const updatedSeverity = { ...severity };
     const updatedStatus = { ...status };
 
@@ -1048,17 +1182,22 @@ function RetrieveVulnerabilties() {
       updatedStatus[item.type] = false;
     });
 
+    setActiveEnvironment([]);
     setActiveDateTimeFilter('1');
     setActiveBuildNumber('');
     setActiveServer([]);
+    setActiveTags([]);
     updateSeverity(updatedSeverity);
     updateStatus(updatedStatus);
 
     clearDateTime();
     clearSessionMetadata();
+    setAreFieldsDisabled({ key: 'environments', value: true });
     setAreFieldsDisabled({ key: 'server', value: true });
     setAreFieldsDisabled({ key: 'buildNumber', value: true });
+    setAreFieldsDisabled({ key: 'tags', value: true });
     setAreFieldsDisabled({ key: 'dateTime', value: true });
+    clearReduxData();
   };
 
   const handleSave = () => {
@@ -1097,6 +1236,12 @@ function RetrieveVulnerabilties() {
 
     if (serverList.length > 0 && activeServer.length > 0) {
       payload.servers = activeServer as string[];
+    }
+    if (environmentList.length > 0 && environmentList.length > 0) {
+      payload.environments = activeEnvironment as unknown as string[];
+    }
+    if (activeTags.length > 0 && activeTags.length > 0) {
+      payload.tags = activeTags as string[];
     }
     if (buildNumberList.length > 0 && activeBuildNumber) {
       payload.appVersionTags = [activeBuildNumber as string];
@@ -1154,32 +1299,19 @@ function RetrieveVulnerabilties() {
     }
 
     webviewPostMessage({
-      command: WEBVIEW_COMMANDS.ASSESS_BACKGROUND_RUNNER,
-      payload: true,
-      screen: WEBVIEW_SCREENS.ASSESS,
-    });
-
-    webviewPostMessage({
       command: WEBVIEW_COMMANDS.ASSESS_UPDATE_FILTERS,
       payload: payload,
       screen: WEBVIEW_SCREENS.ASSESS,
     });
-
-    setTimeout(() => {
-      webviewPostMessage({
-        command: WEBVIEW_COMMANDS.ASSESS_GET_ALL_FILES_VULNERABILITY,
-        payload: payload,
-        screen: WEBVIEW_SCREENS.ASSESS,
-      });
-    }, 400);
   };
   // ------------- Render ----------------------
   return (
     <div style={{ maxWidth: '900px' }}>
       <div className="assess-filter-features">
+        {/* Application */}
         <div className="feature">
           <div className="label">
-            {filterLocale?.retrieveVul?.formFields?.application?.translate}
+            {filterLocale?.filters.assess?.formFields?.application?.translate}
           </div>
           <div className="dropdowns">
             <ContrastDropdown
@@ -1190,7 +1322,8 @@ function RetrieveVulnerabilties() {
               }}
               isDisabled={areFieldsDisabled.application}
               placeHolder={
-                filterLocale?.retrieveVul?.formFields?.application?.placeholder
+                filterLocale?.filters.assess?.formFields?.application
+                  ?.placeholder
               }
               hasSearchBox={true}
             >
@@ -1208,10 +1341,51 @@ function RetrieveVulnerabilties() {
             </ContrastDropdown>
           </div>
         </div>
+        {/* Environments */}
         <div className="feature">
           <div className="label">
             {
-              filterLocale?.retrieveVul?.formFields?.server?.noServerFound
+              filterLocale?.filters.assess?.formFields?.environments
+                ?.noEnvironmentFound?.translate
+            }
+          </div>
+          <div className="dropdowns">
+            <ContrastDropdown
+              id="environments"
+              value={activeEnvironment}
+              onChange={(e: { value: string | string[] }) => {
+                handleEnvironmentChange(e);
+              }}
+              placeHolder={
+                environmentList.length >= 1
+                  ? filterLocale?.filters.assess?.formFields?.environments
+                      ?.selectEnvironment?.placeholder
+                  : filterLocale?.filters.assess?.formFields?.environments
+                      ?.noEnvironmentFound?.placeholder
+              }
+              isDisabled={areFieldsDisabled.environments}
+              hasSearchBox={true}
+              isMultiSelect={true}
+              isClearable={true}
+            >
+              {environmentList.map((item, index: number) => {
+                return (
+                  <ContrastOption
+                    id={index.toString()}
+                    value={`${item.keycode}`}
+                  >
+                    {item.label}
+                  </ContrastOption>
+                );
+              })}
+            </ContrastDropdown>
+          </div>
+        </div>
+        {/* Server */}
+        <div className="feature">
+          <div className="label">
+            {
+              filterLocale?.filters.assess?.formFields?.server?.noServerFound
                 ?.translate
             }
           </div>
@@ -1224,10 +1398,10 @@ function RetrieveVulnerabilties() {
               }}
               placeHolder={
                 serverList.length >= 1
-                  ? filterLocale?.retrieveVul?.formFields?.server?.selectServer
-                      ?.placeholder
-                  : filterLocale?.retrieveVul?.formFields?.server?.noServerFound
-                      ?.placeholder
+                  ? filterLocale?.filters.assess?.formFields?.server
+                      ?.selectServer?.placeholder
+                  : filterLocale?.filters.assess?.formFields?.server
+                      ?.noServerFound?.placeholder
               }
               isDisabled={areFieldsDisabled.server}
               hasSearchBox={true}
@@ -1247,124 +1421,10 @@ function RetrieveVulnerabilties() {
             </ContrastDropdown>
           </div>
         </div>
+        {/* DataRange */}
         <div className="feature">
           <div className="label">
-            {
-              filterLocale?.retrieveVul?.formFields?.buildNumber
-                ?.noBuildNumberFound?.translate
-            }
-          </div>
-          <div className="build-feature">
-            <div className="dropdowns">
-              <ContrastDropdown
-                id="buildNumber"
-                value={activeBuildNumber}
-                onChange={(e: { value: string | string[] }) => {
-                  handleBuildNumberChange(e);
-                }}
-                placeHolder={
-                  buildNumberList.length >= 1
-                    ? filterLocale?.retrieveVul?.formFields?.buildNumber
-                        ?.selectBuildNumber?.placeholder
-                    : filterLocale?.retrieveVul?.formFields?.buildNumber
-                        ?.noBuildNumberFound?.placeholder
-                }
-                isDisabled={areFieldsDisabled.buildNumber}
-                hasSearchBox={true}
-                isClearable={true}
-              >
-                {buildNumberList.map((item, index: number) => {
-                  return (
-                    <ContrastOption
-                      id={index.toString()}
-                      value={item.keycode ?? ''}
-                    >
-                      {item.label}
-                    </ContrastOption>
-                  );
-                })}
-              </ContrastDropdown>
-            </div>
-            <div className="build-btns">
-              <Button
-                id="refresh"
-                title={filterLocale?.buttons?.refresh?.translate ?? 'Refresh'}
-                color="btn-blue"
-                onClick={() => {
-                  handleBuildRefreshChange();
-                }}
-                isDisable={refreshState.disabled}
-                tooltip={
-                  filterLocale?.tooltips?.refreshServersAndBuildNumbers
-                    .translate ?? ''
-                }
-              />
-
-              <Button
-                id="buildClear"
-                title={filterLocale?.buttons?.clear?.translate ?? 'Clear'}
-                color="btn-blue"
-                onClick={() => handleBuildClearChange()}
-                isDisable={buildClearState.disabled}
-                tooltip={
-                  filterLocale?.tooltips?.clearsServersAndBuildNumbers
-                    .translate ?? ''
-                }
-              />
-            </div>
-          </div>
-        </div>
-        <div className="feature">
-          <div className="label">
-            {filterLocale?.retrieveVul?.formFields?.severity?.translate}
-          </div>
-          <div className="feature-fields" id="severity">
-            {severityOptions.map((item, index) => {
-              return (
-                <>
-                  <ContrastCheckbox
-                    key={index}
-                    checked={severity[item.type]}
-                    onChange={() =>
-                      updateSeverity({
-                        ...severity,
-                        [item.type]: !severity[item.type],
-                      })
-                    }
-                  >
-                    {item.label}
-                  </ContrastCheckbox>
-                </>
-              );
-            })}
-          </div>
-        </div>
-        <div className="feature">
-          <div className="label">
-            {filterLocale?.retrieveVul?.formFields?.status?.translate}
-          </div>
-          <div className="feature-fields" id="status">
-            {statusOptions.map((item, index) => {
-              return (
-                <ContrastCheckbox
-                  key={index}
-                  checked={status[item.type]}
-                  onChange={() =>
-                    updateStatus({
-                      ...status,
-                      [item.type]: !(status[item.type] ?? false),
-                    })
-                  }
-                >
-                  {item.label}
-                </ContrastCheckbox>
-              );
-            })}
-          </div>
-        </div>
-        <div className="feature">
-          <div className="label">
-            {filterLocale?.retrieveVul?.formFields?.Filter?.translate}
+            {filterLocale?.filters.assess?.formFields?.Filter?.translate}
           </div>
           <div className="feature-fields">
             <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
@@ -1393,18 +1453,11 @@ function RetrieveVulnerabilties() {
               >
                 <table>
                   {['From', 'To'].map((label, index) => (
-                    <div
-                      key={label}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        gap: '10px',
-                      }}
-                    >
+                    <tbody>
                       <tr>
                         <td>
                           <span style={{ whiteSpace: 'nowrap' }}>
-                            {filterLocale?.retrieveVul?.formFields?.Filter?.options?.find(
+                            {filterLocale?.filters.assess?.formFields?.Filter?.options?.find(
                               (item) => item.name === label
                             )?.translate ?? ''}
                           </span>
@@ -1474,16 +1527,110 @@ function RetrieveVulnerabilties() {
                           </div>
                         </td>
                       </tr>
-                    </div>
+                    </tbody>
                   ))}
                 </table>
               </div>
             </div>
           </div>
         </div>
+        {/* Tags */}
         <div className="feature">
           <div className="label">
-            {filterLocale?.retrieveVul?.formFields?.session_metadata?.translate}
+            {
+              filterLocale?.filters.assess?.formFields?.tags?.noTagFound
+                ?.translate
+            }
+          </div>
+          <div className="dropdowns">
+            <ContrastDropdown
+              id="tags"
+              value={activeTags}
+              onChange={(e: { value: string | string[] }) => {
+                handleTagsChange(e);
+              }}
+              placeHolder={
+                tagsList.length >= 1
+                  ? filterLocale?.filters.assess?.formFields?.tags?.selectTag
+                      ?.placeholder
+                  : filterLocale?.filters.assess?.formFields?.tags?.noTagFound
+                      ?.placeholder
+              }
+              isDisabled={areFieldsDisabled.tags}
+              hasSearchBox={true}
+              isMultiSelect={true}
+              isClearable={true}
+            >
+              {tagsList.map((item, index: number) => {
+                return (
+                  <ContrastOption
+                    id={index.toString()}
+                    value={`${item.keycode}`}
+                  >
+                    {item.label}
+                  </ContrastOption>
+                );
+              })}
+            </ContrastDropdown>
+          </div>
+        </div>
+        {/*Severity */}
+        <div className="feature">
+          <div className="label">
+            {filterLocale?.filters.assess?.formFields?.severity?.translate}
+          </div>
+          <div className="feature-fields" id="severity">
+            {severityOptions.map((item, index) => {
+              return (
+                <>
+                  <ContrastCheckbox
+                    key={index}
+                    checked={severity[item.type]}
+                    onChange={() =>
+                      updateSeverity({
+                        ...severity,
+                        [item.type]: !severity[item.type],
+                      })
+                    }
+                  >
+                    {item.label}
+                  </ContrastCheckbox>
+                </>
+              );
+            })}
+          </div>
+        </div>
+        {/* Status */}
+        <div className="feature">
+          <div className="label">
+            {filterLocale?.filters.assess?.formFields?.status?.translate}
+          </div>
+          <div className="feature-fields" id="status">
+            {statusOptions.map((item, index) => {
+              return (
+                <ContrastCheckbox
+                  key={index}
+                  checked={status[item.type]}
+                  onChange={() =>
+                    updateStatus({
+                      ...status,
+                      [item.type]: !(status[item.type] ?? false),
+                    })
+                  }
+                >
+                  {item.label}
+                </ContrastCheckbox>
+              );
+            })}
+          </div>
+        </div>
+        {/* Session Metadata */}
+        <div className="feature">
+          <div className="label">
+            {
+              filterLocale?.filters.assess?.formFields?.session_metadata
+                ?.translate
+            }
           </div>
           <div className="session-metaData">
             <RadioGroup
@@ -1528,16 +1675,89 @@ function RetrieveVulnerabilties() {
             ) : null}
           </div>
         </div>
+
+        {/* BuildNumber */}
+        <div className="feature">
+          <div className="label">
+            {
+              filterLocale?.filters.assess?.formFields?.buildNumber
+                ?.noBuildNumberFound?.translate
+            }
+          </div>
+          <div className="build-feature">
+            <div className="dropdowns">
+              <ContrastDropdown
+                id="buildNumber"
+                value={activeBuildNumber}
+                onChange={(e: { value: string | string[] }) => {
+                  handleBuildNumberChange(e);
+                }}
+                placeHolder={
+                  buildNumberList.length >= 1
+                    ? filterLocale?.filters.assess?.formFields?.buildNumber
+                        ?.selectBuildNumber?.placeholder
+                    : filterLocale?.filters.assess?.formFields?.buildNumber
+                        ?.noBuildNumberFound?.placeholder
+                }
+                isDisabled={areFieldsDisabled.buildNumber}
+                hasSearchBox={true}
+                isClearable={true}
+              >
+                {buildNumberList.map((item, index: number) => {
+                  return (
+                    <ContrastOption
+                      id={index.toString()}
+                      value={item.keycode ?? ''}
+                    >
+                      {item.label}
+                    </ContrastOption>
+                  );
+                })}
+              </ContrastDropdown>
+            </div>
+            <div className="build-btns">
+              <Button
+                id="refresh"
+                title={filterLocale?.buttons?.refresh?.translate ?? 'Refresh'}
+                color="btn-blue"
+                onClick={() => {
+                  handleBuildRefreshChange();
+                }}
+                isDisable={refreshState.disabled}
+                tooltip={
+                  filterLocale?.tooltips?.refreshServersAndBuildNumbers
+                    .translate ?? ''
+                }
+              />
+
+              <Button
+                id="buildClear"
+                title={filterLocale?.buttons?.clear?.translate ?? 'Clear'}
+                color="btn-blue"
+                onClick={() => handleBuildClearChange()}
+                isDisable={buildClearState.disabled}
+                tooltip={
+                  filterLocale?.tooltips?.clearsServersAndBuildNumbers
+                    .translate ?? ''
+                }
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="assess-footer">
           <Button
             id="run"
-            title={filterLocale?.buttons?.run?.translate ?? 'Run'}
+            title={filterLocale?.buttons?.save?.translate ?? 'Save'}
             color="btn-blue"
             onClick={async () => {
               handleSave();
             }}
             isDisable={runState.disabled}
-            tooltip={filterLocale?.tooltips?.fetchVulnerabilities.translate}
+            tooltip={
+              filterLocale?.tooltips?.vulnerabilitySave?.translate ??
+              'Saves current selected filter'
+            }
           />
           <Button
             id="clear"
@@ -1548,7 +1768,8 @@ function RetrieveVulnerabilties() {
             }}
             isDisable={clearState.disabled}
             tooltip={
-              filterLocale?.tooltips?.clearsAllAppliedFilters.translate ?? ''
+              filterLocale?.tooltips?.vulnerabilityClear?.translate ??
+              'Restores to default value'
             }
           />
         </div>
@@ -1557,4 +1778,4 @@ function RetrieveVulnerabilties() {
   );
 }
 
-export default RetrieveVulnerabilties;
+export default AssessFilterComponent;

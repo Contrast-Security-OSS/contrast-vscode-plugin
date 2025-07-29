@@ -105,11 +105,33 @@
     border-color: #007fd4;
   }
 
-  .c-assess-panel > .c-assess-panel-header {
+  .c-panel > .c-panel-header {
     color: white;
   }
   .assess-split-panel-header {
     color: white;
+  }
+
+  .code-block {
+    background-color: #f4f4f5;
+  }
+
+  .run-action-button {
+    border: 1px solid #424242;
+
+    .run-outline {
+      border: unset;
+      background-color: unset;
+    }
+
+    .select-container {
+      color: black;
+    }
+
+    &:hover,
+    &:focus {
+      border-color: #4daafc;
+    }
   }
 }
 
@@ -162,12 +184,28 @@
     background: #094771 !important;
     border-color: #007fd4;
   }
+
+  .code-block {
+    background-color: #2c2c2c;
+  }
+}
+
+.code-block {
+  padding: 10px;
+  overflow-x: auto;
 }
 
 /* Disabled State */
 .disabled {
   color: var(--disabled-text) !important;
   background-color: var(--disabled-background) !important;
+  cursor: var(--disabled-cursor) !important;
+  opacity: var(--disabled-opacity) !important;
+  pointer-events: none;
+}
+
+.disabled-checkbox {
+  color: var(--disabled-text) !important;
   cursor: var(--disabled-cursor) !important;
   opacity: var(--disabled-opacity) !important;
   pointer-events: none;
@@ -292,6 +330,10 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button:focus {
+  border-color: #4daafc;
+}
+
 /* Input Fields */
 td {
   width: 300px;
@@ -325,6 +367,14 @@ td {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+
+  .panel-header-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+
   .imgContainer {
     margin-right: 6px;
     height: 20px;
@@ -337,7 +387,7 @@ td {
 }
 
 /* Panel */
-.c-assess-panel {
+.c-panel {
   border: 1px solid #2b2b2b;
 
   min-height: 300px;
@@ -345,7 +395,7 @@ td {
   max-height: 475px;
   overflow: auto;
 
-  .c-assess-panel-header {
+  .c-panel-header {
     z-index: 2;
     position: sticky;
     top: 0;
@@ -368,6 +418,11 @@ td {
       cursor: not-allowed !important;
     }
   }
+}
+
+.c-assess-panel {
+  height: 524px;
+  max-height: 524px;
 }
 
 /* Vulnerability Report */

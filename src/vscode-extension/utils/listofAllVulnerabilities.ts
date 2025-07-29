@@ -8,6 +8,7 @@ import { featureController, getFilePathuri, isNotNull } from './helper';
 import { localeI18ln } from '../../l10n';
 import { closeStatusBarItem } from './statusBarSeverity';
 import { CustomFileVulnerability } from '../../common/types';
+import path from 'path';
 
 async function getFileFromCache(
   filePath: string
@@ -53,7 +54,7 @@ const listofAllVulnerabilities = async (e: TextEditor) => {
       break;
     case 'assess':
       {
-        fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+        fileName = path.basename(fileName);
         const vulnerabilities = await getAssessVulnerabilitybyFile(fileName);
         if (
           isNotNull(vulnerabilities) &&

@@ -15,7 +15,7 @@ const ContrastCheckbox = ({
   disabled = false,
 }: ICheckBox) => {
   return (
-    <label className={`checkbox ${disabled ? 'disabled' : ''}`}>
+    <label className={`checkbox ${disabled ? 'disabled-checkbox' : ''}`}>
       <input
         type="checkbox"
         checked={checked}

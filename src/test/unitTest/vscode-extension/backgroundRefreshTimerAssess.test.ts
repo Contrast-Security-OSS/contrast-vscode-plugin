@@ -7,6 +7,7 @@ import {
 import { PersistenceInstance } from '../../../vscode-extension/utils/persistanceState';
 import {
   clearCacheByProjectId,
+  commonRefreshAssessLibrariesCache,
   getDataOnlyFromCacheAssess,
   refreshCacheAssess,
 } from '../../../vscode-extension/cache/cacheManager';
@@ -76,6 +77,7 @@ jest.mock('../../../vscode-extension/cache/cacheManager', () => ({
   refreshCacheAssess: jest.fn(),
   clearCacheByProjectId: jest.fn(),
   getDataOnlyFromCacheAssess: jest.fn(),
+  commonRefreshAssessLibrariesCache: jest.fn(),
 }));
 
 jest.mock('../../../vscode-extension/logging/logger', () => ({
@@ -102,6 +104,10 @@ describe('Background Timer Tests', () => {
     serviceKey: '1234',
     organizationId: 'org123',
     source: 'assess',
+  };
+
+  const libFilters = {
+    appId: '123-345',
   };
 
   const addParams = {
@@ -131,7 +137,8 @@ describe('Background Timer Tests', () => {
         .spyOn(global, 'setInterval')
         .mockImplementation(jest.fn());
 
-      const mockRefreshCacheAssess = refreshCacheAssess as jest.Mock;
+      const mockRefreshCacheAssess =
+        commonRefreshAssessLibrariesCache as jest.Mock;
       mockRefreshCacheAssess.mockResolvedValue(undefined);
 
       const mockGetDataOnlyFromCacheAssess =
@@ -151,7 +158,11 @@ describe('Background Timer Tests', () => {
       await intervalCallback();
       expect(mockRefreshCacheAssess).toHaveBeenCalledTimes(1);
 
-      const response = await refreshCacheAssess(addParams, mockFilter);
+      const response = await commonRefreshAssessLibrariesCache(
+        libFilters,
+        addParams,
+        mockFilter
+      );
       if (response !== undefined) {
         expect(ContrastPanelInstance.postMessage).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -176,7 +187,7 @@ describe('Background Timer Tests', () => {
         .spyOn(global, 'setInterval')
         .mockImplementation(jest.fn());
 
-      const mockRefreshCache = refreshCacheAssess as jest.Mock;
+      const mockRefreshCache = commonRefreshAssessLibrariesCache as jest.Mock;
       mockRefreshCache.mockRejectedValue(new Error('Cache refresh failed'));
 
       await startBackgroundTimerAssess(projectId);
@@ -188,7 +199,9 @@ describe('Background Timer Tests', () => {
       expect(loggerInstance.logMessage).toHaveBeenCalledTimes(1);
       expect(mockRefreshCache).toHaveBeenCalled();
       expect(ShowInformationPopup).toHaveBeenCalledWith(expect.any(String));
-      await expect(refreshCacheAssess).rejects.toThrow('Cache refresh failed');
+      await expect(commonRefreshAssessLibrariesCache).rejects.toThrow(
+        'Cache refresh failed'
+      );
     });
 
     it('should not start a new timer if one already exists', async () => {
@@ -221,8 +234,15 @@ describe('Background Timer Tests', () => {
         mockRefreshCycle
       );
 
-      const mockRefreshCache = refreshCacheAssess as jest.Mock;
-      mockRefreshCache.mockResolvedValue('34544');
+      const mockRefreshCache = commonRefreshAssessLibrariesCache as jest.Mock;
+      mockRefreshCache.mockResolvedValue({
+        code: 200,
+        message: 'Cache refreshed successfully',
+        responseData: {
+          assess: '123',
+          library: '2334',
+        },
+      });
 
       const mockGetDataOnlyFromCache = getDataOnlyFromCacheAssess as jest.Mock;
       mockGetDataOnlyFromCache.mockResolvedValue({
@@ -245,8 +265,8 @@ describe('Background Timer Tests', () => {
       expect(mockRefreshCache).toHaveBeenCalledTimes(1);
 
       expect(mockPostMessage).toHaveBeenCalledWith({
-        command: WEBVIEW_COMMANDS.ASSESS_GET_ALL_FILES_VULNERABILITY,
-        data: { files: ['file1.js', 'file2.js'] },
+        command: 'assessGetAllFilesVulnerability',
+        data: '123',
       });
 
       const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Auto-Refresh - Vulnerability Sync Process Completed`;
@@ -263,7 +283,7 @@ describe('Background Timer Tests', () => {
         mockRefreshCycle
       );
 
-      const mockRefreshCache = refreshCacheAssess as jest.Mock;
+      const mockRefreshCache = commonRefreshAssessLibrariesCache as jest.Mock;
       mockRefreshCache.mockResolvedValue(undefined);
 
       const mockGetDataOnlyFromCache = getDataOnlyFromCacheAssess as jest.Mock;

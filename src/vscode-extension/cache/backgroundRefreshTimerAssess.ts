@@ -5,6 +5,7 @@ import {
   getVulnerabilitiesRefreshCycle,
 } from '../utils/commonUtil';
 import {
+  ASSESS_KEYS,
   SETTING_KEYS,
   TOKEN,
   WEBVIEW_COMMANDS,
@@ -12,20 +13,23 @@ import {
 import { PersistenceInstance } from '../utils/persistanceState';
 import {
   clearCacheByProjectId,
-  getDataOnlyFromCacheAssess,
-  refreshCacheAssess,
+  commonRefreshAssessLibrariesCache,
 } from './cacheManager';
 import { ShowInformationPopup } from '../commands/ui-commands/messageHandler';
 import { window } from 'vscode';
 import { ContrastPanelInstance } from '../commands/ui-commands/webviewHandler';
 import {
   AssessFilter,
+  commonResponse,
   ConfiguredProject,
   LogLevel,
   PersistedDTO,
+  ScaFiltersType,
 } from '../../common/types';
 import { loggerInstance } from '../logging/logger';
 import { AssessRequest } from '../api/model/api.interface';
+import { LocaleMemoryCacheInstance } from '../utils/localeMemoryCache';
+import { randomUUID } from 'crypto';
 
 //to set inteval based on the recycle time
 let interval: ReturnType<typeof setInterval> | undefined;
@@ -56,8 +60,15 @@ export async function startBackgroundTimerAssess(
     async () => {
       try {
         const persist = await getCacheFilterData();
+        const libFilters = (await LocaleMemoryCacheInstance.getItem(
+          TOKEN.ASSESS,
+          ASSESS_KEYS.SCA_FILTERS
+        )) as ScaFiltersType | undefined;
+        if (persist.code === 400 || libFilters === undefined) {
+          return persist;
+        }
 
-        if (persist.code === 400) {
+        if (persist.code === 400 || libFilters === undefined) {
           return persist;
         }
 
@@ -77,7 +88,7 @@ export async function startBackgroundTimerAssess(
           // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
           servers: persistData.servers || [],
           appVersionTags: persistData.appVersionTags ?? '',
-          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+
           severities: persistData.severities ?? '',
           status: persistData.status ?? '',
           // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -95,15 +106,36 @@ export async function startBackgroundTimerAssess(
           localeI18ln.getTranslation('apiResponse.cacheStarted')
         );
 
-        const resultAssess = await refreshCacheAssess(addParams, params);
+        const resultAssess = await commonRefreshAssessLibrariesCache(
+          libFilters,
+          addParams,
+          params
+        );
 
-        if (resultAssess !== undefined) {
+        if (
+          resultAssess !== undefined &&
+          resultAssess.code === 200 &&
+          resultAssess.responseData !== null &&
+          resultAssess.responseData !== undefined
+        ) {
+          const { assess, library } =
+            resultAssess.responseData as commonResponse;
           ContrastPanelInstance.postMessage({
             command: WEBVIEW_COMMANDS.ASSESS_GET_ALL_FILES_VULNERABILITY,
-            data: await getDataOnlyFromCacheAssess(),
+            data: assess ?? null,
           });
+          ContrastPanelInstance.postMessage({
+            command: WEBVIEW_COMMANDS.SCA_GET_ALL_FILES_VULNERABILITY,
+            data: library ?? null,
+          });
+
+          ContrastPanelInstance.postMessage({
+            command: WEBVIEW_COMMANDS.SCA_AUTO_REFRESH,
+            data: randomUUID(),
+          });
+
           window.showInformationMessage(
-            `${localeI18ln.getTranslation('persistResponse.autoRefreshSucess')} ${formatDate(new Date())}`
+            `${localeI18ln.getTranslation('persistResponse.assessAutoRefreshSuccess')} ${formatDate(new Date())}`
           );
           const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Auto-Refresh - Vulnerability Sync Process Completed`;
           void loggerInstance?.logMessage(LogLevel.INFO, logData);

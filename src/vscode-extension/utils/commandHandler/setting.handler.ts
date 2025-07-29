@@ -1,27 +1,22 @@
-// import { TCommand } from "../../../common/types";
 import { CommandRequest, ConfiguredProject } from '../../../common/types';
 import {
   getAllApplicationsByOrgId,
   getAllProjectList,
 } from '../../api/services/apiService';
-import { stopBackgroundTimerAssess } from '../../cache/backgroundRefreshTimerAssess';
-import { ContrastPanelInstance } from '../../commands/ui-commands/webviewHandler';
 import {
   AddProjectToConfig,
   DeleteConfiguredProjectById,
   GetAllConfiguredProjects,
-  GetAssessFilter,
   UpdateConfiguredProjectById,
 } from '../../persistence/PersistenceConfigSetting';
 import { WEBVIEW_COMMANDS, WEBVIEW_SCREENS } from '../constants/commands';
-import { closeActiveFileHightlighting, isNotNull, tabBlocker } from '../helper';
+import { closeActiveFileHightlighting, tabBlocker } from '../helper';
 import {
   assessBackgroundVulBehaviour,
   scanRetrievelBlocker,
   settingActionsBehaviour,
   updateGlobalWebviewConfig,
 } from '../multiInstanceConfigSync';
-import { closeStatusBarItem } from '../statusBarSeverity';
 
 export const SettingCommandHandler = async (props: CommandRequest) => {
   const { command, payload } = props;
@@ -98,7 +93,6 @@ export const SettingCommandHandler = async (props: CommandRequest) => {
 
     case WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT: {
       if (payload !== null && typeof payload === 'object' && 'id' in payload) {
-        const getActiveApplication = await GetAssessFilter();
         await settingActionsBehaviour.disable();
         await scanRetrievelBlocker.disable();
         if (payload.source === 'assess') {
@@ -116,29 +110,7 @@ export const SettingCommandHandler = async (props: CommandRequest) => {
           'assessApplicationReload'
         );
         await assessBackgroundVulBehaviour.enable();
-        if (
-          data?.code === 200 &&
-          data?.status === 'success' &&
-          (payload as ConfiguredProject).source === 'assess' &&
-          isNotNull(getActiveApplication) &&
-          isNotNull(getActiveApplication.responseData)
-        ) {
-          const { projectId, id } =
-            getActiveApplication.responseData as ConfiguredProject;
-          if (payload?.id === id && payload?.projectId === projectId) {
-            await closeActiveFileHightlighting();
-            await closeStatusBarItem();
-            await updateGlobalWebviewConfig(
-              WEBVIEW_SCREENS.SETTING,
-              WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT,
-              'assess'
-            );
-            await ContrastPanelInstance.clearAssessPersistance();
-            await ContrastPanelInstance.clearPrimaryAssessFilter();
-            await ContrastPanelInstance.resetAssessVulnerabilityRecords();
-            await stopBackgroundTimerAssess();
-          }
-        }
+
         return {
           command: WEBVIEW_COMMANDS.SETTING_DELETE_CONFIGURE_PROJECT,
           data: data,

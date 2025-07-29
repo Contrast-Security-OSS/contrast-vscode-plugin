@@ -384,6 +384,7 @@ describe('getAssessVulnerabilities Unit Test', () => {
       issuesCount: 0,
       filesCount: 0,
       child: [],
+      isUnmapped: true,
     });
   });
 

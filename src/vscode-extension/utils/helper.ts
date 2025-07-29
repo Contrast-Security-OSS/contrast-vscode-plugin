@@ -1,6 +1,7 @@
 import { commands, RelativePattern, Uri, window, workspace } from 'vscode';
 import { getOpenedFolderName } from './commonUtil';
 import {
+  ASSESS_KEYS,
   SCAN_KEYS,
   SETTING_KEYS,
   TAB_BLOCKER,
@@ -13,6 +14,7 @@ import {
   ConfiguredProject,
   CustomFileVulnerability,
   PersistedDTO,
+  ScaFiltersTypes,
   ValidProjectType,
 } from '../../common/types';
 import path from 'path';
@@ -28,6 +30,7 @@ import {
   getAssessVulnerabilitybyFile,
   getVulnerabilitybyFile,
 } from '../api/services/apiService';
+import { LocaleMemoryCacheInstance } from './localeMemoryCache';
 
 interface FinalFilter {
   servers?: number | string;
@@ -39,6 +42,8 @@ interface FinalFilter {
   agentSessionId?: string;
   metadataFilters?: string;
   activeSessionMetadata?: string;
+  applicationTags?: string | string[];
+  environments?: string | string[];
 }
 
 function createSlots(): {
@@ -79,6 +84,8 @@ scanRetrieveBlocker.setSlot(false);
 const featureController = createAlphaSlots();
 const currentWorkspaceProjectManager = createAlphaSlots();
 const broadcastProjectNameManager = createAlphaSlots();
+const broadcastApplicationNameManager = createAlphaSlots();
+const libraryPathNavigator = createSlots();
 
 async function getFilePathuri(fileName: string) {
   const pathParts = fileName.split(path.sep);
@@ -90,7 +97,10 @@ async function getFilePathuri(fileName: string) {
   return undefined;
 }
 
-const getProjectIdByName = (projectName: string) => {
+const getProjectIdByName = (
+  projectName: string,
+  source: 'scan' | 'assess' = 'scan'
+) => {
   const persistedData = PersistenceInstance.getByKey(
     TOKEN.SETTING,
     SETTING_KEYS.CONFIGPROJECT as keyof PersistedDTO
@@ -98,7 +108,7 @@ const getProjectIdByName = (projectName: string) => {
 
   const project = persistedData.find(
     (project: ConfiguredProject) =>
-      project.projectName === projectName && project.source === 'scan'
+      project.projectName === projectName && project.source === source
   );
 
   return project;
@@ -210,13 +220,14 @@ async function interlockModeSwitch(type: 'assess' | 'scan') {
         );
         if (confirm === 'Yes') {
           await Promise.all([
-            PersistenceInstance.clear(TOKEN.ASSESS),
+            LocaleMemoryCacheInstance.clearStore(TOKEN.ASSESS),
             clearHighlightedActiveFile('assess'),
             stopBackgroundTimerAssess(),
             disposeCache(),
             ContrastPanelInstance.clearAssessPersistance(),
             ContrastPanelInstance.clearPrimaryAssessFilter(),
             ContrastPanelInstance.resetAssessVulnerabilityRecords(),
+            ContrastPanelInstance.clearPrimaryScaFilter(),
           ]);
         }
         return confirm === 'Yes';
@@ -237,7 +248,7 @@ async function interlockModeSwitch(type: 'assess' | 'scan') {
             clearHighlightedActiveFile('scan'),
             stopBackgroundTimer(),
             disposeCache(),
-            PersistenceInstance.set(
+            LocaleMemoryCacheInstance.setItem(
               TOKEN.SCAN,
               SCAN_KEYS.FILTERS as keyof PersistedDTO,
               FilterData
@@ -404,6 +415,11 @@ const getHighlightPath = async (
 
   return '';
 };
+const getScaFilterFromCache = async () =>
+  (await LocaleMemoryCacheInstance.getItem(
+    TOKEN.ASSESS,
+    ASSESS_KEYS.SCA_FILTERS
+  )) as ScaFiltersTypes;
 
 export {
   slotInstance,
@@ -421,7 +437,11 @@ export {
   closeActiveFileHightlighting,
   currentWorkspaceProjectManager,
   broadcastProjectNameManager,
+  broadcastApplicationNameManager,
   isScanSourceConfiguredProject,
   getValidConfiguredWorkspaceProjects,
   getHighlightPath,
+  getScaFilterFromCache,
+  findFolderInWorkspace,
+  libraryPathNavigator,
 };
