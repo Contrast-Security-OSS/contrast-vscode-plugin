@@ -1,6 +1,6 @@
 # Change Log
 
-## [3.0.0] - 
+## [3.0.0] - 2025-07-31
 
 ### Added
 
@@ -22,6 +22,7 @@
 - Redesigned the filtering experience UI with dedicated filter tabs for Assess and SCA, maintaining separate session filters under the Filter screen.
 - Additionally, added `Tags` and `Environments` fields to the Vulnerability Filter screen and realigned the filter fields.
 - Removed manual refresh fetaure for assess.
+
 ---
 
 ## [2.0.0] - 2025-05-19
