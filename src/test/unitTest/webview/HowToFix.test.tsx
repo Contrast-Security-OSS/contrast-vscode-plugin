@@ -6,7 +6,7 @@ import { HowToFix } from '../../../webview/screens/Assess/tabs/VulnerabilityRepo
 describe('HowToFix Component', () => {
   const vulnerabilityMock = {
     howToFix: {
-      recommendation: { text: 'Fix this issue' },
+      recommendation: { formattedText: 'Fix this issue' },
       custom_recommendation: { text: 'Custom fix' },
       cwe: 'https://cwe.mitre.org/data/definitions/79.html',
       owasp: 'https://owasp.org/www-project-top-ten/',

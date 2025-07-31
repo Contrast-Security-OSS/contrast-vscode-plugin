@@ -7,6 +7,10 @@ import {
   TreeView,
 } from '../../../webview/screens/Assess/tabs/VulnerabilityReport/tabs/Events';
 
+jest.mock('../../../webview/utils/postMessage', () => ({
+  webviewPostMessage: jest.fn(),
+}));
+
 xdescribe('PaneHeader Component', () => {
   const mockOnClick = jest.fn();
   const nodeMock = {

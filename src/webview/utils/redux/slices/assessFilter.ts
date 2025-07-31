@@ -4,6 +4,8 @@ import { AssessFilterState } from '../../../../common/types';
 const assessFilterState: AssessFilterState = {
   configuredApplications: null,
   buildNumber: null,
+  assessEnvironments: null,
+  assessTags: null,
   customSessionMetaData: null,
   mostRecentMetaData: null,
   serverListbyOrgId: null,
@@ -17,6 +19,20 @@ const assessFilterState: AssessFilterState = {
   manualRefreshBackgroundVulnRunner: false,
   activeCurrentFile: null,
   refreshBackgroundVulnRunnerAcrossIds: false,
+  environmentsList: null,
+  serversList: null,
+  quickViewList: null,
+  libraryUsageList: null,
+  libraryLicenceList: null,
+  tagList: null,
+  scaFilters: null,
+  scaSeverities: null,
+  scaStatus: null,
+  scaAllFiles: null,
+  scaOrgTags: null,
+  scaTagsOkBehaviour: false,
+  scaCveOverview: null,
+  scaAutoRefresh: null,
 };
 
 const assessFilterSlice = createSlice({
@@ -31,6 +47,12 @@ const assessFilterSlice = createSlice({
     },
     getBuildNumber: (state, action) => {
       state.buildNumber = action.payload;
+    },
+    getAssessEnvironmentsList: (state, action) => {
+      state.assessEnvironments = action.payload;
+    },
+    getAssessTagsList: (state, action) => {
+      state.assessTags = action.payload;
     },
     getCustomSessionMetaData: (state, action) => {
       state.customSessionMetaData = action.payload;
@@ -68,6 +90,48 @@ const assessFilterSlice = createSlice({
     setRefreshBackgroundRunnerAcrossIds: (state, action) => {
       state.refreshBackgroundVulnRunnerAcrossIds = action.payload;
     },
+    getEnvironmentsList: (state, action) => {
+      state.environmentsList = action.payload;
+    },
+    getServersList: (state, action) => {
+      state.serversList = action.payload;
+    },
+    getQuickViewList: (state, action) => {
+      state.quickViewList = action.payload;
+    },
+    getLibraryUsageList: (state, action) => {
+      state.libraryUsageList = action.payload;
+    },
+    getLibraryLicenceList: (state, action) => {
+      state.libraryLicenceList = action.payload;
+    },
+    getTagList: (state, action) => {
+      state.tagList = action.payload;
+    },
+    getScaFilters: (state, action) => {
+      state.scaFilters = action.payload;
+    },
+    getScaStaus: (state, action) => {
+      state.scaStatus = action.payload;
+    },
+    getScaSeverities: (state, action) => {
+      state.scaSeverities = action.payload;
+    },
+    getScaAllFilesVulnerability: (state, action) => {
+      state.scaAllFiles = action.payload;
+    },
+    getScaOrganizationTags: (state, action) => {
+      state.scaOrgTags = action.payload;
+    },
+    setScaTagsOkBehaviour: (state, action) => {
+      state.scaTagsOkBehaviour = action.payload;
+    },
+    getScaCveOverview: (state, action) => {
+      state.scaCveOverview = action.payload;
+    },
+    getScaAutoRefresh: (state, action) => {
+      state.scaAutoRefresh = action.payload;
+    },
   },
 });
 
@@ -75,6 +139,8 @@ export const {
   getConfiguredApplications,
   getServerListbyOrgId,
   getBuildNumber,
+  getAssessEnvironmentsList,
+  getAssessTagsList,
   getCustomSessionMetaData,
   getMostRecentMetaData,
   getAssessFilters,
@@ -87,6 +153,19 @@ export const {
   setManualRefreshBackgroundRunner,
   setAssessActiveCurrentFile,
   setRefreshBackgroundRunnerAcrossIds,
+  getEnvironmentsList,
+  getServersList,
+  getQuickViewList,
+  getLibraryUsageList,
+  getLibraryLicenceList,
+  getTagList,
+  getScaFilters,
+  getScaStaus,
+  getScaSeverities,
+  getScaAllFilesVulnerability,
+  getScaOrganizationTags,
+  setScaTagsOkBehaviour,
+  getScaAutoRefresh,
 } = assessFilterSlice.actions;
 const AssessFilterReducer = assessFilterSlice.reducer;
 

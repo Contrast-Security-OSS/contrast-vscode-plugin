@@ -1,11 +1,14 @@
 import { ConfigurationTarget, workspace } from 'vscode';
 import {
+  ASSESS_KEYS,
   CONTRAST_SECURITY,
   CONTRAST_SECURITY_GLOBAL_SHARING,
+  TOKEN,
   WEBVIEW_COMMANDS,
   WEBVIEW_SCREENS,
 } from './constants/commands';
 import {
+  broadcastApplicationNameManager,
   broadcastProjectNameManager,
   closeActiveFileHightlighting,
   currentWorkspaceProjectManager,
@@ -23,7 +26,8 @@ import { stopBackgroundTimerAssess } from '../cache/backgroundRefreshTimerAssess
 import { stopBackgroundTimer } from '../cache/backgroundRefreshTimer';
 import { clearCacheByProjectId } from '../cache/cacheManager';
 import { closeStatusBarItem } from './statusBarSeverity';
-// import { PersistenceInstance } from './persistanceState';
+import { LocaleMemoryCacheInstance } from './localeMemoryCache';
+import { AssessFilter } from '../../common/types';
 
 // Start listening for config changes
 
@@ -104,6 +108,50 @@ const scanClearActions = () => {
   return promisesList;
 };
 
+const assessClearActions = async () => {
+  const promisesList = [];
+  const activeApplicationName = (await LocaleMemoryCacheInstance.getItem(
+    TOKEN.ASSESS,
+    ASSESS_KEYS.ASSESS_FILTERS
+  )) as AssessFilter;
+  const broadcastSlot = broadcastApplicationNameManager.getSlot();
+
+  if (activeApplicationName === undefined || activeApplicationName === null) {
+    return null;
+  }
+  if (
+    activeApplicationName.projectName &&
+    activeApplicationName.projectName === broadcastSlot
+  ) {
+    promisesList.push(
+      closeActiveFileHightlighting(),
+      closeStatusBarItem(),
+      ContrastPanelInstance.resetAssessVulnerabilityRecords(),
+      ContrastPanelInstance.clearPrimaryAssessFilter(),
+      stopBackgroundTimerAssess(),
+      ContrastPanelInstance.clearAssessPersistance(),
+      LocaleMemoryCacheInstance.clearStore(TOKEN.ASSESS),
+      ContrastPanelInstance.clearPrimaryScaFilter()
+    );
+
+    const projectDetails = getProjectIdByName(
+      activeApplicationName.projectName,
+      'assess'
+    );
+
+    if (
+      projectDetails !== null &&
+      projectDetails !== undefined &&
+      'projectId' in projectDetails
+    ) {
+      promisesList.push(
+        clearCacheByProjectId(projectDetails?.projectId as string)
+      );
+    }
+  }
+  return promisesList;
+};
+
 const assessBackgroundVulBehaviour = {
   enable: async () =>
     updateGlobalWebviewConfig(
@@ -162,6 +210,10 @@ const handleSettingCommand = async (
             ContrastPanelInstance.clearPrimaryAssessFilter(),
             ContrastPanelInstance.resetAssessVulnerabilityRecords(),
             await stopBackgroundTimerAssess(),
+            closeActiveFileHightlighting(),
+            closeStatusBarItem(),
+            LocaleMemoryCacheInstance.clearStore(TOKEN.ASSESS),
+            ContrastPanelInstance.clearPrimaryScaFilter(),
           ]);
         } else if (receiveData === 'assessApplicationReload') {
           await reloadAssessApplications();
@@ -176,21 +228,6 @@ const handleSettingCommand = async (
         command: WEBVIEW_COMMANDS.SETTING_ACTIONS,
         data: receiveData === 'true',
       });
-      break;
-
-    case 'clearAssessThings':
-      await Promise.all([
-        closeActiveFileHightlighting(),
-        closeStatusBarItem(),
-        ContrastPanelInstance.resetAssessVulnerabilityRecords(),
-        ContrastPanelInstance.clearPrimaryAssessFilter(),
-        stopBackgroundTimerAssess(),
-        ContrastPanelInstance.clearAssessPersistance(),
-      ]);
-      break;
-
-    case 'reloadApplications':
-      await reloadAssessApplications();
       break;
 
     default:
@@ -252,6 +289,33 @@ const handleAssessCommand = async (
         command: WEBVIEW_COMMANDS.ASSESS_GET_FILTERS,
         data: await GetAssessFilter(),
       });
+      break;
+
+    case 'clearAssessThings':
+      const promiseList = (await assessClearActions()) as Array<
+        Promise<unknown>
+      >;
+      await Promise.all(promiseList);
+      break;
+
+    case 'reloadApplications':
+      await reloadAssessApplications();
+      break;
+
+    case 'sharedApplicationName':
+      {
+        broadcastApplicationNameManager.setSlot(receiveData);
+      }
+      break;
+    case 'deleteApplication':
+      {
+        broadcastApplicationNameManager.setSlot(receiveData);
+        const promiseList = (await assessClearActions()) as Array<
+          Promise<unknown>
+        >;
+        await Promise.all(promiseList);
+        await reloadAssessApplications();
+      }
       break;
   }
 };

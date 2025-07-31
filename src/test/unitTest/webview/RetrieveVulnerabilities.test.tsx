@@ -1,5 +1,4 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
-import RetrieveVulnerabilities from '../../../webview/screens/Assess/tabs/RetrieveVulnerabilities/RetrieveVulnerabilities';
 import { Provider } from 'react-redux';
 import { configureStore, Store, UnknownAction } from '@reduxjs/toolkit';
 import {
@@ -15,6 +14,7 @@ import { ThemeReducer } from '../../../webview/utils/redux/slices/contrastTheme'
 import { configuredProject1, configuredProject2 } from '../../mocks/testMock';
 import { webviewPostMessage } from '../../../webview/utils/postMessage';
 import { ConfiguredProject } from '../../../common/types';
+import AssessFilterComponent from '../../../webview/screens/Assess/tabs/Filters/tabs/AssessFilterComponent';
 // Mock webviewPostMessage to avoid errors
 jest.mock('../../../webview/utils/postMessage', () => ({
   webviewPostMessage: jest.fn(),
@@ -25,7 +25,7 @@ describe('Retrieve Vulnerabilities', () => {
   const renderRetrieveVulnerabilities = () => {
     return render(
       <Provider store={store}>
-        <RetrieveVulnerabilities />
+        <AssessFilterComponent />
       </Provider>
     );
   };
@@ -85,9 +85,9 @@ describe('Retrieve Vulnerabilities', () => {
     const buildClear = container.querySelector('#buildClear');
     const dateRange = container.querySelector('#dateRange');
 
-    expect(application).toHaveTextContent('No Applications Found');
+    expect(application).toHaveTextContent('No Application Found');
     expect(server).toHaveTextContent('No Servers Found');
-    expect(buildNumber).toHaveTextContent('No Build Numbers Found');
+    expect(buildNumber).toHaveTextContent('No Build Number Found');
 
     expect(status?.children[0].querySelector('input')).toBeChecked();
     expect(status?.children[1].querySelector('input')).toBeChecked();
@@ -111,7 +111,7 @@ describe('Retrieve Vulnerabilities', () => {
     const { container } = renderRetrieveVulnerabilities();
 
     const application = container.querySelector('#application');
-    expect(application).toHaveTextContent('No Applications Found');
+    expect(application).toHaveTextContent('No Application Found');
   });
 
   test('should update the application list when data is loaded', async () => {
@@ -121,7 +121,7 @@ describe('Retrieve Vulnerabilities', () => {
 
     const application = container.querySelector('#application');
     await waitFor(() => {
-      expect(application).toHaveTextContent('No Applications Found');
+      expect(application).toHaveTextContent('No Application Found');
     });
 
     dispatchConfiguredApplications([
@@ -175,7 +175,7 @@ describe('Retrieve Vulnerabilities', () => {
     dispatchBuildNumber([]);
 
     await waitFor(() => {
-      expect(buildNumber).toHaveTextContent('No Build Numbers Found');
+      expect(buildNumber).toHaveTextContent('No Build Number Found');
     });
 
     dispatchConfiguredApplications([
@@ -239,7 +239,7 @@ describe('Retrieve Vulnerabilities', () => {
       fireEvent.click(clear);
       await waitFor(() => {
         expect(server).toHaveTextContent('No Servers Found');
-        expect(buildNumber).toHaveTextContent('No Build Numbers Found');
+        expect(buildNumber).toHaveTextContent('No Build Number Found');
       });
     }
   });

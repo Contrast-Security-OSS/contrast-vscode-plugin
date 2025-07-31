@@ -3,10 +3,19 @@
 import {
   AssessFileVulnerability,
   AssessVulnerability,
+  CustomLibraryVulnerability,
   DateTimeValue,
 } from '../../common/types';
-
-// import { DateTimeValue } from '../../common/types';
+import {
+  CVENode,
+  LibParsedVulnerability,
+  LibraryNode,
+} from '../../vscode-extension/api/model/api.interface';
+import {
+  WEBVIEW_COMMANDS,
+  WEBVIEW_SCREENS,
+} from '../../vscode-extension/utils/constants/commands';
+import { webviewPostMessage } from './postMessage';
 
 const getCurrentDateTime = () => new Date().toISOString();
 const getCurrentDateString = () =>
@@ -212,6 +221,144 @@ const customToolTipStyle = {
   },
 };
 
+const getSeverityColor = (severity: string) => {
+  if (severity === undefined) {
+    return '';
+  }
+  switch (severity.toUpperCase()) {
+    case 'CRITICAL':
+      return 'red';
+    case 'HIGH':
+      return 'orange';
+    case 'MEDIUM':
+      return 'yellow';
+    case 'LOW':
+      return 'gray';
+    case 'NOTE':
+      return 'rgb(220, 220, 220)';
+    default:
+      return 'rgb(220, 220, 220)';
+  }
+};
+function getGradeColorKey(grade: string) {
+  switch (grade) {
+    case 'A':
+      return 'rgb(174, 205, 67)'; // Green
+    case 'B':
+      return 'rgb(12, 159, 167)'; // Turquoise
+    case 'C':
+      return '#f7b600'; // Yellow
+    case 'D':
+      return 'rgb(247, 138, 49)'; // Orange
+    case 'F':
+      return 'rgb(229, 5, 0)'; // Red
+    default:
+      return 'rgb(220, 220, 220)'; // Neutral gray
+  }
+}
+function isOfType<T>(obj: unknown, key: keyof T): obj is T {
+  return typeof obj === 'object' && obj !== null && key in obj;
+}
+function countOwnEntries(obj: unknown): number {
+  return obj !== null && typeof obj === 'object'
+    ? Object.entries(obj).length
+    : 0;
+}
+
+function getLibraryNodeByUuid(
+  parsedVul: LibParsedVulnerability,
+  uuid: string,
+  isUnmapped: boolean
+): LibraryNode | undefined {
+  let matchNode = undefined;
+  if (isUnmapped) {
+    parsedVul.child.map((node: LibraryNode & { isRootUnmapped?: boolean }) => {
+      if (node.isRootUnmapped === true) {
+        matchNode = (node.child as unknown as LibraryNode[])?.find(
+          (childNode: LibraryNode) => childNode.overview?.hash === uuid
+        );
+      }
+    });
+  } else {
+    matchNode = parsedVul.child.find(
+      (node: LibraryNode) => node.overview?.hash === uuid
+    );
+  }
+  return matchNode;
+}
+
+const scaPathUpdate = <T extends CustomLibraryVulnerability | LibraryNode>(
+  vul: T
+): void => {
+  if (vul.level === 1) {
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCA_UPDATE_CVE_PATH,
+      payload: vul,
+      screen: WEBVIEW_SCREENS.ASSESS,
+    });
+  }
+};
+
+const scaUsageUpdate = <T extends CustomLibraryVulnerability | LibraryNode>(
+  vul: T
+): void => {
+  const hasUsage =
+    isOfType<CustomLibraryVulnerability>(vul, 'usage') &&
+    vul?.usage?.observations !== undefined &&
+    vul?.usage?.observations?.length > 0;
+
+  if (vul.level === 1 && !hasUsage) {
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCA_UPDATE_VULNERABILITY_USAGE,
+      payload: vul,
+      screen: WEBVIEW_SCREENS.ASSESS,
+    });
+  }
+};
+
+const scaOverviewUpdateForCve = <
+  T extends CustomLibraryVulnerability | CVENode,
+>(
+  vul: T
+): void => {
+  const isSeverityEmpty = vul.overview?.severityAndMetrics?.length === 0;
+  const isVectorEmpty = vul.overview?.vector?.vectors?.length === 0;
+
+  if ((vul.level === 0 && isSeverityEmpty) || isVectorEmpty) {
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.SCA_UPDATE_CVE_OVERVIEW,
+      payload: vul,
+      screen: WEBVIEW_SCREENS.ASSESS,
+    });
+  }
+};
+
+const AssessEventsHttpRequestUpdate = (e: AssessVulnerability) => {
+  if (e.events?.data[0].child?.length === 0 || !e?.http_request) {
+    webviewPostMessage({
+      command: WEBVIEW_COMMANDS.ASSESS_UPDATE_VULNERABILITY,
+      payload: e,
+      screen: WEBVIEW_SCREENS.ASSESS,
+    });
+  }
+};
+
+function formatToLocalDateTime(isoString: string) {
+  const date = new Date(isoString);
+
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  let hour = date.getHours();
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+
+  hour = hour % 12 || 12;
+
+  return `${month}/${day}/${year} ${hour}:${minute}${ampm}`;
+}
+
 export {
   getCurrentDateTime,
   getCurrentDateString,
@@ -226,4 +373,14 @@ export {
   getTimeRange,
   findVulnerabilityByTraceId,
   customToolTipStyle,
+  getSeverityColor,
+  getGradeColorKey,
+  isOfType,
+  countOwnEntries,
+  getLibraryNodeByUuid,
+  scaPathUpdate,
+  scaUsageUpdate,
+  scaOverviewUpdateForCve,
+  formatToLocalDateTime,
+  AssessEventsHttpRequestUpdate,
 };

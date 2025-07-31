@@ -5,9 +5,13 @@ import React, {
 } from 'react';
 import { EXTENTION_COMMANDS } from '../vscode-extension/utils/constants/commands';
 import {
+  CVENode,
   Events,
   Level0Entry,
   Level1Entry,
+  LibParsedVulnerability,
+  LibraryNode,
+  LibraryVulnerability,
   ListOfTagsResponse,
   ProjectSource,
   ResponseCustomSession,
@@ -34,6 +38,7 @@ export interface ButtonProps {
   isDisable?: boolean;
   id?: string;
   tooltip?: string;
+  variant?: 'run';
 }
 
 // ---------------- supported locally language -----------------
@@ -137,35 +142,112 @@ export type ContrastScanLocale = {
   };
 };
 
+export type LibraryReportOverview = {
+  translate?: string;
+  formFields?: {
+    library?: {
+      released: TranslateType;
+      identifier: TranslateType;
+      license: TranslateType;
+      vulnerability: TranslateType;
+      policyViolations: TranslateType;
+      appsUsing: TranslateType;
+      classesUsed: TranslateType;
+      whatHappened: TranslateType;
+      whatTheRisk: TranslateType;
+    };
+    cve?: {
+      firstSeen: TranslateType;
+      nvdPublished: TranslateType;
+      nvdLastModified: TranslateType;
+      nvdLatestInformation: TranslateType;
+      cveOrg: TranslateType;
+      severityAndMetrics: TranslateType;
+      vector: TranslateType;
+      description: TranslateType;
+      organizationalImpact: TranslateType;
+    };
+  };
+};
+
+export type LibraryReportHowToFix = {
+  translate?: string;
+  placeholder: string;
+  minimumUpgrade?: TranslateType;
+  latestStable?: TranslateType;
+};
+
+export type LibraryReportUsage = {
+  translate?: string;
+  formFields?: {
+    classesLoaded: TranslateType;
+    firstObserved: TranslateType;
+    lastObserved: TranslateType;
+    noSearchResults: TranslateType;
+  };
+};
+
 export type ContrastAssessLocale = {
   translate?: string;
-  retrieveVul?: {
+  filters: {
     translate?: string;
-    formFields: {
-      application?: TranslateType;
-      server?: {
-        noServerFound?: TranslateType;
-        selectServer?: TranslateType;
+    assess?: {
+      translate?: string;
+      formFields: {
+        application?: TranslateType;
+        server?: {
+          noServerFound?: TranslateType;
+          selectServer?: TranslateType;
+        };
+        buildNumber?: {
+          noBuildNumberFound?: TranslateType;
+          selectBuildNumber?: TranslateType;
+        };
+        severity?: {
+          translate: string;
+          options?: OptionLocaleType;
+        };
+        status?: {
+          translate: string;
+          options?: OptionLocaleType;
+        };
+        Filter?: {
+          translate: string;
+          options?: OptionLocaleType;
+        };
+        session_metadata?: {
+          translate: string;
+          options?: OptionLocaleType;
+        };
+        environments?: {
+          noEnvironmentFound?: TranslateType;
+          selectEnvironment?: TranslateType;
+        };
+        tags?: {
+          noTagFound?: TranslateType;
+          selectTag?: TranslateType;
+        };
       };
-      buildNumber?: {
-        noBuildNumberFound?: TranslateType;
-        selectBuildNumber?: TranslateType;
-      };
-      severity?: {
-        translate: string;
-        options?: OptionLocaleType;
-      };
-      status?: {
-        translate: string;
-        options?: OptionLocaleType;
-      };
-      Filter?: {
-        translate: string;
-        options?: OptionLocaleType;
-      };
-      session_metadata?: {
-        translate: string;
-        options?: OptionLocaleType;
+    };
+    library?: {
+      translate?: string;
+      formFields?: {
+        application?: TranslateType;
+        environments?: TranslateType;
+        servers?: TranslateType;
+        quickView?: TranslateType;
+        libraryUsage?: TranslateType;
+        libraryLicenceType?: TranslateType;
+        tag?: TranslateType;
+        severity?: {
+          translate: string;
+          placeholder?: string;
+          options?: OptionLocaleType;
+        };
+        status?: {
+          translate: string;
+          options?: OptionLocaleType;
+        };
       };
     };
   };
@@ -208,12 +290,30 @@ export type ContrastAssessLocale = {
       };
     };
   };
+  librariesReport?: {
+    translate: string;
+    htmlElements?: TranslateType;
+    tabs?: {
+      overView?: LibraryReportOverview;
+      howToFix?: LibraryReportHowToFix;
+      usage?: LibraryReportUsage;
+      path?: {
+        translate?: string;
+        noDataFoundLable: string;
+        noDataFoundContent: string;
+      };
+      tags?: {
+        translate: string;
+      };
+    };
+  };
   buttons?: {
     refresh?: TranslateType;
     clear?: TranslateType;
     run?: TranslateType;
     ok?: TranslateType;
     create?: TranslateType;
+    save?: TranslateType;
   };
   tooltips?: {
     refresh?: TranslateType;
@@ -227,6 +327,11 @@ export type ContrastAssessLocale = {
     clearsServersAndBuildNumbers: TranslateType;
     clearsAllAppliedFilters: TranslateType;
     fetchVulnerabilities: TranslateType;
+    assessRun: TranslateType;
+    vulnerabilitySave: TranslateType;
+    vulnerabilityClear: TranslateType;
+    libraryRefresh: TranslateType;
+    libraryClear: TranslateType;
   };
 };
 export interface LocalizationJSON {
@@ -266,6 +371,7 @@ export type ResponseData =
   | Record<string, string>
   | Array<Record<string, string>>
   | []
+  | string[]
   | null
   | CustomFileVulnerability
   | ConfiguredProject[]
@@ -284,7 +390,14 @@ export type ResponseData =
   | ResponseCustomSession[]
   | ListOfTagsResponse[]
   | AssessFilter
-  | Events[];
+  | Events[]
+  | LibParsedVulnerability
+  | commonResponse;
+
+export interface commonResponse {
+  assess: ApiResponse | null;
+  library: ApiResponse | null;
+}
 
 export interface SucessResponse {
   status: 'success';
@@ -565,6 +678,7 @@ export interface IOption {
   isChecked?: boolean;
   isMulti?: boolean;
   tooltipPlacement?: TooltipProps['placement'];
+  title?: React.ReactNode;
 }
 
 export type TabProps = {
@@ -665,6 +779,8 @@ export type AssessFilterState = {
   configuredApplications: ApiResponse | null;
   serverListbyOrgId: ApiResponse | null;
   buildNumber: ApiResponse | null;
+  assessEnvironments: ApiResponse | null;
+  assessTags: ApiResponse | null;
   customSessionMetaData: ApiResponse | null;
   mostRecentMetaData: ApiResponse | null;
   filters: ApiResponse | null;
@@ -677,6 +793,20 @@ export type AssessFilterState = {
   manualRefreshBackgroundVulnRunner: boolean;
   activeCurrentFile: ApiResponse | null;
   refreshBackgroundVulnRunnerAcrossIds: boolean;
+  environmentsList: ApiResponse | null;
+  serversList: ApiResponse | null;
+  quickViewList: ApiResponse | null;
+  libraryUsageList: ApiResponse | null;
+  libraryLicenceList: ApiResponse | null;
+  tagList: ApiResponse | null;
+  scaFilters: ApiResponse | null;
+  scaSeverities: ApiResponse | null;
+  scaStatus: ApiResponse | null;
+  scaAllFiles: ApiResponse | null;
+  scaOrgTags: ApiResponse | null;
+  scaTagsOkBehaviour: boolean;
+  scaCveOverview: ApiResponse | null;
+  scaAutoRefresh: ApiResponse | null;
 };
 
 export interface VulnerabilityOverview {
@@ -688,7 +818,7 @@ export interface VulnerabilityOverview {
 
 export interface VulnerabilityHowToFix {
   recommendation?: {
-    text: string;
+    formattedText: string;
   };
   custom_recommendation?: {
     text: string;
@@ -734,6 +864,7 @@ export interface AssessVulnerability {
   events?: VulnerabilityEvents;
   http_request?: VulnerabilityHttpRequest;
   tags: VulnerabilityTags[];
+  labelForMapping?: string;
 }
 
 export interface AssessFileVulnerability {
@@ -759,6 +890,7 @@ export interface AssessVulnerabilitiesType {
   servers?: number | number[] | string | string[];
   appVersionTags?: string | string[];
   severities?: string;
+  applicationTags?: string | string[];
   status?: string;
   startDate?: {
     date?: string;
@@ -783,10 +915,106 @@ export interface AssessVulnerabilitiesType {
     | [];
   dateFilter?: string;
   activeSessionMetadata?: string;
+  environments?: string[];
+  tags?: string[];
 }
 export type AssessFilter = ConfiguredProject & AssessVulnerabilitiesType;
 
 export type FilterOption = {
   keycode: string;
   label: string;
+};
+
+// ------------------- SCA Types ----------------------
+
+export type libListFilter = {
+  quickFilter: string;
+  apps: string[];
+};
+
+export type ScaFilterOption = {
+  keycode?: string;
+  label?: string;
+  count?: string;
+  disabled?: boolean;
+  checked?: boolean;
+};
+
+export type ScaFiltersTypes = {
+  appId?: string;
+  applicationName?: string;
+  tags?: string[];
+  grades?: string[];
+  usage?: string[];
+  licenses?: string[];
+  environments?: string[];
+  servers?: string[];
+  severity?: string[];
+  status?: string[];
+  quickView?: string;
+  sort?: string;
+};
+
+export type ScaFiltersType = {
+  appId?: string;
+  applicationName?: string;
+  tags?: string[];
+  grades?: string[];
+  usage?: string[];
+  licenses?: string[];
+  environments?: string[];
+  servers?: string[];
+  sort?: string;
+  severity?: string[];
+  quickView?: string;
+  status?: string[];
+};
+
+export type LibRequestBody = Pick<
+  ScaFiltersType,
+  | 'tags'
+  | 'grades'
+  | 'usage'
+  | 'licenses'
+  | 'environments'
+  | 'servers'
+  | 'sort'
+  | 'status'
+> & {
+  apps: string[];
+  includeUnused: boolean;
+  includeUsed: boolean;
+  severities: string[];
+  quickFilter: string;
+};
+
+export type CustomLibraryVulnerability = LibraryVulnerability &
+  LibraryNode &
+  CVENode & {
+    fileName?: string;
+    popupMessage?: PopupMessage;
+    lineNumber?: number;
+    severity?: string;
+    scrollToLine?: boolean;
+    id?: string;
+    filesCount?: number;
+    overview?: VulnerabilityOverview;
+    isRootUnmapped?: boolean;
+  };
+
+export type LibLanguages = {
+  java: ['pom.xml', 'build.gradle', 'build.gradle.kts', 'build.sbt'];
+  '.net': [
+    '.csproj',
+    '.fsproj',
+    '.vbproj',
+    'Directory.Packages.props',
+    'packages.config',
+  ];
+  ruby: ['Gemfile', '.gemspec'];
+  python: ['requirements.txt', 'pyproject.toml', 'Pipfile', 'setup.py'];
+  php: ['composer.json'];
+  go: ['go.mod'];
+  node: ['package.json'];
+  [key: string]: string[];
 };

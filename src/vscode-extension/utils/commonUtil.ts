@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { localeI18ln } from '../../l10n';
 import {
   ArtifactLocation,
@@ -5,6 +6,9 @@ import {
   Level0Vulnerability,
   Level1Entry,
   Level1Vulnerability,
+  LibParsedVulnerability,
+  LibraryNode,
+  LibraryVulnerability,
   ProjectSource,
   SourceJson,
   Vulnerability,
@@ -18,6 +22,7 @@ import {
   FilterSeverity,
   FilterStatus,
   FilterType,
+  LogLevel,
   PersistedDTO,
   PrimaryConfig,
 } from '../../common/types';
@@ -25,6 +30,7 @@ import path from 'path';
 import { resolveFailure, resolveSuccess } from './errorHandling';
 import { GetAssessFilter } from '../persistence/PersistenceConfigSetting';
 import { currentWorkspaceProjectManager, featureController } from './helper';
+import { loggerInstance } from '../logging/logger';
 
 export async function getVulnerabilitiesRefreshCycle(
   projectId: string,
@@ -418,4 +424,205 @@ export async function getCacheFilterData(): Promise<ApiResponse> {
   }
 
   return resolveSuccess('success', 200, persist.responseData);
+}
+
+export function getParseLibVulData(
+  data: LibraryVulnerability[],
+  configParams: ConfiguredProject,
+  appId: string
+) {
+  const childNodeVulnerabilities: LibraryNode[] = [];
+  const noVulnChildren: LibraryNode[] = [];
+
+  data.forEach((item) => {
+    const hasVulns = item.vulns.length > 0;
+    const parentMatch: string = `${item.file_name}:${item.hash}`;
+
+    if (hasVulns) {
+      const node: LibraryNode = {
+        level: 1,
+        isUnmapped: false,
+        parentMatch: parentMatch,
+        label: item.file_name,
+        cveCount: item.vulns.length,
+        restrictedLicenses: item.licenseViolation,
+        restrictedLibraries: item.restricted,
+        outdatedLibrary: true,
+        overview: {
+          file_name: item.file_name,
+          version: item.version,
+          release_date:
+            item.release_date &&
+            new Date(Number(item.release_date)).toISOString().split('T')[0],
+          hash: item.hash,
+          licenses: item.licenses,
+          grade: item.grade,
+          score: item.score,
+          total_vulnerabilities: item.vulns.length,
+          policy_violations: item.loc,
+          apps_using: item.apps.length,
+          classes_used: usageCounts(appId, item.library_class_usage_counts),
+          class_count: item.class_count,
+          app_language: item.app_language,
+        },
+        howToFix: {
+          minUpgrade: {
+            ...item?.remediationGuidance?.minUpgrade,
+            releaseDate:
+              item?.remediationGuidance?.minUpgrade?.releaseDate &&
+              new Date(
+                Number(item?.remediationGuidance?.minUpgrade?.releaseDate)
+              )
+                .toISOString()
+                .split('T')[0],
+          },
+          maxUpgrade: {
+            ...item.remediationGuidance?.maxUpgrade,
+            releaseDate:
+              item?.remediationGuidance?.maxUpgrade?.releaseDate &&
+              new Date(Number(item.remediationGuidance.maxUpgrade.releaseDate))
+                .toISOString()
+                .split('T')[0],
+          },
+        },
+        usage: {
+          total: 0,
+          classes_used: usageCounts(appId, item.library_class_usage_counts),
+          class_count: item.class_count,
+          observations: [],
+        },
+        path: [],
+        tags: item.tags,
+        redirectionUrl: libRedirectUrl(configParams, appId),
+        child: item.vulns.map((val) => ({
+          level: 0,
+          label: val.name,
+          parentMatch: parentMatch,
+          overview: {
+            severity: val.cvss_3_severity_code,
+            firstSeen: '',
+            nvdPublished: '',
+            nvdModified: '',
+            cveRecordLink: `https://www.cve.org/CVERecord?id=${val.name}`,
+            nvdRecordLink: `https://nvd.nist.gov/vuln/detail/${val.name}`,
+            severityAndMetrics: [],
+            vector: {
+              label: '',
+              vectors: [],
+            },
+            cisa: val.cisa,
+            epss_percentile: val.epss_percentile,
+            epss_score: val.epss_score,
+            cvss_3_severity_value: val.cvss_3_severity_value,
+            description: val.description,
+          },
+          redirectionUrl: libRedirectUrl(configParams, appId),
+        })),
+      };
+
+      childNodeVulnerabilities.push(node);
+    } else {
+      const childNode: LibraryNode = {
+        level: 1,
+        isUnmapped: true,
+        label: item.file_name,
+        parentMatch: parentMatch,
+        overview: {
+          file_name: item.file_name,
+          version: item.version,
+          release_date:
+            item.release_date &&
+            new Date(Number(item.release_date)).toISOString().split('T')[0],
+          hash: item.hash,
+          licenses: item.licenses,
+          grade: item.grade,
+          score: item.score,
+          total_vulnerabilities: 0,
+          policy_violations: item.loc,
+          apps_using: item.apps.length,
+          classes_used: usageCounts(appId, item.library_class_usage_counts),
+          class_count: item.class_count,
+          app_language: item.app_language,
+        },
+        restrictedLicenses: item.licenseViolation,
+        restrictedLibraries: item.restricted,
+        outdatedLibrary: true,
+        usage: {
+          total: 0,
+          classes_used: usageCounts(appId, item.library_class_usage_counts),
+          class_count: item.class_count,
+          observations: [],
+        },
+        tags: item.tags,
+        redirectionUrl: libRedirectUrl(configParams, appId),
+        child: [],
+        path: [],
+        cveCount: 0,
+        howToFix: {
+          minUpgrade: {
+            ...item?.remediationGuidance?.minUpgrade,
+            releaseDate:
+              item?.remediationGuidance?.minUpgrade?.releaseDate &&
+              new Date(
+                Number(item?.remediationGuidance?.minUpgrade?.releaseDate)
+              )
+                .toISOString()
+                .split('T')[0],
+          },
+          maxUpgrade: {
+            ...item.remediationGuidance?.maxUpgrade,
+            releaseDate:
+              item?.remediationGuidance?.maxUpgrade?.releaseDate &&
+              new Date(Number(item.remediationGuidance.maxUpgrade.releaseDate))
+                .toISOString()
+                .split('T')[0],
+          },
+        },
+      };
+
+      noVulnChildren.push(childNode);
+    }
+  });
+
+  // If there are any items without vulns, push the special "unmapped" node
+  if (noVulnChildren.length > 0) {
+    childNodeVulnerabilities.push({
+      level: 1,
+      label: "Unmapped CVE's",
+      count: noVulnChildren.length,
+      child: noVulnChildren,
+      isRootUnmapped: true,
+    } as any);
+  }
+
+  const totalCveCount = data.reduce((sum, item) => sum + item.vulns.length, 0);
+
+  const libraryCount = childNodeVulnerabilities.length + noVulnChildren.length;
+
+  const libraryVulnerability: LibParsedVulnerability = {
+    level: 2,
+    label: `Found ${totalCveCount} CVE's from ${noVulnChildren.length > 0 ? libraryCount - 1 : libraryCount} libraries`,
+    cveCount: totalCveCount,
+    libraryCount: libraryCount,
+    child: childNodeVulnerabilities,
+  };
+  const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: ${libraryVulnerability.label} \n`;
+  void loggerInstance?.logMessage(LogLevel.INFO, logData);
+  return libraryVulnerability;
+}
+
+export function libRedirectUrl(
+  configParams: ConfiguredProject,
+  appId: string
+): string {
+  return `${configParams.contrastURL}/Contrast/static/ng/index.html#/${configParams.organizationId}/applications/${appId}/libs`;
+}
+
+function usageCounts(appId: string, libraryUsage: any[]) {
+  const usageId = libraryUsage.find((val: any) => {
+    if (val.appId === appId) {
+      return val.usageCount;
+    }
+  });
+  return usageId !== undefined ? usageId.usageCount : 0;
 }

@@ -1,5 +1,4 @@
 import {
-  AssessProjectVulnerability,
   ContrastAssessLocale,
   ContrastScanLocale,
   ContrastSettingsLocale,
@@ -330,120 +329,235 @@ const FilterData: FilterType = {
 
 const AssessLocale: ContrastAssessLocale = {
   translate: 'Contrast Assess',
-  retrieveVul: {
-    translate: 'Retrieve Vulnerability',
-    formFields: {
-      application: {
-        translate: 'Application',
-        placeholder: 'No Applications Found',
-      },
-      server: {
-        noServerFound: {
-          translate: 'Server',
-          placeholder: 'No Servers Found',
+  filters: {
+    translate: 'Filters',
+    assess: {
+      translate: 'Filters',
+      formFields: {
+        application: {
+          translate: 'Application Name',
+          placeholder: 'No Application Found',
         },
-        selectServer: {
-          translate: 'Server',
-          placeholder: 'Select Server',
+        server: {
+          noServerFound: {
+            translate: 'Servers',
+            placeholder: 'No Servers Found',
+          },
+          selectServer: {
+            translate: 'Servers',
+            placeholder: 'Select Servers',
+          },
+        },
+        buildNumber: {
+          noBuildNumberFound: {
+            translate: 'Build Number',
+            placeholder: 'No Build Number Found',
+          },
+          selectBuildNumber: {
+            translate: 'Build Number',
+            placeholder: 'Select Build Number',
+          },
+        },
+        severity: {
+          translate: 'Severity',
+          options: [
+            {
+              name: 'critical',
+              translate: 'Critical',
+            },
+            {
+              name: 'high',
+              translate: 'High',
+            },
+            {
+              name: 'medium',
+              translate: 'Medium',
+            },
+            {
+              name: 'low',
+              translate: 'Low',
+            },
+            {
+              name: 'note',
+              translate: 'Note',
+            },
+          ],
+        },
+        status: {
+          translate: 'Status',
+          options: [
+            {
+              name: 'reported',
+              translate: 'Reported',
+            },
+            {
+              name: 'confirmed',
+              translate: 'Confirmed',
+            },
+            {
+              name: 'suspicious',
+              translate: 'Suspicious',
+            },
+            {
+              name: 'notAproblem',
+              translate: 'Not a problem',
+            },
+            {
+              name: 'remediated',
+              translate: 'Remediated',
+            },
+            {
+              name: 'remediatedAutoVerified',
+              translate: 'Remediated Auto Verified',
+            },
+            {
+              name: 'reopened',
+              translate: 'Reopened',
+            },
+          ],
+        },
+        Filter: {
+          translate: 'Filter',
+          options: [
+            {
+              name: 'From',
+              translate: 'From',
+            },
+            {
+              name: 'To',
+              translate: 'To',
+            },
+          ],
+        },
+        session_metadata: {
+          translate: 'Session Metadata',
+          options: [
+            {
+              name: 'none-radio',
+              translate: 'None',
+            },
+            {
+              name: 'custom-session-radio',
+              translate: 'Custom Session',
+            },
+            {
+              name: 'most-recent-session-radio',
+              translate: 'Most recent session',
+            },
+          ],
+        },
+        environments: {
+          noEnvironmentFound: {
+            translate: 'Environments',
+            placeholder: 'No Environments Found',
+          },
+          selectEnvironment: {
+            translate: 'Environments',
+            placeholder: 'Select Environments',
+          },
+        },
+        tags: {
+          noTagFound: {
+            translate: 'Tags',
+            placeholder: 'No Tags Found',
+          },
+          selectTag: {
+            translate: 'Tags',
+            placeholder: 'Select Tags',
+          },
         },
       },
-      buildNumber: {
-        noBuildNumberFound: {
-          translate: 'Build Number',
-          placeholder: 'No Build Numbers Found',
+    },
+    library: {
+      translate: 'Library',
+      formFields: {
+        application: {
+          translate: 'Application Name',
+          placeholder: 'No Application Found',
         },
-        selectBuildNumber: {
-          translate: 'Build Number',
-          placeholder: 'Select Build Number',
+        environments: {
+          translate: 'Environments',
+          placeholder: 'Select Environments',
         },
-      },
-      severity: {
-        translate: 'Severity',
-        options: [
-          {
-            name: 'critical',
-            translate: 'Critical',
-          },
-          {
-            name: 'high',
-            translate: 'High',
-          },
-          {
-            name: 'medium',
-            translate: 'Medium',
-          },
-          {
-            name: 'low',
-            translate: 'Low',
-          },
-          {
-            name: 'note',
-            translate: 'Note',
-          },
-        ],
-      },
-      status: {
-        translate: 'Status',
-        options: [
-          {
-            name: 'reported',
-            translate: 'Reported',
-          },
-          {
-            name: 'confirmed',
-            translate: 'Confirmed',
-          },
-          {
-            name: 'suspicious',
-            translate: 'Suspicious',
-          },
-          {
-            name: 'notAproblem',
-            translate: 'Not a problem',
-          },
-          {
-            name: 'remediated',
-            translate: 'Remediated',
-          },
-          {
-            name: 'remediatedAutoVerified',
-            translate: 'Remediated Auto Verified',
-          },
-          {
-            name: 'reopened',
-            translate: 'Reopened',
-          },
-        ],
-      },
-      Filter: {
-        translate: 'Filter',
-        options: [
-          {
-            name: 'From',
-            translate: 'From',
-          },
-          {
-            name: 'To',
-            translate: 'To',
-          },
-        ],
-      },
-      session_metadata: {
-        translate: 'Session Metadata',
-        options: [
-          {
-            name: 'none-radio',
-            translate: 'None',
-          },
-          {
-            name: 'custom-session-radio',
-            translate: 'Custom Session',
-          },
-          {
-            name: 'most-recent-session-radio',
-            translate: 'Most recent session',
-          },
-        ],
+        servers: {
+          translate: 'Servers',
+          placeholder: 'Select Servers',
+        },
+        quickView: {
+          translate: 'Quick View',
+          placeholder: 'Select Quick View',
+        },
+        libraryUsage: {
+          translate: 'Library Usage',
+          placeholder: 'Select Library Usage',
+        },
+        libraryLicenceType: {
+          translate: 'Library Licence Type',
+          placeholder: 'Select Library Licence Type',
+        },
+        tag: {
+          translate: 'Tags',
+          placeholder: 'Select Tags',
+        },
+        severity: {
+          translate: 'Severity',
+          placeholder: 'Select Severity',
+          options: [
+            {
+              name: 'critical',
+              translate: 'Critical',
+            },
+            {
+              name: 'high',
+              translate: 'High',
+            },
+            {
+              name: 'medium',
+              translate: 'Medium',
+            },
+            {
+              name: 'low',
+              translate: 'Low',
+            },
+            {
+              name: 'note',
+              translate: 'Note',
+            },
+          ],
+        },
+        status: {
+          translate: 'Status',
+          options: [
+            {
+              name: 'reported',
+              translate: 'Reported',
+            },
+            {
+              name: 'confirmed',
+              translate: 'Confirmed',
+            },
+            {
+              name: 'suspicious',
+              translate: 'Suspicious',
+            },
+            {
+              name: 'notAproblem',
+              translate: 'Not a problem',
+            },
+            {
+              name: 'remediated',
+              translate: 'Remediated',
+            },
+            {
+              name: 'remediatedAutoVerified',
+              translate: 'Remediated Auto Verified',
+            },
+            {
+              name: 'reopened',
+              translate: 'Reopened',
+            },
+          ],
+        },
       },
     },
   },
@@ -454,7 +568,7 @@ const AssessLocale: ContrastAssessLocale = {
     translate: 'Vulnerability Report',
     htmlElements: {
       translate:
-        "<h1>No vulnerabilities found for the project:</h1><ol><li>Go to the Contrast view in the Activity Bar.</li><li>Click the Retrieve Vulnerability button for the project.</li></ol><p>After retrieving vulnerabilities, return to this screen or else click on refresh icon to see the latest vulnerability report.</p><p>Tip: <span style='font-weight: 400;'>You can access this screen anytime via the Contrast Scan panel in the Activity Bar.</span></p>",
+        '<h1>No vulnerabilities found:</h1><ol><li>Navigate to the Contrast - Assess menu</li><li>Select the necessary filters in the vulnerability tab, Click on save button and click Run Button.</li><li>View the results in the Vulnerabilities Report tab.</li></ol><p>After retrieving vulnerabilities, return to this screen.</p><p>',
     },
     tabs: {
       overView: {
@@ -497,6 +611,7 @@ const AssessLocale: ContrastAssessLocale = {
           },
           tag: {
             translate: 'Tag',
+            placeholder: 'Nothing to show',
           },
         },
       },
@@ -535,6 +650,9 @@ const AssessLocale: ContrastAssessLocale = {
     create: {
       translate: 'Clear',
     },
+    save: {
+      translate: 'Save',
+    },
   },
   tooltips: {
     refresh: {
@@ -553,16 +671,146 @@ const AssessLocale: ContrastAssessLocale = {
       translate: 'Clear',
     },
     refreshServersAndBuildNumbers: {
-      translate: 'Refresh servers and buildNumbers',
+      translate: 'Refresh environments, servers, tags, and build numbers',
     },
     clearsServersAndBuildNumbers: {
-      translate: 'Clears servers and buildNumbers',
+      translate: 'Clear environments, servers, tags, and build numbers',
     },
     clearsAllAppliedFilters: {
       translate: 'Clears all applied filters',
     },
     fetchVulnerabilities: {
       translate: 'Fetch vulnerabilities',
+    },
+    assessRun: {
+      translate:
+        'Search for vulnerabilities and its libraries with these filter settings',
+    },
+    vulnerabilitySave: {
+      translate: 'Saves current selected filter',
+    },
+    vulnerabilityClear: {
+      translate: 'Restores to default value',
+    },
+    libraryRefresh: {
+      translate:
+        'Refresh’s Servers, Quick View, Library Usage, Library Licence type and Tags',
+    },
+    libraryClear: {
+      translate:
+        'Clear’s Servers, Quick View, Library Usage, Library Licence type and Tags',
+    },
+  },
+  librariesReport: {
+    translate: 'Library Report',
+    htmlElements: {
+      translate:
+        '<h1>No Libraries found:</h1><ol><li>Navigate to the Contrast - Assess menu</li><li>Select the necessary filters in the library tab, Click on the save button and click Run Button.</li><li>View the results in the Libraries Report tab.</li></ol><p>After retrieving Runtime Libraries, return to this screen.</p><p>',
+    },
+    tabs: {
+      overView: {
+        translate: 'Overview',
+        formFields: {
+          library: {
+            released: {
+              translate: 'Released',
+            },
+            identifier: {
+              translate: 'Identifier',
+            },
+            license: {
+              translate: 'License',
+            },
+            vulnerability: {
+              translate: 'Vulnerability',
+            },
+            policyViolations: {
+              translate: 'Policy Violations',
+            },
+            appsUsing: {
+              translate: 'Apps Using',
+            },
+            classesUsed: {
+              translate: 'Classes Used',
+            },
+            whatHappened: {
+              translate: 'What happened?',
+              placeholder: 'This library has known CVEs.',
+            },
+            whatTheRisk: {
+              translate: "What's the risk?",
+            },
+          },
+          cve: {
+            firstSeen: {
+              translate: 'First seen in Contrast',
+            },
+            nvdPublished: {
+              translate: 'NVD Published',
+            },
+            nvdLastModified: {
+              translate: 'NVD Last Modified',
+            },
+            nvdLatestInformation: {
+              translate: 'See NVD for latest information',
+            },
+            cveOrg: {
+              translate: 'See in cve.org ',
+            },
+            severityAndMetrics: {
+              translate: 'Severity and Metrics',
+            },
+            vector: {
+              translate: 'Vector',
+            },
+            description: {
+              translate: 'Description',
+            },
+            organizationalImpact: {
+              translate: 'Organizational Impact',
+            },
+          },
+        },
+      },
+
+      howToFix: {
+        translate: 'How To Fix',
+        placeholder: 'No recommended fixes.',
+        minimumUpgrade: {
+          translate: 'Minimum upgrade',
+          placeholder: 'We recommend upgrading to',
+        },
+        latestStable: {
+          translate: 'Latest stable',
+          placeholder: 'We recommend upgrading to',
+        },
+      },
+      usage: {
+        translate: 'Usage',
+        formFields: {
+          classesLoaded: {
+            translate: 'Classes Loaded',
+          },
+          firstObserved: {
+            translate: 'First Seen',
+          },
+          lastObserved: {
+            translate: 'Last Seen',
+          },
+          noSearchResults: {
+            translate: 'No search results',
+          },
+        },
+      },
+      path: {
+        translate: 'Path',
+        noDataFoundLable: 'No Path found',
+        noDataFoundContent:
+          'Note: Please check the corresponding manifest files for the selected library.',
+      },
+      tags: {
+        translate: 'Tags',
+      },
     },
   },
 };
@@ -618,283 +866,6 @@ const sessionMetaDatas: SessionMetaDataForRadio[] = [
   },
 ];
 
-const AssessTreeData: AssessProjectVulnerability = {
-  level: 2,
-  label: 'Found 10 issues in 5 files',
-  issuesCount: 10,
-  filesCount: 5,
-  child: [
-    {
-      level: 1,
-      label: 'SessionConfig.java',
-      issuesCount: 2,
-      filePath: 'SessionConfig.java',
-      fileType: 'java',
-      child: [
-        {
-          level: 0,
-          traceId: 'QBFI-1K8P-EEQG-A0VU',
-          label: "Application Disables 'secure' Flag on Cookies",
-          lineNumber: 58,
-          popupMessage: {
-            lastDetected_date: '01-May-2007',
-            status: 'REPORTED',
-            link: 'http://mdn.com',
-          },
-          Substatus_keycode: 'SECURE_FLAG_MISSING',
-          severity: 'Critical',
-          overview: {
-            chapters: [
-              {
-                type: 'location',
-                introText: 'The code:',
-                body: 'io.undertow.server.session.SessionCookieC',
-              },
-            ],
-            risk: {
-              text: "Setting the 'secure' flag on cookies prevents transmission over unencrypted channels.",
-            },
-          },
-          howToFix: {
-            recommendation: {
-              text: 'Ensure that the javax.servlet.http.Cookie#setSecure() method is called with true.',
-            },
-            owasp: 'https://owasp.org/Top10/A05_2021-Security',
-            cwe: 'https://cwe.mitre.org/data/definitions/614.html',
-          },
-          events: {
-            data: [
-              {
-                label: 'Events',
-                child: [
-                  {
-                    type: 'SECURE_FLAG_MISSING',
-                    label: 'Rule Violation Detected',
-                    child: [
-                      {
-                        label: 'cookie.setSecure(false)',
-                        child: [],
-                      },
-                      {
-                        label: 'Session created without secure flag',
-                        child: [],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          http_request: {
-            text: 'POST /WebGoat/login HTTP/1.1',
-          },
-          tags: [
-            { id: 1, label: 'Security' },
-            { id: 2, label: 'Critical' },
-          ],
-        },
-      ],
-    },
-    {
-      level: 1,
-      label: 'DatabaseConfig.java',
-      issuesCount: 2,
-      filePath: 'DatabaseConfig.java',
-      fileType: 'java',
-      child: [
-        {
-          level: 0,
-          traceId: 'QBFI-1K8P-EEQG-A1ZX',
-          label: 'Application Uses Hardcoded Credentials',
-          lineNumber: 102,
-          popupMessage: {
-            lastDetected_date: '15-June-2021',
-            status: 'REPORTED',
-            link: 'http://security.com',
-          },
-          Substatus_keycode: 'HARDCODED_CREDENTIALS',
-          severity: 'High',
-          overview: {
-            chapters: [
-              {
-                type: 'location',
-                introText: 'The code:',
-                body: 'DatabaseConfig.java',
-              },
-            ],
-            risk: {
-              text: 'Hardcoded credentials can be extracted and exploited by attackers.',
-            },
-          },
-          howToFix: {
-            recommendation: {
-              text: 'Store credentials securely in environment variables or a secrets manager.',
-            },
-            owasp: 'https://owasp.org/Top10/A03_2021-Injection',
-            cwe: 'https://cwe.mitre.org/data/definitions/798.html',
-          },
-          events: {
-            data: [
-              {
-                label: 'Events',
-                child: [
-                  {
-                    type: 'HARDCODED_CREDENTIALS',
-                    label: 'Rule Violation Detected',
-                    child: [
-                      { label: "password = 'admin123'", child: [] },
-                      { label: "db_user = 'root'", child: [] },
-                      { label: 'Plaintext credentials found', child: [] },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          http_request: {
-            text: 'GET /config/database HTTP/1.1',
-          },
-          tags: [
-            { id: 3, label: 'Configuration' },
-            { id: 4, label: 'Security Risk' },
-          ],
-        },
-      ],
-    },
-    {
-      level: 1,
-      label: 'UserAuth.java',
-      issuesCount: 2,
-      filePath: 'UserAuth.java',
-      fileType: 'java',
-      child: [
-        {
-          level: 0,
-          traceId: 'QBFI-1K8P-EEQG-B2YX',
-          label: 'Weak Password Policy Detected',
-          lineNumber: 78,
-          popupMessage: {
-            lastDetected_date: '20-Dec-2023',
-            status: 'NEW',
-            link: 'http://security-alert.com',
-          },
-          Substatus_keycode: 'WEAK_PASSWORD_POLICY',
-          severity: 'Medium',
-          overview: {
-            chapters: [
-              {
-                type: 'location',
-                introText: 'The code:',
-                body: 'UserAuth.java',
-              },
-            ],
-            risk: {
-              text: 'Weak passwords make accounts vulnerable to brute-force attacks.',
-            },
-          },
-          howToFix: {
-            recommendation: {
-              text: 'Enforce password complexity rules with uppercase, numbers, and special characters.',
-            },
-            owasp: 'https://owasp.org/Top10/A02_2021-Cryptographic_Failures',
-            cwe: 'https://cwe.mitre.org/data/definitions/521.html',
-          },
-          events: {
-            data: [
-              {
-                label: 'Events',
-                child: [
-                  {
-                    type: 'WEAK_PASSWORD_POLICY',
-                    label: 'Rule Violation Detected',
-                    child: [
-                      { label: 'password.length() < 6', child: [] },
-                      { label: 'Missing special characters', child: [] },
-                      { label: 'No uppercase letters', child: [] },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          http_request: {
-            text: 'POST /user/register HTTP/1.1',
-          },
-          tags: [
-            { id: 5, label: 'Authentication' },
-            { id: 6, label: 'Best Practices' },
-          ],
-        },
-      ],
-    },
-    {
-      level: 1,
-      label: 'LoggingService.java',
-      issuesCount: 2,
-      filePath: 'LoggingService.java',
-      fileType: 'java',
-      child: [
-        {
-          level: 0,
-          traceId: 'QBFI-1K8P-EEQG-C3ZY',
-          label: 'Logging Sensitive Information',
-          lineNumber: 35,
-          popupMessage: {
-            lastDetected_date: '10-Aug-2022',
-            status: 'REPORTED',
-            link: 'http://log-security.com',
-          },
-          Substatus_keycode: 'LOGGING_SENSITIVE_DATA',
-          severity: 'High',
-          overview: {
-            chapters: [
-              {
-                type: 'location',
-                introText: 'The code:',
-                body: 'LoggingService.java',
-              },
-            ],
-            risk: {
-              text: 'Logging sensitive data can expose it in logs, leading to leaks.',
-            },
-          },
-          howToFix: {
-            recommendation: {
-              text: 'Mask or remove sensitive data before logging.',
-            },
-            owasp: 'https://owasp.org/Top10/A06_2021-Insecure_Design',
-            cwe: 'https://cwe.mitre.org/data/definitions/532.html',
-          },
-          events: {
-            data: [
-              {
-                label: 'Events',
-                child: [
-                  {
-                    type: 'LOGGING_SENSITIVE_DATA',
-                    label: 'Rule Violation Detected',
-                    child: [
-                      { label: 'Logging user passwords', child: [] },
-                      { label: 'Logging credit card numbers', child: [] },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          http_request: {
-            text: 'POST /logs/error HTTP/1.1',
-          },
-          tags: [
-            { id: 7, label: 'Logging' },
-            { id: 8, label: 'Security' },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
 const mainFilters: FilterOption[] = [
   { keycode: 'Reported', label: 'Reported' },
   { keycode: 'Suspicious', label: 'Suspicious' },
@@ -925,7 +896,6 @@ export {
   dateRangeFilters,
   availableTimeSlots,
   sessionMetaDatas,
-  AssessTreeData,
   mainFilters,
   notAProblemSubfilters,
 };

@@ -45,6 +45,7 @@ import path from 'path';
 import { Uri } from 'vscode';
 import { ContrastPanelInstance } from '../../../vscode-extension/commands/ui-commands/webviewHandler';
 import { updateGlobalWebviewConfig } from '../../../vscode-extension/utils/multiInstanceConfigSync';
+import { LocaleMemoryCacheInstance } from '../../../vscode-extension/utils/localeMemoryCache';
 
 jest.mock('../../../vscode-extension/utils/helper', () => ({
   closeActiveFileHightlighting: jest.fn(),
@@ -159,6 +160,15 @@ jest.mock('../../../vscode-extension/utils/persistanceState', () => ({
   PersistenceInstance: {
     set: jest.fn(),
     getByKey: jest.fn(),
+  },
+}));
+
+jest.mock('../../../vscode-extension/utils/localeMemoryCache', () => ({
+  LocaleMemoryCacheInstance: {
+    getStore: jest.fn(),
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    clearStore: jest.fn(),
   },
 }));
 
@@ -1231,13 +1241,13 @@ describe('Project Configuration Functions', () => {
     it('should return persisted data when it is not an array', async () => {
       const persistedData = { id: 1, name: 'filter1' };
 
-      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue(
+      (LocaleMemoryCacheInstance.getItem as jest.Mock).mockReturnValue(
         persistedData
       );
 
       const response = await GetFilters();
 
-      expect(PersistenceInstance.getByKey).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.getItem).toHaveBeenCalledWith(
         TOKEN.SCAN,
         SCAN_KEYS.FILTERS
       );
@@ -1258,13 +1268,13 @@ describe('Project Configuration Functions', () => {
       };
       const persistedData = [mockProject];
 
-      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue(
+      (LocaleMemoryCacheInstance.getItem as jest.Mock).mockReturnValue(
         persistedData
       );
 
       const response = await GetFilters();
 
-      expect(PersistenceInstance.getByKey).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.getItem).toHaveBeenCalledWith(
         TOKEN.SCAN,
         SCAN_KEYS.FILTERS
       );
@@ -1278,9 +1288,11 @@ describe('Project Configuration Functions', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      (PersistenceInstance.getByKey as jest.Mock).mockImplementation(() => {
-        throw new Error('Database error');
-      });
+      (LocaleMemoryCacheInstance.getItem as jest.Mock).mockImplementation(
+        () => {
+          throw new Error('Database error');
+        }
+      );
 
       await expect(GetFilters()).rejects.toEqual(
         resolveFailure(
@@ -1312,11 +1324,11 @@ describe('Project Configuration Functions', () => {
     };
 
     it('should return success message when data is updated successfully', async () => {
-      (PersistenceInstance.set as jest.Mock).mockReturnValue(true);
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockReturnValue(true);
 
       const response = await UpdateFilters(mockPayload);
 
-      expect(PersistenceInstance.set).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.setItem).toHaveBeenCalledWith(
         TOKEN.SCAN,
         SCAN_KEYS.FILTERS,
         mockPayload
@@ -1331,11 +1343,11 @@ describe('Project Configuration Functions', () => {
     });
 
     it('should return success message with null when persisting data fails', async () => {
-      (PersistenceInstance.set as jest.Mock).mockReturnValue(false);
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockReturnValue(false);
 
       const response = await UpdateFilters(mockPayload);
 
-      expect(PersistenceInstance.set).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.setItem).toHaveBeenCalledWith(
         TOKEN.SCAN,
         SCAN_KEYS.FILTERS,
         mockPayload
@@ -1350,9 +1362,11 @@ describe('Project Configuration Functions', () => {
     });
 
     it('should return failure message when an error occurs during execution', async () => {
-      (PersistenceInstance.set as jest.Mock).mockImplementation(() => {
-        throw new Error('Something went wrong');
-      });
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockImplementation(
+        () => {
+          throw new Error('Something went wrong');
+        }
+      );
 
       try {
         await UpdateFilters(mockPayload);
@@ -1371,15 +1385,15 @@ describe('Project Configuration Functions', () => {
     it('should return persisted data when it is not an array', async () => {
       const persistedData = { id: 1, name: 'filter1' };
 
-      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue(
+      (LocaleMemoryCacheInstance.getItem as jest.Mock).mockReturnValue(
         persistedData
       );
 
       const response = await GetAssessFilter();
 
-      expect(PersistenceInstance.getByKey).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.getItem).toHaveBeenCalledWith(
         TOKEN.ASSESS,
-        ASSESS_KEYS.FILTERS
+        ASSESS_KEYS.ASSESS_FILTERS
       );
       expect(response).toEqual(
         resolveSuccess(
@@ -1397,15 +1411,15 @@ describe('Project Configuration Functions', () => {
       };
       const persistedData = [mockProject];
 
-      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue(
+      (LocaleMemoryCacheInstance.getItem as jest.Mock).mockReturnValue(
         persistedData
       );
 
       const response = await GetAssessFilter();
 
-      expect(PersistenceInstance.getByKey).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.getItem).toHaveBeenCalledWith(
         TOKEN.ASSESS,
-        ASSESS_KEYS.FILTERS
+        ASSESS_KEYS.ASSESS_FILTERS
       );
       expect(response).toEqual(
         resolveSuccess(
@@ -1417,9 +1431,11 @@ describe('Project Configuration Functions', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      (PersistenceInstance.getByKey as jest.Mock).mockImplementation(() => {
-        throw new Error('Database error');
-      });
+      (LocaleMemoryCacheInstance.getItem as jest.Mock).mockImplementation(
+        () => {
+          throw new Error('Database error');
+        }
+      );
 
       await expect(GetFilters()).rejects.toEqual(
         resolveFailure(
@@ -1433,9 +1449,11 @@ describe('Project Configuration Functions', () => {
       const errorMessage = 'Something went wrong';
       const fakeError = new Error(errorMessage);
 
-      (PersistenceInstance.getByKey as jest.Mock).mockImplementation(() => {
-        throw fakeError;
-      });
+      (LocaleMemoryCacheInstance.getItem as jest.Mock).mockImplementation(
+        () => {
+          throw fakeError;
+        }
+      );
 
       const logMock = jest.fn();
       (loggerInstance.logMessage as jest.Mock) = logMock;
@@ -1469,7 +1487,9 @@ describe('Project Configuration Functions', () => {
       };
       const persistedData = true; // Simulate success
 
-      (PersistenceInstance.set as jest.Mock).mockReturnValue(persistedData);
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockReturnValue(
+        persistedData
+      );
       const logMock = jest.fn();
       (loggerInstance.logMessage as jest.Mock) = logMock;
 
@@ -1501,7 +1521,9 @@ describe('Project Configuration Functions', () => {
       };
       const persistedData = null;
 
-      (PersistenceInstance.set as jest.Mock).mockReturnValue(persistedData);
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockReturnValue(
+        persistedData
+      );
       const logMock = jest.fn();
       (loggerInstance.logMessage as jest.Mock) = logMock;
 
@@ -1534,9 +1556,11 @@ describe('Project Configuration Functions', () => {
       const errorMessage = 'Something went wrong';
       const fakeError = new Error(errorMessage);
 
-      (PersistenceInstance.set as jest.Mock).mockImplementation(() => {
-        throw fakeError;
-      });
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockImplementation(
+        () => {
+          throw fakeError;
+        }
+      );
 
       const logMock = jest.fn();
       (loggerInstance.logMessage as jest.Mock) = logMock;
@@ -1598,13 +1622,13 @@ describe('Project Configuration Functions', () => {
     };
 
     it('should return success message when data is updated successfully', async () => {
-      (PersistenceInstance.set as jest.Mock).mockReturnValue(true);
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockReturnValue(true);
 
       const response = await UpdateAssessFilter(mockPayload);
 
-      expect(PersistenceInstance.set).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.setItem).toHaveBeenCalledWith(
         TOKEN.ASSESS,
-        ASSESS_KEYS.FILTERS,
+        ASSESS_KEYS.ASSESS_FILTERS,
         mockPayload
       );
       expect(response).toEqual(
@@ -1617,13 +1641,13 @@ describe('Project Configuration Functions', () => {
     });
 
     it('should return success message with null when persisting data fails', async () => {
-      (PersistenceInstance.set as jest.Mock).mockReturnValue(false);
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockReturnValue(false);
 
       const response = await UpdateAssessFilter(mockPayload);
 
-      expect(PersistenceInstance.set).toHaveBeenCalledWith(
+      expect(LocaleMemoryCacheInstance.setItem).toHaveBeenCalledWith(
         TOKEN.ASSESS,
-        ASSESS_KEYS.FILTERS,
+        ASSESS_KEYS.ASSESS_FILTERS,
         mockPayload
       );
       expect(response).toEqual(
@@ -1636,9 +1660,11 @@ describe('Project Configuration Functions', () => {
     });
 
     it('should return failure message when an error occurs during execution', async () => {
-      (PersistenceInstance.set as jest.Mock).mockImplementation(() => {
-        throw new Error('Something went wrong');
-      });
+      (LocaleMemoryCacheInstance.setItem as jest.Mock).mockImplementation(
+        () => {
+          throw new Error('Something went wrong');
+        }
+      );
 
       try {
         await UpdateAssessFilter(mockPayload);

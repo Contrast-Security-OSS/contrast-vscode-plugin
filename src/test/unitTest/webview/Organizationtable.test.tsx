@@ -4,6 +4,10 @@ import { createStore } from 'redux';
 
 import OrganizationTable from '../../../webview/components/Settings/OrganizationTable';
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+jest.mock('../../../webview/utils/postMessage', () => ({
+  webviewPostMessage: jest.fn(),
+}));
 const mockStore = (state: any) => createStore((state) => state, state);
 
 describe('OrganizationTable', () => {

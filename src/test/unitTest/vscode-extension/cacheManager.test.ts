@@ -4,6 +4,7 @@ import { PersistenceInstance } from '../../../vscode-extension/utils/persistance
 import { getProjectById } from '../../../vscode-extension/api/services/apiService';
 import {
   clearCacheByProjectId,
+  commonRefreshAssessLibrariesCache,
   disposeCache,
   getAdviceFromCache,
   getCacheSize,
@@ -12,7 +13,10 @@ import {
   getDataOnlyFromCacheAssess,
   updateAdvice,
 } from '../../../vscode-extension/cache/cacheManager';
-import { resolveFailure } from '../../../vscode-extension/utils/errorHandling';
+import {
+  resolveFailure,
+  resolveSuccess,
+} from '../../../vscode-extension/utils/errorHandling';
 
 import {
   getCacheFilterData,
@@ -26,6 +30,7 @@ import {
   ShowInformationPopup,
 } from '../../../vscode-extension/commands/ui-commands/messageHandler';
 import { stopBackgroundTimer } from '../../../vscode-extension/cache/backgroundRefreshTimer';
+import { commonResponse } from '../../../common/types';
 
 const cacheManager = require('cache-manager');
 
@@ -382,6 +387,108 @@ describe('Cache Management Tests', () => {
         resolveFailure(
           localeI18ln.getTranslation('apiResponse.projectNotFound'),
           400
+        )
+      );
+    });
+  });
+
+  describe('commonRefreshAssessLibrariesCache', () => {
+    const mockRequestBody = { appId: '123' } as any;
+    const mockRequestParams = { appId: '123', orgId: 'org1' } as any;
+    const mockParams = { apiKey: 'mockApiKey' } as any;
+    const configuredProject = { projectId: '123', source: 'assess' };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      memoryCache.set.mockClear();
+      memoryCache.get.mockClear();
+      memoryCache.del.mockClear();
+      memoryCache.reset.mockClear();
+      mockedShowErrorPopup.mockReset();
+    });
+
+    it('should return failure if project is not found', async () => {
+      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue([]);
+
+      const result = await commonRefreshAssessLibrariesCache(
+        mockRequestBody,
+        mockRequestParams,
+        mockParams
+      );
+
+      expect(result).toEqual(
+        resolveFailure(
+          localeI18ln.getTranslation('apiResponse.projectNotFound'),
+          400
+        )
+      );
+    });
+
+    it('should return success if both assess and library refresh succeed', async () => {
+      const mockCacheData: commonResponse = {
+        assess: {
+          code: 200,
+          status: 'success', // literal type match
+          responseData: [],
+          message: 'Assess OK',
+        },
+        library: {
+          code: 200,
+          status: 'success', // literal type match
+          responseData: [],
+          message: 'Library OK',
+        },
+      };
+
+      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue([
+        configuredProject,
+      ]);
+
+      const result = await commonRefreshAssessLibrariesCache(
+        mockRequestBody,
+        mockRequestParams,
+        mockParams
+      );
+
+      expect(result).toEqual(
+        resolveSuccess(
+          localeI18ln.getTranslation('apiResponse.vulnerabilitesRetrieved'),
+          200,
+          mockCacheData
+        )
+      );
+    });
+
+    it('should return success with partial result if library fails', async () => {
+      const mockCacheData: commonResponse = {
+        assess: {
+          code: 200,
+          status: 'success', // literal type match
+          responseData: [],
+          message: 'Assess OK',
+        },
+        library: {
+          code: 400,
+          status: 'failure', // literal type match
+          message: 'Library failed',
+          responseData: null,
+        },
+      };
+      (PersistenceInstance.getByKey as jest.Mock).mockReturnValue([
+        configuredProject,
+      ]);
+
+      const result = await commonRefreshAssessLibrariesCache(
+        mockRequestBody,
+        mockRequestParams,
+        mockParams
+      );
+
+      expect(result).toEqual(
+        resolveSuccess(
+          localeI18ln.getTranslation('apiResponse.vulnerabilitesRetrieved'),
+          200,
+          mockCacheData
         )
       );
     });

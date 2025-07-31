@@ -22,6 +22,7 @@ const ContrastOption = ({
   additionalProps,
   isMulti = false,
   isChecked = false,
+  title,
 }: IOption) => {
   const textRef = useRef<HTMLDivElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -59,7 +60,7 @@ const ContrastOption = ({
           <div className="dropdown-option-label">
             {isMulti && <input type="checkbox" checked={isChecked} readOnly />}
             <span className="dropdown-option-label-text" ref={textRef}>
-              {children}
+              {title ?? children}
             </span>
           </div>
         }
@@ -151,34 +152,46 @@ const ContrastDropdown = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const getSelectedOptionLabels = useMemo((): string | string[] => {
+  const getSelectedOptionLabels = useMemo((): {
+    name: string | string[];
+    isPlaceholder: boolean;
+  } => {
     if (!isMultiSelect) {
       const selected = contrastOptions.find(
         (child) => child.props.value === selectedValue
       );
-      return selected?.props.children ?? placeHolder;
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (selected?.props.children) {
+        return { name: selected.props.children, isPlaceholder: false };
+      }
+      return { name: placeHolder, isPlaceholder: true };
     }
 
     if (Array.isArray(selectedValue)) {
-      return selectedValue
+      const selectedLabels = selectedValue
         .map(
           (val) =>
             contrastOptions.find((child) => child.props.value === val)?.props
               .children
         )
         .filter(Boolean) as string[];
+
+      if (selectedLabels.length > 0) {
+        return { name: selectedLabels, isPlaceholder: false };
+      }
     }
 
-    return placeHolder;
-  }, [selectedValue, contrastOptions]);
+    return { name: placeHolder, isPlaceholder: true };
+  }, [selectedValue, contrastOptions, isMultiSelect, placeHolder]);
 
   const selectedText = useMemo(() => {
-    const names = getSelectedOptionLabels;
-    if (Array.isArray(names)) {
-      return names.length > 0 ? names.join(', ') : placeHolder;
-    }
-    return names || placeHolder;
-  }, [getSelectedOptionLabels, placeHolder]);
+    const { name, isPlaceholder } = getSelectedOptionLabels;
+
+    return {
+      name: Array.isArray(name) ? name.join(', ') : name,
+      isPlaceholder,
+    };
+  }, [getSelectedOptionLabels]);
 
   const handleOptionClick = (e: { value: string; children: ReactNode }) => {
     let newValue: string | string[];
@@ -230,12 +243,16 @@ const ContrastDropdown = ({
         id={id}
       >
         <Tooltip
-          title={isOverflowing ? selectedText?.toString() : ''}
+          title={isOverflowing ? selectedText.name?.toString() : ''}
           placement="bottom-start"
           slotProps={customToolTipStyle}
         >
-          <div ref={selectedRef} className="dropdown-label">
-            {selectedText}
+          <div
+            ref={selectedRef}
+            className="dropdown-label"
+            style={selectedText.isPlaceholder ? { color: 'gray' } : {}}
+          >
+            {selectedText.name}
           </div>
         </Tooltip>
 

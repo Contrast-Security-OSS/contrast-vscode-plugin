@@ -6,7 +6,12 @@ import { registerScanCommand } from './ui-commands/scanCommands';
 import { PersistenceInstance } from '../utils/persistanceState';
 import { initializeLogger } from '../logging/logger';
 import { registerRetrieveVulCommand } from './ui-commands/retrieveVulnerabilityCommand';
-import { featureController, slotInstance, tabBlocker } from '../utils/helper';
+import {
+  featureController,
+  libraryPathNavigator,
+  slotInstance,
+  tabBlocker,
+} from '../utils/helper';
 import { listofAllVulnerabilities } from '../utils/listofAllVulnerabilities';
 import { registerStatusBarCommend } from '../utils/statusBarSeverity';
 import { registerAboutWebviewPanel } from './ui-commands/aboutWebviewHandler';
@@ -15,6 +20,7 @@ import { FilterData } from '../../webview/utils/constant';
 import { PersistedDTO } from '../../common/types';
 import { registerAssessCommand } from './ui-commands/assessCommand';
 import { globalConfigChangeListener } from '../utils/multiInstanceConfigSync';
+import { LocaleMemoryCacheInstance } from '../utils/localeMemoryCache';
 
 let globalExtentionUri: vscode.ExtensionContext;
 
@@ -42,7 +48,8 @@ export async function registerCommands(
     if (
       e &&
       slotInstance.getSlot() === true &&
-      featureController.getSlot() !== 'none'
+      featureController.getSlot() !== 'none' &&
+      libraryPathNavigator.getSlot() === true
     ) {
       await listofAllVulnerabilities(e);
     }
@@ -51,12 +58,12 @@ export async function registerCommands(
   initializeLogger(context);
   context.subscriptions.push(...registeredCommands);
 
-  await PersistenceInstance.set(
+  await LocaleMemoryCacheInstance.setItem(
     TOKEN.SCAN,
     SCAN_KEYS.FILTERS as keyof PersistedDTO,
     FilterData
   );
-  await PersistenceInstance.clear(TOKEN.ASSESS);
+  await LocaleMemoryCacheInstance.clearStore(TOKEN.ASSESS);
 }
 
 export const disposeCommads = () => {

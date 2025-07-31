@@ -51,6 +51,21 @@ import {
   setManualRefreshBackgroundRunner,
   setAssessActiveCurrentFile,
   setRefreshBackgroundRunnerAcrossIds,
+  getEnvironmentsList,
+  getQuickViewList,
+  getLibraryUsageList,
+  getLibraryLicenceList,
+  getScaFilters,
+  getServersList,
+  getTagList,
+  getScaSeverities,
+  getScaStaus,
+  getAssessEnvironmentsList,
+  getAssessTagsList,
+  getScaAllFilesVulnerability,
+  getScaOrganizationTags,
+  setScaTagsOkBehaviour,
+  getScaAutoRefresh,
 } from './utils/redux/slices/assessFilter';
 import { setContrastTheme } from './utils/redux/slices/contrastTheme';
 
@@ -217,6 +232,16 @@ const handleMessage = (event: MessageEvent): void => {
         ContrastStore.dispatch(getBuildNumber(data));
       }
       break;
+    case WEBVIEW_COMMANDS.GET_ASSESS_ENVIRONMENTS:
+      {
+        ContrastStore.dispatch(getAssessEnvironmentsList(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.GET_ASSESS_TAGS:
+      {
+        ContrastStore.dispatch(getAssessTagsList(data));
+      }
+      break;
     case WEBVIEW_COMMANDS.GET_CUSTOM_SESSION_METADATA:
       {
         ContrastStore.dispatch(getCustomSessionMetaData(data));
@@ -310,6 +335,102 @@ const handleMessage = (event: MessageEvent): void => {
     case WEBVIEW_COMMANDS.ASSESS_REFRESH_BACKGROUND_RUNNER_ACROSS_IDS:
       {
         ContrastStore.dispatch(setRefreshBackgroundRunnerAcrossIds(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_ENVIRONMENTS_LIST:
+      {
+        ContrastStore.dispatch(getEnvironmentsList(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_SERVERS_LIST:
+      {
+        ContrastStore.dispatch(getServersList(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_QUICKVIEW_LIST:
+      {
+        ContrastStore.dispatch(getQuickViewList(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_LIBRARY_USAGE_LIST:
+      {
+        ContrastStore.dispatch(getLibraryUsageList(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_LIBRARY_LICENSES_LIST:
+      {
+        ContrastStore.dispatch(getLibraryLicenceList(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_TAG_LIST:
+      {
+        ContrastStore.dispatch(getTagList(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.SCA_GET_FILTERS:
+      {
+        ContrastStore.dispatch(getScaFilters(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.SCA_SEVERITIES:
+      {
+        ContrastStore.dispatch(getScaSeverities(data));
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.SCA_STATUS:
+      {
+        ContrastStore.dispatch(getScaStaus(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_GET_ALL_FILES_VULNERABILITY:
+      {
+        ContrastStore.dispatch(getScaAllFilesVulnerability(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_UPDATE_VULNERABILITY_USAGE:
+      {
+        ContrastStore.dispatch(getScaAllFilesVulnerability(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_ORG_TAGS:
+      {
+        ContrastStore.dispatch(getScaOrganizationTags(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_TAG_OK_BEHAVIOUR:
+      {
+        ContrastStore.dispatch(setScaTagsOkBehaviour(false));
+        if (data !== null) {
+          ContrastStore.dispatch(getScaAllFilesVulnerability(data));
+        }
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_UPDATE_CVE_OVERVIEW:
+      {
+        ContrastStore.dispatch(getScaOrganizationTags(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_UPDATE_CVE_PATH:
+      {
+        if (data !== null) {
+          ContrastStore.dispatch(getScaAllFilesVulnerability(data));
+        }
+      }
+      break;
+
+    case WEBVIEW_COMMANDS.SCA_AUTO_REFRESH:
+      {
+        ContrastStore.dispatch(getScaAutoRefresh(data));
+      }
+      break;
+    case WEBVIEW_COMMANDS.SCA_GET_INITIAL_ALL_FILES_VULNERABILITY:
+      {
+        if (data !== null) {
+          ContrastStore.dispatch(getScaAllFilesVulnerability(data));
+        }
       }
       break;
     default:

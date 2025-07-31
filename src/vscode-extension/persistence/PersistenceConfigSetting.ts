@@ -27,14 +27,13 @@ import {
   getOrganisationName,
   getProjectById,
 } from '../api/services/apiService';
-import { clearCacheByProjectId } from '../cache/cacheManager';
 import { localeI18ln } from '../../l10n';
 import { DateTime } from '../utils/commonUtil';
 import { loggerInstance } from '../logging/logger';
 import { ContrastPanelInstance } from '../commands/ui-commands/webviewHandler';
-import { closeActiveFileHightlighting, isNotNull } from '../utils/helper';
-import { stopBackgroundTimerAssess } from '../cache/backgroundRefreshTimerAssess';
+import { closeActiveFileHightlighting } from '../utils/helper';
 import { updateGlobalWebviewConfig } from '../utils/multiInstanceConfigSync';
+import { LocaleMemoryCacheInstance } from '../utils/localeMemoryCache';
 
 async function AddProjectToConfig(
   payload: ConfiguredProject
@@ -199,8 +198,12 @@ async function UpdateConfiguredProjectById(
     );
 
     await updateGlobalWebviewConfig(
-      WEBVIEW_SCREENS.SCAN,
-      'sharedProjectName',
+      existingProject?.source === 'scan'
+        ? WEBVIEW_SCREENS.SCAN
+        : WEBVIEW_SCREENS.ASSESS,
+      existingProject?.source === 'scan'
+        ? 'sharedProjectName'
+        : 'sharedApplicationName',
       existingProject?.projectName ?? ''
     );
 
@@ -271,7 +274,6 @@ async function UpdateConfiguredProjectById(
       }
 
       // Assess Things
-      const getActiveApplication = await GetAssessFilter();
       if (
         existingProject.source === 'assess' &&
         (existingProject.source !== payload.source ||
@@ -281,28 +283,12 @@ async function UpdateConfiguredProjectById(
           existingProject.projectName !== payload.projectName ||
           existingProject.projectId !== payload.projectId)
       ) {
-        if (
-          isNotNull(getActiveApplication) &&
-          isNotNull(getActiveApplication.responseData)
-        ) {
-          const { projectId, id } =
-            getActiveApplication.responseData as ConfiguredProject;
-          if (
-            existingProject?.id === id &&
-            existingProject.projectId === projectId
-          ) {
-            await updateGlobalWebviewConfig(
-              WEBVIEW_SCREENS.SETTING,
-              'clearAssessThings'
-            );
-            await ContrastPanelInstance.clearAssessPersistance();
-            await ContrastPanelInstance.clearPrimaryAssessFilter();
-            await ContrastPanelInstance.resetAssessVulnerabilityRecords();
-            await stopBackgroundTimerAssess();
-          }
-        }
         await updateGlobalWebviewConfig(
-          WEBVIEW_SCREENS.SETTING,
+          WEBVIEW_SCREENS.ASSESS,
+          'clearAssessThings'
+        );
+        await updateGlobalWebviewConfig(
+          WEBVIEW_SCREENS.ASSESS,
           'reloadApplications'
         );
       }
@@ -360,6 +346,7 @@ async function DeleteConfiguredProjectById(
           (item: ConfiguredProject) => item.id === id
         );
         let isScanDelete: boolean = false;
+        let isAssessDelete: boolean = false;
 
         if (deletedProject.length > 0) {
           if (deletedProject[0].source === 'scan') {
@@ -374,7 +361,15 @@ async function DeleteConfiguredProjectById(
             ]);
           }
           if (deletedProject[0].source === 'assess') {
-            await clearCacheByProjectId(deletedProject[0].projectId as string);
+            isAssessDelete = true;
+            await closeActiveFileHightlighting();
+            await Promise.all([
+              updateGlobalWebviewConfig(
+                WEBVIEW_SCREENS.ASSESS,
+                'deleteApplication',
+                deletedProject[0].projectName ?? ''
+              ),
+            ]);
           }
         }
 
@@ -387,6 +382,12 @@ async function DeleteConfiguredProjectById(
           await updateGlobalWebviewConfig(
             WEBVIEW_SCREENS.SCAN,
             'reloadProjects'
+          );
+        }
+        if (isAssessDelete) {
+          await updateGlobalWebviewConfig(
+            WEBVIEW_SCREENS.ASSESS,
+            'reloadApplications'
           );
         }
         ContrastPanelInstance.postMessage({
@@ -445,11 +446,10 @@ async function DeleteConfiguredProjectById(
 
 async function GetFilters(): Promise<ApiResponse> {
   try {
-    // PersistenceInstance.clear(TOKEN.SCAN);
-    const persistedData = PersistenceInstance.getByKey(
+    const persistedData = (await LocaleMemoryCacheInstance.getItem(
       TOKEN.SCAN,
       SCAN_KEYS.FILTERS as keyof PersistedDTO
-    ) as FilterType;
+    )) as FilterType;
 
     if (!Array.isArray(persistedData)) {
       return Promise.resolve(
@@ -484,7 +484,7 @@ async function GetFilters(): Promise<ApiResponse> {
 
 async function UpdateFilters(payload: FilterType): Promise<ApiResponse> {
   try {
-    const persistedData = PersistenceInstance.set(
+    const persistedData = await LocaleMemoryCacheInstance.setItem(
       TOKEN.SCAN,
       SCAN_KEYS.FILTERS as keyof PersistedDTO,
       payload
@@ -526,11 +526,10 @@ async function UpdateFilters(payload: FilterType): Promise<ApiResponse> {
 
 async function GetAssessFilter(): Promise<ApiResponse> {
   try {
-    // PersistenceInstance.clear(TOKEN.SCAN);
-    const persistedData = PersistenceInstance.getByKey(
+    const persistedData = (await LocaleMemoryCacheInstance.getItem(
       TOKEN.ASSESS,
-      ASSESS_KEYS.FILTERS as keyof PersistedDTO
-    ) as FilterType;
+      ASSESS_KEYS.ASSESS_FILTERS as keyof PersistedDTO
+    )) as unknown as FilterType;
 
     if (!Array.isArray(persistedData)) {
       return Promise.resolve(
@@ -565,9 +564,9 @@ async function GetAssessFilter(): Promise<ApiResponse> {
 
 async function UpdateAssessFilter(payload: AssessFilter): Promise<ApiResponse> {
   try {
-    const persistedData = PersistenceInstance.set(
+    const persistedData = await LocaleMemoryCacheInstance.setItem(
       TOKEN.ASSESS,
-      ASSESS_KEYS.FILTERS as keyof PersistedDTO,
+      ASSESS_KEYS.ASSESS_FILTERS as keyof PersistedDTO,
       payload
     );
     if (persistedData !== null) {

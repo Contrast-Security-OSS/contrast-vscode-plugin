@@ -220,7 +220,7 @@ describe('Cache Management Tests', () => {
       const result = await refreshCacheAssess(requestParams, params);
 
       expect(memoryCache.reset).toHaveBeenCalled();
-      expect(result).toBeUndefined();
+      expect(result).toEqual(mockErrorResponse);
     });
   });
 
@@ -237,7 +237,7 @@ describe('Cache Management Tests', () => {
       params
     );
     expect(memoryCache.reset).toHaveBeenCalled();
-    expect(result).toBeUndefined();
+    expect(result).toEqual(mockErrorResponse);
   });
 
   it('should throw an error if fetching data from the API fails', async () => {
@@ -260,7 +260,7 @@ describe('Cache Management Tests', () => {
     const result = await refreshCacheAssess(requestParams, params);
 
     expect(memoryCache.reset).toHaveBeenCalled();
-    expect(result).toBeUndefined();
+    expect(result).toEqual(mockInvalidResponse);
   });
   it('should fetch data from the API and set it in memory cache', async () => {
     const mockScanResults = { vulnerabilities: [] };

@@ -5,9 +5,12 @@ import {
   AssessFilter,
   ConfiguredProject,
   FilterType,
+  LibRequestBody,
+  libListFilter,
   LogLevel,
   PersistedDTO,
   PrimaryConfig,
+  ScaFiltersType,
 } from '../../../common/types';
 import { authBase64 } from '../../../webview/utils/authBase64';
 import { resolveFailure, resolveSuccess } from '../../utils/errorHandling';
@@ -52,6 +55,7 @@ import {
   addMarkByOrgIdReqParams,
   FinalFilter,
   newData,
+  LibraryVulnerability,
 } from '../model/api.interface';
 import { localeI18ln } from '../../../l10n';
 import {
@@ -60,6 +64,7 @@ import {
   filterCriticalVulnerabilities,
   filterCriticalVulnerabilitiesLineNumber,
   formatString,
+  getParseLibVulData,
   groupByFileName,
   handleErrorResponse,
   moveUnmappedVulnerabilities,
@@ -85,6 +90,7 @@ import { decrypt } from '../../utils/encryptDecrypt';
 import { AxiosInstance } from 'axios';
 import { stopBackgroundTimerAssess } from '../../cache/backgroundRefreshTimerAssess';
 import { ContrastPanelInstance } from '../../commands/ui-commands/webviewHandler';
+import path from 'path';
 
 const os = require('os');
 
@@ -187,7 +193,6 @@ async function getAllProjectList(params: PrimaryConfig): Promise<ApiResponse> {
     if (error instanceof Error) {
       const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Retrieve Projects - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
-      console.error('error', error);
       ShowInformationPopup(
         localeI18ln.getTranslation('apiResponse.authenticationFailure')
       );
@@ -904,7 +909,7 @@ async function getAllApplicationsByOrgId(
         ) === index
     );
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Applications fetched successfully | Total applications: ${uniqueApplications.length} \n`;
+    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Applications fetched successfully \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     ShowInformationPopup(
@@ -1539,6 +1544,7 @@ async function getScanVulnerabilityResults(
         params: searchParams,
       }
     );
+
     if (response.status === 200) {
       allResults = allResults.concat(response.data.traces);
     } else {
@@ -2000,12 +2006,14 @@ async function getAssessVulnerabilities(
             overview: {
               chapters: chaptersList,
               risk: {
-                text: level0FileDetailResponseData?.risk.text,
+                text: level0FileDetailResponseData?.risk.formattedText,
               },
             },
             howToFix: {
               recommendation: {
-                text: level0RecommendationResponseData?.recommendation?.text,
+                formattedText:
+                  level0RecommendationResponseData?.recommendation
+                    ?.formattedText,
               },
               custom_recommendation: {
                 text: level0RecommendationResponseData?.custom_recommendation
@@ -2031,6 +2039,7 @@ async function getAssessVulnerabilities(
               ],
             },
             tags: vulnerabilityTags,
+            isUnmapped: title === 'Un mapped vulnerabilities',
           };
 
           level0Vulnerabilities.push(item);
@@ -2044,6 +2053,7 @@ async function getAssessVulnerabilities(
         level1Vulnerabilities.push({
           level: 1,
           label: key,
+          isUnmapped: key === 'Un mapped vulnerabilities',
           filePath: items[0].filePath,
           fileType: items[0].language,
           child: items,
@@ -2062,6 +2072,7 @@ async function getAssessVulnerabilities(
         issuesCount: vulnerabilitiesData.length,
         filesCount: level1VulnerabilitiesWithUnmapped.length,
         child: level1VulnerabilitiesWithUnmapped,
+        isUnmapped: true,
       };
       return resolveSuccess(
         localeI18ln.getTranslation('apiResponse.assessVulnerbilitySuccess'),
@@ -2086,7 +2097,9 @@ async function getAssessVulnerabilities(
   }
 }
 
-const getAllAssessFilters = async (): Promise<FinalFilter | undefined> => {
+export const getAllAssessFilters = async (): Promise<
+  FinalFilter | undefined
+> => {
   const payload: FinalFilter = {
     severities: ['CRITICAL', 'HIGH', 'MEDIUM'],
     status: ['REPORTED', 'CONFIRMED', 'SUSPICIOUS'],
@@ -2120,6 +2133,8 @@ const getAllAssessFilters = async (): Promise<FinalFilter | undefined> => {
       endDate,
       agentSessionId,
       metadataFilters,
+      applicationTags,
+      environments,
     } = getWorkspaceFilter.responseData as AssessFilter;
 
     if (isIn('servers') && isNotNull(servers)) {
@@ -2158,6 +2173,14 @@ const getAllAssessFilters = async (): Promise<FinalFilter | undefined> => {
 
     if (isIn('metadataFilters') && isNotNull(metadataFilters)) {
       payload.metadataFilters = metadataFilters;
+    }
+
+    if (isIn('applicationTags') && isNotNull(applicationTags)) {
+      payload.applicationTags = applicationTags;
+    }
+
+    if (isIn('environments') && isNotNull(environments)) {
+      payload.environments = environments;
     }
 
     return payload;
@@ -2222,7 +2245,7 @@ async function getCurrentFileVulForAssess(): Promise<ApiResponse> {
     const filePath = await getFilePathuri(editor.document.fileName);
 
     if (filePath !== undefined) {
-      const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+      const fileName = path.basename(filePath);
       const response = await getAssessVulnerabilitybyFile(fileName);
 
       if (response.code === 200) {
@@ -2285,6 +2308,509 @@ async function getVulnerabilityByTraceId(
   return undefined;
 }
 
+/* getLibraryVulnerabilities: A method to retrieve library Vulnerabilities with the selected filters based on appId */
+async function getLibraryVulnerabilities(
+  requestBody: ScaFiltersType
+): Promise<ApiResponse> {
+  const response: ApiResponse = await GetAllConfiguredProjects();
+  const configuredProjects: ConfiguredProject[] =
+    response.responseData as ConfiguredProject[];
+
+  const project: ConfiguredProject | undefined = configuredProjects?.find(
+    (project: ConfiguredProject) =>
+      project.projectId === requestBody.appId && project.source === 'assess'
+  );
+
+  if (!project) {
+    return resolveFailure(
+      localeI18ln.getTranslation('apiResponse.projectNotFound'),
+      400
+    );
+  }
+
+  const body: LibRequestBody = {
+    apps: [requestBody?.appId ?? ''],
+    includeUnused: Array.isArray(requestBody?.usage)
+      ? requestBody.usage.includes('unused')
+      : false,
+    includeUsed: Array.isArray(requestBody?.usage)
+      ? requestBody.usage.includes('used')
+      : false,
+    severities: requestBody?.severity ?? [],
+    tags: requestBody?.tags ?? [],
+    grades: requestBody?.grades ?? [],
+    usage: requestBody?.usage ?? [],
+    licenses: requestBody?.licenses ?? [],
+    environments: requestBody?.environments ?? [],
+    servers: requestBody?.servers ?? [],
+    quickFilter:
+      requestBody?.quickView !== undefined && requestBody?.quickView.length > 0
+        ? requestBody?.quickView
+        : 'ALL',
+    status: requestBody?.status ?? [],
+  };
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } = project;
+
+  try {
+    const client = getAxiosClient(contrastURL);
+    const limit = 50;
+    let offset = 0;
+    let allLibraries: LibraryVulnerability[] = [];
+
+    const initialResponse = await client.post(
+      `/ng/${organizationId}/libraries/filter?expand=skip_links,apps,quickFilters,vulns,status,usage_counts`,
+      body,
+      {
+        headers: {
+          'Api-Key': apiKey,
+          Authorization: authBase64(userName, serviceKey),
+          ...headers,
+        },
+        params: {
+          sort: requestBody?.sort ?? '',
+          limit,
+          offset,
+        },
+      }
+    );
+    if (initialResponse.status !== 200) {
+      return handleErrorResponse('apiResponse.somethingWentWrong', 400);
+    }
+
+    const totalCount = initialResponse.data.count ?? 0;
+    allLibraries = initialResponse.data.libraries ?? [];
+
+    const totalCalls = Math.ceil(totalCount / limit);
+
+    for (let i = 1; i < totalCalls; i++) {
+      offset = i * limit;
+
+      const pagedResponse = await client.post(
+        `/ng/${organizationId}/libraries/filter?expand=skip_links,apps,quickFilters,vulns,status,usage_counts`,
+        body,
+        {
+          headers: {
+            'Api-Key': apiKey,
+            Authorization: authBase64(userName, serviceKey),
+            ...headers,
+          },
+          params: {
+            sort: requestBody?.sort ?? '',
+            limit,
+            offset,
+          },
+        }
+      );
+
+      if (pagedResponse.status === 200) {
+        const moreLibraries = pagedResponse.data.libraries ?? [];
+        allLibraries = [...allLibraries, ...moreLibraries];
+      } else {
+        throw new Error(
+          `${pagedResponse.status}: ${pagedResponse.data.message}`
+        );
+      }
+    }
+
+    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Library Vulnerabilities fetched successfully \n`;
+    void loggerInstance?.logMessage(LogLevel.INFO, logData);
+
+    return resolveSuccess(
+      localeI18ln.getTranslation('apiResponse.libraryFetchSuccessfully'),
+      200,
+      getParseLibVulData(allLibraries, project, requestBody?.appId ?? '')
+    );
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
+
+/* getLibFilterListByAppId: A method to retrieve library filters list based on appId */
+async function getLibFilterListByAppId(
+  list:
+    | 'tags'
+    | 'licenses'
+    | 'grades'
+    | 'environments'
+    | 'servers'
+    | 'usage'
+    | 'severities'
+    | 'status'
+    | 'QUICKFILTER',
+  appId: string,
+  params: PrimaryConfig
+): Promise<ApiResponse> {
+  const validationResult = validateParams(params);
+
+  if ('code' in validationResult) {
+    return validationResult;
+  }
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } =
+    validationResult.validParams;
+  try {
+    const client = getAxiosClient(contrastURL);
+
+    const body: libListFilter = {
+      quickFilter: list === 'QUICKFILTER' ? 'ALL' : 'VULNERABLE',
+      apps: [appId],
+    };
+
+    const url =
+      list === 'QUICKFILTER'
+        ? `/ng/${organizationId}/libraries/filter?expand=quickFilters&offset=0&limit=1&sort=score`
+        : `/ng/${organizationId}/libraries/filters/${list}/listing`;
+    const response = await client.post(url, body, {
+      headers: {
+        'Api-Key': apiKey,
+        Authorization: authBase64(userName, serviceKey),
+        ...headers,
+      },
+    });
+
+    if (response.status === 200) {
+      return resolveSuccess(
+        `${list} ${localeI18ln.getTranslation('apiResponse.libraryFilterLists')}`,
+        200,
+        list === 'QUICKFILTER'
+          ? response.data.quickFilters
+          : response.data.filters
+      );
+    } else {
+      throw new Error(`${response.status}: ${response.data.message}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
+
+/* getAvailableEnvironments: A method to retrieve environments for assess based on appId */
+async function getAvailableEnvironments(appId: string): Promise<ApiResponse> {
+  const response: ApiResponse = await GetAllConfiguredProjects();
+  const configuredProjects: ConfiguredProject[] =
+    response.responseData as ConfiguredProject[];
+
+  const project: ConfiguredProject | undefined = configuredProjects?.find(
+    (project: ConfiguredProject) =>
+      project.projectId === appId && project.source === 'assess'
+  );
+
+  if (!project) {
+    return resolveFailure(
+      localeI18ln.getTranslation('apiResponse.projectNotFound'),
+      400
+    );
+  }
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } = project;
+  try {
+    const client = getAxiosClient(contrastURL);
+
+    const response = await client.post(
+      `/ng/${organizationId}/orgtraces/filter/servers-environment/listing?expand=skip_links`,
+      {
+        quickFilter: 'OPEN',
+        modules: [appId],
+      },
+      {
+        headers: {
+          'Api-Key': apiKey,
+          Authorization: authBase64(userName, serviceKey),
+          ...headers,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return resolveSuccess(
+        localeI18ln.getTranslation(`apiResponse.assessEnvironments`),
+        200,
+        response.data.filters
+      );
+    } else {
+      throw new Error(`${response.status}: ${response.data.message}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
+
+/* getAvailableTags: A method to retrieve tags for the assess based on the appId */
+async function getAvailableTags(
+  appId: string,
+  params: PrimaryConfig
+): Promise<ApiResponse> {
+  const validationResult = validateParams(params);
+
+  if ('code' in validationResult) {
+    return validationResult;
+  }
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } =
+    validationResult.validParams;
+  try {
+    const client = getAxiosClient(contrastURL);
+
+    const response = await client.get(
+      `/ng/${organizationId}/tags/application/list/${appId}?expand=skip_links`,
+      {
+        headers: {
+          'Api-Key': apiKey,
+          Authorization: authBase64(userName, serviceKey),
+          ...headers,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return resolveSuccess(
+        localeI18ln.getTranslation(`apiResponse.assessTags`),
+        200,
+        Array.isArray(response.data.tags) && response.data.tags.length > 0
+          ? response.data.tags.map((val: string) => {
+              return {
+                keycode: val,
+                label: val,
+              };
+            })
+          : []
+      );
+    } else {
+      throw new Error(`${response.status}: ${response.data.message}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
+
+/* getUsageForLibVul: A method to retrieve usage details based on the appId and hashID */
+async function getUsageForLibVul(
+  appId: string | undefined,
+  hashId: string,
+  params: PrimaryConfig
+) {
+  if (appId === undefined) {
+    return resolveFailure(
+      localeI18ln.getTranslation('apiResponse.projectNotFound'),
+      400
+    );
+  }
+
+  const validationResult = validateParams(params);
+
+  if ('code' in validationResult) {
+    return validationResult;
+  }
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } =
+    validationResult.validParams;
+
+  try {
+    const client = getAxiosClient(contrastURL);
+
+    const response = await client.get(
+      `/ng/organizations/${organizationId}/applications/${appId}/libraries/${hashId}/reports/library-usage`,
+      {
+        headers: {
+          'Api-Key': apiKey,
+          Authorization: authBase64(userName, serviceKey),
+          ...headers,
+        },
+      }
+    );
+    if (response.status === 200) {
+      return resolveSuccess(
+        localeI18ln.getTranslation('apiResponse.libUsage'),
+        200,
+        response.data
+      );
+    } else {
+      throw new Error(`${response.status}: ${response.data.message}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
+
+async function getLibOrgTags(params: PrimaryConfig) {
+  const validationResult = validateParams(params);
+
+  if ('code' in validationResult) {
+    return validationResult;
+  }
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } =
+    validationResult.validParams;
+
+  try {
+    const client = getAxiosClient(contrastURL);
+
+    const response = await client.get(
+      `/ng/${organizationId}/tags/libraries/list?expand=skip_links`,
+      {
+        headers: {
+          'Api-Key': apiKey,
+          Authorization: authBase64(userName, serviceKey),
+          ...headers,
+        },
+      }
+    );
+    if (response.status === 200) {
+      return resolveSuccess(
+        localeI18ln.getTranslation('apiResponse.libTags'),
+        200,
+        response.data.tags
+      );
+    } else {
+      throw new Error(`${response.status}: ${response.data.message}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
+
+async function updateLibTags(
+  params: PrimaryConfig,
+  hashId: string,
+  tags: Array<string>,
+  tags_remove: Array<string>
+) {
+  const validationResult = validateParams(params);
+
+  if ('code' in validationResult) {
+    return validationResult;
+  }
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } =
+    validationResult.validParams;
+
+  const requestBody = {
+    library_hashes: [hashId],
+    tags: tags,
+    tags_remove: tags_remove,
+  };
+
+  try {
+    const client = getAxiosClient(contrastURL);
+
+    const response = await client.put(
+      `/ng/${organizationId}/tags/libraries/bulk?expand=skip_links`,
+      requestBody,
+      {
+        headers: {
+          'Api-Key': apiKey,
+          Authorization: authBase64(userName, serviceKey),
+          ...headers,
+        },
+      }
+    );
+    if (response.status === 200) {
+      return resolveSuccess(
+        localeI18ln.getTranslation('apiResponse.libTagsUpdate'),
+        200,
+        response.data.messages
+      );
+    } else {
+      throw new Error(`${response.status}: ${response.data.message}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
+
+async function getCVEOverview(cve: string, params: PrimaryConfig) {
+  const validationResult = validateParams(params);
+
+  if ('code' in validationResult) {
+    return validationResult;
+  }
+
+  const { apiKey, contrastURL, userName, serviceKey, organizationId } =
+    validationResult.validParams;
+
+  try {
+    const client = getAxiosClient(contrastURL);
+
+    const response = await client.get(
+      `/ng/organizations/${organizationId}/cves/${cve}`,
+      {
+        headers: {
+          'Api-Key': apiKey,
+          Authorization: authBase64(userName, serviceKey),
+          ...headers,
+        },
+      }
+    );
+    if (response.status === 200) {
+      return resolveSuccess(
+        localeI18ln.getTranslation('apiResponse.cveretrieved'),
+        200,
+        response.data
+      );
+    } else {
+      throw new Error(`${response.status}: ${response.data.message}`);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+
+      return handleErrorResponse('apiResponse.authenticationFailure', 500);
+    }
+
+    return handleErrorResponse('apiResponse.somethingWentWrong', 500);
+  }
+}
 export {
   getAllProjectList,
   getProjectById,
@@ -2322,4 +2848,12 @@ export {
   getCurrentFileVulForAssess,
   getVulnerabilityByTraceId,
   getVulnerabilityHttps,
+  getLibraryVulnerabilities,
+  getAvailableEnvironments,
+  getLibFilterListByAppId,
+  getAvailableTags,
+  getUsageForLibVul,
+  getLibOrgTags,
+  updateLibTags,
+  getCVEOverview,
 };

@@ -216,116 +216,231 @@
   },
   "contrastAssess": {
     "translate": "Contrast Assess",
-    "retrieveVul": {
-      "translate": "Retrieve Vulnerability",
-      "formFields": {
-        "application": {
-          "translate": "Application",
-          "placeholder": "No Applications Found"
-        },
-        "server": {
-          "noServerFound": {
-            "translate": "Server",
-            "placeholder": "No Servers Found"
+    "filters": {
+      "translate": "Filters",
+      "assess": {
+        "translate": "Vulnerability",
+        "formFields": {
+          "application": {
+            "translate": "Application Name",
+            "placeholder": "No Application Found"
           },
-          "selectServer": {
-            "translate": "Server",
-            "placeholder": "Select Server"
-          }
-        },
-        "buildNumber": {
-          "noBuildNumberFound": {
-            "translate": "Build Number",
-            "placeholder": "No Build Numbers Found"
+          "server": {
+            "noServerFound": {
+              "translate": "Servers",
+              "placeholder": "No Servers Found"
+            },
+            "selectServer": {
+              "translate": "Servers",
+              "placeholder": "Select Servers"
+            }
           },
-          "selectBuildNumber": {
-            "translate": "Build Number",
-            "placeholder": "Select Build Number"
+          "buildNumber": {
+            "noBuildNumberFound": {
+              "translate": "Build Number",
+              "placeholder": "No Build Number Found"
+            },
+            "selectBuildNumber": {
+              "translate": "Build Number",
+              "placeholder": "Select Build Number"
+            }
+          },
+          "severity": {
+            "translate": "Severity",
+            "options": [
+              {
+                "name": "critical",
+                "translate": "Critical"
+              },
+              {
+                "name": "high",
+                "translate": "High"
+              },
+              {
+                "name": "medium",
+                "translate": "Medium"
+              },
+              {
+                "name": "low",
+                "translate": "Low"
+              },
+              {
+                "name": "note",
+                "translate": "Note"
+              }
+            ]
+          },
+          "status": {
+            "translate": "Status",
+            "options": [
+              {
+                "name": "reported",
+                "translate": "Reported"
+              },
+              {
+                "name": "confirmed",
+                "translate": "Confirmed"
+              },
+              {
+                "name": "suspicious",
+                "translate": "Suspicious"
+              },
+              {
+                "name": "notAproblem",
+                "translate": "Not a problem"
+              },
+              {
+                "name": "remediated",
+                "translate": "Remediated"
+              },
+              {
+                "name": "fixed",
+                "translate": "Fixed"
+              }
+            ]
+          },
+          "Filter": {
+            "translate": "Filter",
+            "options": [
+              {
+                "name": "From",
+                "translate": "From"
+              },
+              {
+                "name": "To",
+                "translate": "To"
+              }
+            ]
+          },
+          "session_metadata": {
+            "translate": "Session Metadata",
+            "options": [
+              {
+                "name": "none-radio",
+                "translate": "None"
+              },
+              {
+                "name": "custom-session-radio",
+                "translate": "Custom Session"
+              },
+              {
+                "name": "most-recent-session-radio",
+                "translate": "Most recent session"
+              }
+            ]
+          },
+          "environments": {
+            "noEnvironmentFound": {
+              "translate": "Environments",
+              "placeholder": "No Environments Found"
+            },
+            "selectEnvironment": {
+              "translate": "Environments",
+              "placeholder": "Select Environments"
+            }
+          },
+          "tags": {
+            "noTagFound": {
+              "translate": "Tags",
+              "placeholder": "No Tags Found"
+            },
+            "selectTag": {
+              "translate": "Tags",
+              "placeholder": "Select Tags"
+            }
           }
-        },
-        "severity": {
-          "translate": "Severity",
-          "options": [
-            {
-              "name": "critical",
-              "translate": "Critical"
-            },
-            {
-              "name": "high",
-              "translate": "High"
-            },
-            {
-              "name": "medium",
-              "translate": "Medium"
-            },
-            {
-              "name": "low",
-              "translate": "Low"
-            },
-            {
-              "name": "note",
-              "translate": "Note"
-            }
-          ]
-        },
-        "status": {
-          "translate": "Status",
-          "options": [
-            {
-              "name": "reported",
-              "translate": "Reported"
-            },
-            {
-              "name": "confirmed",
-              "translate": "Confirmed"
-            },
-            {
-              "name": "suspicious",
-              "translate": "Suspicious"
-            },
-            {
-              "name": "notAproblem",
-              "translate": "Not a problem"
-            },
-            {
-              "name": "remediated",
-              "translate": "Remediated"
-            },
-            {
-              "name": "fixed",
-              "translate": "Fixed"
-            }
-          ]
-        },
-        "Filter": {
-          "translate": "Filter",
-          "options": [
-            {
-              "name": "From",
-              "translate": "From"
-            },
-            {
-              "name": "To",
-              "translate": "To"
-            }
-          ]
-        },
-        "session_metadata": {
-          "translate": "Session Metadata",
-          "options": [
-            {
-              "name": "none-radio",
-              "translate": "None"
-            },
-            {
-              "name": "custom-session-radio",
-              "translate": "Custom Session"
-            },
-            {
-              "name": "most-recent-session-radio",
-              "translate": "Most recent session"
-            }
-          ]
+        }
+      },
+      "library": {
+        "translate": "Library",
+        "formFields": {
+          "application": {
+            "translate": "Application Name",
+            "placeholder": "No Application Found"
+          },
+          "environments": {
+            "translate": "Environments",
+            "placeholder": "Select Environments"
+          },
+          "servers": {
+            "translate": "Servers",
+            "placeholder": "Select Servers"
+          },
+          "quickView": {
+            "translate": "Quick View",
+            "placeholder": "Select Quick View"
+          },
+          "libraryUsage": {
+            "translate": "Library Usage",
+            "placeholder": "Select Library Usage"
+          },
+          "libraryLicenceType": {
+            "translate": "Library Licence type",
+            "placeholder": "Select Library Licence type"
+          },
+          "tag": {
+            "translate": "Tags",
+            "placeholder": "Select Tags"
+          },
+          "severity": {
+            "translate": "Severity",
+            "placeholder": "Select Severity",
+            "options": [
+              {
+                "name": "critical",
+                "translate": "Critical"
+              },
+              {
+                "name": "high",
+                "translate": "High"
+              },
+              {
+                "name": "medium",
+                "translate": "Medium"
+              },
+              {
+                "name": "low",
+                "translate": "Low"
+              },
+              {
+                "name": "note",
+                "translate": "Note"
+              }
+            ]
+          },
+          "status": {
+            "translate": "Status",
+            "options": [
+              {
+                "name": "reported",
+                "translate": "Reported"
+              },
+              {
+                "name": "confirmed",
+                "translate": "Confirmed"
+              },
+              {
+                "name": "suspicious",
+                "translate": "Suspicious"
+              },
+              {
+                "name": "notAProblem",
+                "translate": "Not a problem"
+              },
+              {
+                "name": "remediated",
+                "translate": "Remediated"
+              },
+              {
+                "name": "remediatedAutoVerified",
+                "translate": "Remediated Auto Verified"
+              },
+              {
+                "name": "reopened",
+                "translate": "Reopened"
+              }
+            ]
+          }
         }
       }
     },
@@ -335,7 +450,7 @@
     "vulnerabilityReport": {
       "translate": "Vulnerability Report",
       "htmlElements": {
-        "translate": "<h1>No vulnerabilities found:</h1><ol><li>Navigate to the Contrast - Assess menu</li><li>Select the necessary filters and click Run Button.</li><li>View the results in the Vulnerability Report tab.</li></ol><p>After retrieving vulnerabilities, return to this screen or else click on refresh icon to see the latest vulnerability report.</p><p>"
+        "translate": "<h1>No vulnerabilities found:</h1><ol><li>Navigate to the Contrast - Assess menu</li><li>Select the necessary filters in the vulnerability tab, Click on save button and click Run Button.</li><li>View the results in the Vulnerabilities Report tab.</li></ol><p>After retrieving vulnerabilities, return to this screen.</p><p>"
       },
       "tabs": {
         "overView": {
@@ -377,7 +492,8 @@
               "translate": "Applied tag"
             },
             "tag": {
-              "translate": "Tag"
+              "translate": "Tag",
+              "placeholder": "Nothing to show"
             }
           }
         },
@@ -400,6 +516,115 @@
         }
       }
     },
+    "librariesReport": {
+      "translate": "Library Report",
+      "htmlElements": {
+        "translate": "<h1>No Libraries found:</h1><ol><li>Navigate to the Contrast - Assess menu</li><li>Select the necessary filters in the library tab, Click on the save button and click Run Button.</li><li>View the results in the Libraries Report tab.</li></ol><p>After retrieving Runtime Libraries, return to this screen.</p><p>"
+      },
+      "tabs": {
+        "overView": {
+          "translate": "Overview",
+          "formFields": {
+            "library": {
+              "released": {
+                "translate": "Released"
+              },
+              "identifier": {
+                "translate": "Identifier"
+              },
+              "license": {
+                "translate": "License"
+              },
+              "vulnerability": {
+                "translate": "Vulnerability"
+              },
+              "policyViolations": {
+                "translate": "Policy Violations"
+              },
+              "appsUsing": {
+                "translate": "Apps Using"
+              },
+              "classesUsed": {
+                "translate": "Classes Used"
+              },
+              "whatHappened": {
+                "translate": "What happened?",
+                "placeholder": "This library has known CVEs."
+              },
+              "whatTheRisk": {
+                "translate": "What's the risk?"
+              }
+            },
+            "cve": {
+              "firstSeen": {
+                "translate": "First seen in Contrast"
+              },
+              "nvdPublished": {
+                "translate": "NVD Published"
+              },
+              "nvdLastModified": {
+                "translate": "NVD Last Modified"
+              },
+              "nvdLatestInformation": {
+                "translate": "See NVD for latest information"
+              },
+              "cveOrg": {
+                "translate": "See in cve.org"
+              },
+              "severityAndMetrics": {
+                "translate": "Severity and Metrics"
+              },
+              "vector": {
+                "translate": "Vector"
+              },
+              "description": {
+                "translate": "Description"
+              },
+              "organizationalImpact": {
+                "translate": "Organizational Impact"
+              }
+            }
+          }
+        },
+        "howToFix": {
+          "translate": "How To Fix",
+          "placeholder": "No recommended fixes.",
+          "minimumUpgrade": {
+            "translate": "Minimum upgrade",
+            "placeholder": "We recommend upgrading to"
+          },
+          "latestStable": {
+            "translate": "Latest stable",
+            "placeholder": "We recommend upgrading to"
+          }
+        },
+        "usage": {
+          "translate": "Usage",
+          "formFields": {
+            "classesLoaded": {
+              "translate": "Classes Loaded"
+            },
+            "firstObserved": {
+              "translate": "First Seen"
+            },
+            "lastObserved": {
+              "translate": "Last Seen"
+            },
+            "noSearchResults": {
+              "translate": "No search results"
+            }
+          }
+        },
+        "path": {
+          "translate": "Path",
+          "noDataFoundLable": "No Path found",
+          "noDataFoundContent": "Note: Please check the corresponding manifest files for the selected library."
+        },
+        "tags": {
+          "translate": "Tags"
+        }
+      }
+    },
     "buttons": {
       "refresh": {
         "translate": "Refresh"
@@ -415,6 +640,9 @@
       },
       "create": {
         "translate": "Create"
+      },
+      "save": {
+        "translate": "Save"
       }
     },
     "tooltips": {
@@ -440,16 +668,31 @@
         "translate": "Redirect"
       },
       "refreshServersAndBuildNumbers": {
-        "translate": "Refresh servers and buildNumbers"
+        "translate": "Refresh environments, servers, tags, and build numbers"
       },
       "clearsServersAndBuildNumbers": {
-        "translate": "Clears servers and buildNumbers"
+        "translate": "Clear environments, servers, tags, and build numbers"
       },
       "clearsAllAppliedFilters": {
         "translate": "Clears all applied filters"
       },
       "fetchVulnerabilities": {
         "translate": "Fetch vulnerabilities"
+      },
+      "assessRun": {
+        "translate": "Search for vulnerabilities and its libraries with these filter settings"
+      },
+      "vulnerabilitySave": {
+        "translate": "Saves current selected filter"
+      },
+      "vulnerabilityClear": {
+        "translate": "Restores to default value"
+      },
+      "libraryRefresh": {
+        "translate": "Refresh’s Servers, Quick View, Library Usage, Library Licence type and Tags"
+      },
+      "libraryClear": {
+        "translate": "Clear’s Servers, Quick View, Library Usage, Library Licence type and Tags"
       }
     }
   },
@@ -581,7 +824,7 @@
       "translate": "1 Vulnerability successfully marked as Reported"
     },
     "assessVulnerbilitySuccess": {
-      "translate": "Successfully fetched vulnerabilities"
+      "translate": "Successfully fetched vulnerabilities and libraries"
     },
     "traceIdNotFound": {
       "translate": "Missing TraceId"
@@ -606,6 +849,36 @@
     },
     "ARCHIVED": {
       "translate": "project is archived/deleted"
+    },
+    "libraryFilterLists": {
+      "translate": "list fetched successfully."
+    },
+    "assessEnvironments": {
+      "translate": "Environments fetched successfully"
+    },
+    "assessTags": {
+      "translate": "Tags fetched successfully"
+    },
+    "assessLibraryData": {
+      "translate": "Successfully initiated retrieving assess and library vulnerabilities"
+    },
+    "vulnerabilitesRetrieved": {
+      "translate": "Vulnerabilities retrieved successfully"
+    },
+    "libUsage": {
+      "translate": "Library Usage report retrieved successfully"
+    },
+    "libTags": {
+      "translate": "Library Tags fetched successfully"
+    },
+    "libTagsUpdate": {
+      "translate": "Library Tags updated successfully"
+    },
+    "cveretrieved": {
+      "translate": "CVE's Overview Retrieved successfully"
+    },
+    "cveOverViewUpdate": {
+      "translate": "CVE's Overview Updated successfully"
     }
   },
   "persistResponse": {
@@ -669,11 +942,17 @@
     "autoRefreshSucess": {
       "translate": "Vulnerability Sync Process Completed"
     },
+    "assessAutoRefreshSuccess": {
+      "translate": "Vulnerability and library Sync Process Completed"
+    },
     "retrievingVulnerabilities": {
-      "translate": "Retrieving vulnerabilities"
+      "translate": "Retrieving vulnerabilities - Scan"
+    },
+    "assessRetrievingVulnerabilities": {
+      "translate": "Retrieving vulnerabilities and libraries - Assess"
     },
     "loadingFilters": {
-      "translate": "Loading servers, build numbers and session metadata"
+      "translate": "Loading tags, environments, servers, build numbers and session metadata"
     },
     "tagAlreadyApplied": {
       "translate": "Tag already applied"
@@ -695,6 +974,18 @@
     },
     "wrongRelativePath": {
       "translate": "Incorrect file path detected. Please open the project relative to"
+    },
+    "applicationFilterUpdatedSuccess": {
+      "translate": "Vulnerability filter updated successfully"
+    },
+    "scaFilterUpdatedSuccess": {
+      "translate": "Library filter updated successfully"
+    },
+    "scaClear": {
+      "translate": "Library filter restored successfully"
+    },
+    "vulnerabilityClear": {
+      "translate": "Vulnerability filter restored successfully"
     }
   },
   "contrastItems": {

@@ -249,7 +249,10 @@ describe('Cache Management Tests', () => {
 
       expect(memoryCache.reset).toHaveBeenCalledTimes(1);
 
-      expect(result).toBeUndefined();
+      expect(result).toEqual({
+        code: 500,
+        message: 'Error',
+      });
     });
   });
 });

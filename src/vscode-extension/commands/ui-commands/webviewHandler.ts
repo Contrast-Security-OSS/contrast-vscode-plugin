@@ -14,11 +14,10 @@ import { localeI18ln } from '../../../l10n';
 import { messageHandler } from './messageHandler';
 import { CommandResponse, ScreenId } from '../../../common/types';
 import { ScanCommandHandler } from '../../utils/commandHandler/scan.handler';
-import { PersistenceInstance } from '../../utils/persistanceState';
-// import { GetAllConfiguredProjects } from '../../persistence/PersistenceConfigSetting';
 import { AssessCommandHandler } from '../../utils/commandHandler/assess.handler';
 import { GetAllConfiguredProjects } from '../../persistence/PersistenceConfigSetting';
 import { currentWorkspaceProjectManager } from '../../utils/helper';
+import { LocaleMemoryCacheInstance } from '../../utils/localeMemoryCache';
 
 const crypto = require('crypto');
 
@@ -110,7 +109,7 @@ class ContrastPanel implements WebviewViewProvider {
   }
 
   public async clearAssessPersistance() {
-    await PersistenceInstance.clear(TOKEN.ASSESS);
+    await LocaleMemoryCacheInstance.clearStore(TOKEN.ASSESS);
     this.postMessage({
       command: WEBVIEW_COMMANDS.ASSESS_UPDATE_FILTERS,
       data: null,
@@ -150,8 +149,65 @@ class ContrastPanel implements WebviewViewProvider {
     });
 
     this.postMessage({
+      command: WEBVIEW_COMMANDS.GET_ASSESS_ENVIRONMENTS,
+      data: null,
+    });
+
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.GET_ASSESS_TAGS,
+      data: null,
+    });
+
+    this.postMessage({
       command: WEBVIEW_COMMANDS.GET_CONFIGURED_APPLICATIONS,
       data: await GetAllConfiguredProjects(),
+    });
+  }
+
+  public async clearPrimaryScaFilter() {
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_UPDATE_FILTERS,
+      data: null,
+    });
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_GET_ALL_FILES_VULNERABILITY,
+      data: null,
+    });
+
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_TAG_LIST,
+      data: null,
+    });
+
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_LIBRARY_USAGE_LIST,
+      data: null,
+    });
+
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_LIBRARY_LICENSES_LIST,
+      data: null,
+    });
+
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_ENVIRONMENTS_LIST,
+      data: null,
+    });
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_SERVERS_LIST,
+      data: null,
+    });
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_QUICKVIEW_LIST,
+      data: null,
+    });
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_STATUS,
+      data: null,
+    });
+    this.postMessage({
+      command: WEBVIEW_COMMANDS.SCA_SEVERITIES,
+      data: null,
     });
   }
 

@@ -8,6 +8,7 @@ import {
   getAxiosClient,
   getBuildNumber,
   getCustomSessionMetaData,
+  getLibFilterListByAppId,
   getMostRecentMetaData,
   getServerListbyOrgId,
   getVulnerabilityEvents,
@@ -118,7 +119,7 @@ describe('API Service Unit Tests', () => {
   let mockAxios: MockAdapter;
   let mockGetAxiosClient: jest.Mock;
   const mockProjectId = '1';
-
+  const mockList = 'tags';
   const mockParams = {
     projectId: mockProjectId,
     apiKey: 'testApiKey',
@@ -1425,6 +1426,220 @@ describe('API Service Unit Tests', () => {
         expect.any(String),
         expect.any(String)
       );
+    });
+  });
+
+  describe('getLibFilterListByAppId', () => {
+    it('should fetch the list by appId successfully', async () => {
+      const mockResponse = {
+        filters: [
+          {
+            keycode: 'custom',
+            label: 'custom',
+            count: 1,
+            links: [],
+          },
+          {
+            keycode: 'garthtest1',
+            label: 'garthtest1',
+            count: 31,
+            links: [],
+          },
+        ],
+      };
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .reply(200, mockResponse);
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response).toEqual({
+        code: 200,
+        message: 'tags list fetched successfully.',
+        responseData: [
+          {
+            keycode: 'custom',
+            label: 'custom',
+            count: 1,
+            links: [],
+          },
+          {
+            keycode: 'garthtest1',
+            label: 'garthtest1',
+            count: 31,
+            links: [],
+          },
+        ],
+        status: 'success',
+      });
+    });
+    it('should handle API failure gracefully (500 status)', async () => {
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .reply(500, {});
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response.code).toBe(500);
+      expect(response.message).toBe(
+        local.getTranslation('apiResponse.authenticationFailure')
+      );
+
+      expect(loggerInstance.logMessage).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('should handle non-200 response with generic error', async () => {
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .reply(400);
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response).toEqual({
+        code: 500,
+        message: 'Authentication failure',
+        responseData: null,
+        status: 'failure',
+      });
+    });
+
+    it('should handle exception and return authentication failure', async () => {
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .networkError(); // Simulate a network error
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response).toEqual({
+        code: 500,
+        message: 'Authentication failure',
+        responseData: null,
+        status: 'failure',
+      });
+    });
+
+    it('should handle API failure gracefully (500 status)', async () => {
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .reply(500, {});
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response.code).toBe(500);
+      expect(response.message).toBe(
+        local.getTranslation('apiResponse.authenticationFailure')
+      );
+
+      expect(loggerInstance.logMessage).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('should handle missing parameters and return failure (400 status)', async () => {
+      const invalidParams = { ...mockParams, apiKey: '' };
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        invalidParams
+      );
+
+      expect(response.code).toBe(400);
+      expect(response.message).toBe(
+        local.getTranslation('apiResponse.missingOneOrMoreError')
+      );
+
+      expect(loggerInstance.logMessage).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('should handle invalid application ID (404 status)', async () => {
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .reply(500, {});
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response.code).toBe(500);
+      expect(response.message).toBe(
+        local.getTranslation('apiResponse.authenticationFailure')
+      );
+
+      expect(loggerInstance.logMessage).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('should handle unexpected error gracefully', async () => {
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .networkError();
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response.code).toBe(500);
+      expect(response.message).toBe(
+        local.getTranslation('apiResponse.authenticationFailure')
+      );
+
+      expect(loggerInstance.logMessage).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('should handle unexpected non-200 successful status (like 204)', async () => {
+      mockAxios
+        .onPost(`/ng/${mockOrgId}/libraries/filters/${mockList}/listing`)
+        .reply(204);
+
+      const response = await getLibFilterListByAppId(
+        mockList,
+        mockApplicationId,
+        mockParams
+      );
+
+      expect(response).toEqual({
+        code: 500,
+        message: local.getTranslation('apiResponse.authenticationFailure'),
+        responseData: null,
+        status: 'failure',
+      });
     });
   });
 });

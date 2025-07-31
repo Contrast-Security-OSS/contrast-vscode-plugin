@@ -23,6 +23,7 @@ import {
   getValidConfiguredWorkspaceProjects,
   interlockModeSwitch,
   isNotNull,
+  libraryPathNavigator,
   scanRetrieveBlocker,
   slotInstance,
   tabBlocker,
@@ -144,11 +145,16 @@ export const ScanCommandHandler = async (props: CommandRequest) => {
 
     case WEBVIEW_COMMANDS.SCAN_OPEN_VULNERABILITY_FILE: {
       slotInstance.setSlot(false);
+      libraryPathNavigator.setSlot(false);
+      const data = await openVulFile(payload, 'scan');
+      slotInstance.setSlot(true);
+      libraryPathNavigator.setSlot(true);
       return {
         command: WEBVIEW_COMMANDS.SCAN_OPEN_VULNERABILITY_FILE,
-        data: openVulFile(payload, 'scan'),
+        data: data,
       };
     }
+
     case WEBVIEW_COMMANDS.SCAN_GET_CURRENTFILE_VUL: {
       return {
         command: WEBVIEW_COMMANDS.SCAN_GET_CURRENTFILE_VUL,
@@ -228,7 +234,7 @@ export const ScanCommandHandler = async (props: CommandRequest) => {
           ShowInformationPopup(
             localeI18ln.getTranslation(
               'persistResponse.retrievingVulnerabilities'
-            ) + ' - Scan'
+            )
           );
           await scanRetrievelDetectorAcrossIds.disable();
           await refreshCache(project.projectId as string);

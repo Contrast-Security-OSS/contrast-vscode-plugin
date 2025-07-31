@@ -214,117 +214,232 @@
     }
   },
   "contrastAssess": {
-    "translate": "コントラスト評価",
-    "retrieveVul": {
-      "translate": "脆弱性を取得",
-      "formFields": {
-        "application": {
-          "translate": "アプリケーション",
-          "placeholder": "アプリケーションが見つかりません"
-        },
-        "server": {
-          "noServerFound": {
-            "translate": "サーバー",
-            "placeholder": "サーバーが見つかりません"
+    "translate": "コントラストアセス",
+    "filters": {
+      "translate": "フィルター",
+      "assess": {
+        "translate": "脆弱性",
+        "formFields": {
+          "application": {
+            "translate": "アプリケーション名",
+            "placeholder": "アプリケーションが見つかりません"
           },
-          "selectServer": {
-            "translate": "サーバー",
-            "placeholder": "サーバーを選択してください"
-          }
-        },
-        "buildNumber": {
-          "noBuildNumberFound": {
-            "translate": "ビルド番号",
-            "placeholder": "ビルド番号が見つかりません"
+          "server": {
+            "noServerFound": {
+              "translate": "サーバー",
+              "placeholder": "サーバーが見つかりません"
+            },
+            "selectServer": {
+              "translate": "サーバー",
+              "placeholder": "サーバーを選択"
+            }
           },
-          "selectBuildNumber": {
-            "translate": "ビルド番号",
-            "placeholder": "ビルド番号を選択してください"
+          "buildNumber": {
+            "noBuildNumberFound": {
+              "translate": "ビルド番号",
+              "placeholder": "ビルド番号が見つかりません"
+            },
+            "selectBuildNumber": {
+              "translate": "ビルド番号",
+              "placeholder": "ビルド番号を選択"
+            }
+          },
+          "severity": {
+            "translate": "重大度",
+            "options": [
+              {
+                "name": "critical",
+                "translate": "クリティカル"
+              },
+              {
+                "name": "high",
+                "translate": "高"
+              },
+              {
+                "name": "medium",
+                "translate": "中"
+              },
+              {
+                "name": "low",
+                "translate": "低"
+              },
+              {
+                "name": "note",
+                "translate": "ノート"
+              }
+            ]
+          },
+          "status": {
+            "translate": "ステータス",
+            "options": [
+              {
+                "name": "reported",
+                "translate": "報告済み"
+              },
+              {
+                "name": "confirmed",
+                "translate": "確認済み"
+              },
+              {
+                "name": "suspicious",
+                "translate": "疑わしい"
+              },
+              {
+                "name": "notAproblem",
+                "translate": "問題なし"
+              },
+              {
+                "name": "remediated",
+                "translate": "修正済み"
+              },
+              {
+                "name": "fixed",
+                "translate": "修正済み"
+              }
+            ]
+          },
+          "Filter": {
+            "translate": "フィルター",
+            "options": [
+              {
+                "name": "From",
+                "translate": "開始"
+              },
+              {
+                "name": "To",
+                "translate": "終了"
+              }
+            ]
+          },
+          "session_metadata": {
+            "translate": "セッションメタデータ",
+            "options": [
+              {
+                "name": "none-radio",
+                "translate": "なし"
+              },
+              {
+                "name": "custom-session-radio",
+                "translate": "カスタムセッション"
+              },
+              {
+                "name": "most-recent-session-radio",
+                "translate": "最新のセッション"
+              }
+            ]
+          },
+          "environments": {
+            "noEnvironmentFound": {
+              "translate": "環境",
+              "placeholder": "環境が見つかりません"
+            },
+            "selectEnvironment": {
+              "translate": "環境",
+              "placeholder": "環境を選択"
+            }
+          },
+          "tags": {
+            "noTagFound": {
+              "translate": "タグ",
+              "placeholder": "タグが見つかりません"
+            },
+            "selectTag": {
+              "translate": "タグ",
+              "placeholder": "タグを選択"
+            }
           }
-        },
-        "severity": {
-          "translate": "重大度",
-          "options": [
-            {
-              "name": "critical",
-              "translate": "クリティカル"
-            },
-            {
-              "name": "high",
-              "translate": "高"
-            },
-            {
-              "name": "medium",
-              "translate": "中"
-            },
-            {
-              "name": "low",
-              "translate": "低"
-            },
-            {
-              "name": "note",
-              "translate": "メモ"
-            }
-          ]
-        },
-        "status": {
-          "translate": "ステータス",
-          "options": [
-            {
-              "name": "reported",
-              "translate": "報告済み"
-            },
-            {
-              "name": "confirmed",
-              "translate": "確認済み"
-            },
-            {
-              "name": "suspicious",
-              "translate": "疑わしい"
-            },
-            {
-              "name": "notAproblem",
-              "translate": "問題なし"
-            },
-            {
-              "name": "remediated",
-              "translate": "修正済み"
-            },
-            {
-              "name": "fixed",
-              "translate": "修正済み"
-            }
-          ]
-        },
-        "Filter": {
-          "translate": "フィルター",
-          "options": [
-            {
-              "name": "From",
-              "translate": "開始日"
-            },
-            {
-              "name": "To",
-              "translate": "終了日"
-            }
-          ]
-        },
-        "session_metadata": {
-          "translate": "セッションメタデータ",
-          "options": [
-            {
-              "name": "none-radio",
-              "translate": "なし"
-            },
-            {
-              "name": "custom-session-radio",
-              "translate": "カスタムセッション"
-            },
-            {
-              "name": "most-recent-session-radio",
-              "translate": "最新のセッション"
-            }
-          ]
+        }
+      },
+      "library": {
+        "translate": "ライブラリ",
+        "formFields": {
+          "application": {
+            "translate": "アプリケーション",
+            "placeholder": "アプリケーションが見つかりません"
+          },
+          "environments": {
+            "translate": "環境",
+            "placeholder": "環境を選択"
+          },
+          "servers": {
+            "translate": "サーバー",
+            "placeholder": "サーバーを選択"
+          },
+          "quickView": {
+            "translate": "クイックビュー",
+            "placeholder": "クイックビューを選択"
+          },
+          "libraryUsage": {
+            "translate": "ライブラリ使用状況",
+            "placeholder": "ライブラリ使用状況を選択"
+          },
+          "libraryLicenceType": {
+            "translate": "ライブラリライセンスタイプ",
+            "placeholder": "ライセンス種別を選択"
+          },
+          "tag": {
+            "translate": "タグ",
+            "placeholder": "タグを選択"
+          },
+          "severity": {
+            "translate": "重大度",
+            "placeholder": "重大度を選択",
+            "options": [
+              {
+                "name": "critical",
+                "translate": "クリティカル"
+              },
+              {
+                "name": "high",
+                "translate": "高"
+              },
+              {
+                "name": "medium",
+                "translate": "中"
+              },
+              {
+                "name": "low",
+                "translate": "低"
+              },
+              {
+                "name": "note",
+                "translate": "ノート"
+              }
+            ]
+          },
+          "status": {
+            "translate": "ステータス",
+            "options": [
+              {
+                "name": "reported",
+                "translate": "報告済み"
+              },
+              {
+                "name": "confirmed",
+                "translate": "確認済み"
+              },
+              {
+                "name": "suspicious",
+                "translate": "疑わしい"
+              },
+              {
+                "name": "notAProblem",
+                "translate": "問題なし"
+              },
+              {
+                "name": "remediated",
+                "translate": "修正済み"
+              },
+              {
+                "name": "remediatedAutoVerified",
+                "translate": "自動検証済み修正"
+              },
+              {
+                "name": "reopened",
+                "translate": "再オープン"
+              }
+            ]
+          }
         }
       }
     },
@@ -334,7 +449,7 @@
     "vulnerabilityReport": {
       "translate": "脆弱性レポート",
       "htmlElements": {
-        "translate": "<h1>脆弱性は見つかりませんでした：</h1><ol><li>「Contrast - Assess」メニューに移動します</li><li>必要なフィルターを選択して「実行ボタン」をクリックします。</li><li>「脆弱性レポート」タブで結果を確認します。</li></ol><p>脆弱性を取得した後、この画面に戻るか、最新の脆弱性レポートを見るには更新アイコンをクリックしてください。</p><p>"
+        "translate": "<h1>脆弱性は見つかりませんでした：</h1><ol><li>Contrast - Assess メニューに移動します。</li><li>脆弱性タブで必要なフィルターを選択し、「保存」ボタンをクリックしてから「実行」ボタンをクリックします。</li><li>「脆弱性レポート」タブで結果を確認します。</li></ol><p>脆弱性を取得した後、この画面に戻ってください。</p><p>"
       },
       "tabs": {
         "overView": {
@@ -347,10 +462,10 @@
               "translate": "リスクは何か？"
             },
             "firstDetectedDate": {
-              "translate": "最初の検出日"
+              "translate": "初検出日"
             },
             "lastDetectedDate": {
-              "translate": "最後の検出日"
+              "translate": "最終検出日"
             }
           }
         },
@@ -373,10 +488,11 @@
               "translate": "新しいタグを作成して適用"
             },
             "appliedTag": {
-              "translate": "適用されたタグ"
+              "translate": "適用済みタグ"
             },
             "tag": {
-              "translate": "タグ"
+              "translate": "タグ",
+              "placeholder": "表示するものがありません"
             }
           }
         },
@@ -399,6 +515,115 @@
         }
       }
     },
+    "librariesReport": {
+      "translate": "ライブラリレポート",
+      "htmlElements": {
+        "translate": "<h1>ライブラリは見つかりませんでした：</h1><ol><li>Contrast - Assess メニューに移動します。</li><li>ライブラリタブで必要なフィルターを選択し、「保存」ボタンをクリックしてから「実行」ボタンをクリックします。</li><li>「ライブラリレポート」タブで結果を確認します。</li></ol><p>Runtime ライブラリを取得した後、この画面に戻ってください。</p><p>"
+      },
+      "tabs": {
+        "overView": {
+          "translate": "概要",
+          "formFields": {
+            "library": {
+              "released": {
+                "translate": "リリース日"
+              },
+              "identifier": {
+                "translate": "識別子"
+              },
+              "license": {
+                "translate": "ライセンス"
+              },
+              "vulnerability": {
+                "translate": "脆弱性"
+              },
+              "policyViolations": {
+                "translate": "ポリシー違反"
+              },
+              "appsUsing": {
+                "translate": "使用中のアプリ"
+              },
+              "classesUsed": {
+                "translate": "使用クラス"
+              },
+              "whatHappened": {
+                "translate": "何が起こったのか？",
+                "placeholder": "このライブラリには既知のCVEがあります。"
+              },
+              "whatTheRisk": {
+                "translate": "リスクは何か？"
+              }
+            },
+            "cve": {
+              "firstSeen": {
+                "translate": "Contrastで最初に確認された日"
+              },
+              "nvdPublished": {
+                "translate": "NVD公開日"
+              },
+              "nvdLastModified": {
+                "translate": "NVD最終更新日"
+              },
+              "nvdLatestInformation": {
+                "translate": "最新情報はNVDをご覧ください"
+              },
+              "cveOrg": {
+                "translate": "cve.orgで確認する"
+              },
+              "severityAndMetrics": {
+                "translate": "深刻度と指標"
+              },
+              "vector": {
+                "translate": "ベクター"
+              },
+              "description": {
+                "translate": "説明"
+              },
+              "organizationalImpact": {
+                "translate": "組織への影響"
+              }
+            }
+          }
+        },
+        "howToFix": {
+          "translate": "修正方法",
+          "placeholder": "推奨される修正はありません。",
+          "minimumUpgrade": {
+            "translate": "最小限のアップグレード",
+            "placeholder": "以下へのアップグレードを推奨します"
+          },
+          "latestStable": {
+            "translate": "最新の安定版",
+            "placeholder": "以下へのアップグレードを推奨します"
+          }
+        },
+        "usage": {
+          "translate": "使用状況",
+          "formFields": {
+            "classesLoaded": {
+              "translate": "読み込まれたクラス"
+            },
+            "firstObserved": {
+              "translate": "最初に確認された日"
+            },
+            "lastObserved": {
+              "translate": "最後に確認された日"
+            },
+            "noSearchResults": {
+              "translate": "検索結果がありません"
+            }
+          }
+        },
+        "path": {
+          "translate": "パス",
+          "noDataFoundLable": "パスが見つかりません",
+          "noDataFoundContent": "注：選択したライブラリの対応するマニフェストファイルを確認してください。"
+        },
+        "tags": {
+          "translate": "タグ"
+        }
+      }
+    },
     "buttons": {
       "refresh": {
         "translate": "更新"
@@ -410,10 +635,13 @@
         "translate": "実行"
       },
       "ok": {
-        "translate": "わかりました"
+        "translate": "オーケー"
       },
       "create": {
         "translate": "作成"
+      },
+      "save": {
+        "translate": "保存"
       }
     },
     "tooltips": {
@@ -427,28 +655,43 @@
         "translate": "実行"
       },
       "ok": {
-        "translate": "わかりました"
+        "translate": "オーケー"
       },
       "create": {
         "translate": "作成"
       },
+      "delete": {
+        "translate": "削除"
+      },
       "redirect": {
         "translate": "リダイレクト"
       },
-      "delete": {
-        "translate": "消去"
-      },
       "refreshServersAndBuildNumbers": {
-        "translate": "サーバとビルド番号を更新"
+        "translate": "環境、サーバー、タグ、およびビルド番号を更新"
       },
       "clearsServersAndBuildNumbers": {
-        "translate": "サーバとビルド番号をクリア"
+        "translate": "環境、サーバー、タグ、およびビルド番号をクリア"
       },
       "clearsAllAppliedFilters": {
-        "translate": "適用された全てのフィルタをクリア"
+        "translate": "すべての適用済みフィルターをクリア"
       },
       "fetchVulnerabilities": {
         "translate": "脆弱性を取得"
+      },
+      "assessRun": {
+        "translate": "これらのフィルター設定で脆弱性とそのライブラリを検索します"
+      },
+      "vulnerabilitySave": {
+        "translate": "現在選択されているフィルターを保存します"
+      },
+      "vulnerabilityClear": {
+        "translate": "デフォルト値に戻します"
+      },
+      "libraryRefresh": {
+        "translate": "サーバー、クイックビュー、ライブラリ使用状況、ライセンスタイプ、およびタグを更新します"
+      },
+      "libraryClear": {
+        "translate": "サーバー、クイックビュー、ライブラリ使用状況、ライセンスタイプ、およびタグをクリアします"
       }
     }
   },
@@ -523,88 +766,118 @@
       "translate": "申し訳ありませんが、このプロジェクトの脆弱性は見つかりませんでした"
     },
     "cacheStarted": {
-      "translate": "cache started"
+      "translate": "キャッシュを開始しました"
     },
     "cacheCompleted": {
-      "translate": "cache completed"
+      "translate": "キャッシュが完了しました"
     },
     "packageInfoSuccess": {
-      "translate": "Successfully retrieved package information"
+      "translate": "パッケージ情報の取得に成功しました"
     },
     "refineFilter": {
-      "translate": "There are more than 12,000 records. Please refine your filter criteria to fetch vulnerabilities"
+      "translate": "12,000件以上のレコードがあります。フィルター条件を絞って脆弱性を取得してください"
     },
     "fecthingApplication": {
-      "translate": "Fetching application details..."
+      "translate": "アプリケーションの詳細を取得中..."
     },
     "fechedSuccess": {
-      "translate": "Applications fetched successfully."
+      "translate": "アプリケーションの取得に成功しました"
     },
     "somethingWentWrong": {
-      "translate": "Oops! Something went wrong."
+      "translate": "問題が発生しました"
     },
     "serverListFetched": {
-      "translate": "ServerList fetched successfully."
+      "translate": "サーバーリストの取得に成功しました"
     },
     "buildnumberFetched": {
-      "translate": "BuildNumber fetched successfully."
+      "translate": "ビルド番号の取得に成功しました"
     },
     "customSessionMetaDataFetched": {
-      "translate": "CustomSessionMetaData fetched successfully."
+      "translate": "カスタムセッションメタデータの取得に成功しました"
     },
     "MostRecentMetaDataFetched": {
-      "translate": "MostRecentMetaData fetched successfully."
+      "translate": "最新のメタデータの取得に成功しました"
     },
     "getAllTags": {
-      "translate": "All Tags fetched successfully."
+      "translate": "すべてのタグの取得に成功しました"
     },
     "vulnerabilitysuccessfully": {
-      "translate": "Vulnerability tagged successfully."
+      "translate": "脆弱性のタグ付けに成功しました"
     },
     "tracesFetched": {
-      "translate": "Traces fetched successfully."
+      "translate": "トレースの取得に成功しました"
     },
     "storyResult": {
-      "translate": "LineNumber and FileName fetched successfully."
+      "translate": "行番号とファイル名の取得に成功しました"
     },
     "storyText": {
-      "translate": "StoryResult fetched successfully."
+      "translate": "ストーリー結果の取得に成功しました"
     },
     "recommendationText": {
-      "translate": "All Recommendation Text fetched successfully."
+      "translate": "すべての推奨テキストの取得に成功しました"
     },
     "eventsResult": {
-      "translate": "All Events fetched successfully."
+      "translate": "すべてのイベントの取得に成功しました"
     },
     "addVulnerabilitySuccessfully": {
-      "translate": "1 Vulnerability successfully marked as Reported"
+      "translate": "1件の脆弱性を報告済みにマークしました"
     },
     "assessVulnerbilitySuccess": {
-      "translate": "Successfully fetched vulnerabilities"
+      "translate": "脆弱性とライブラリの取得に成功しました"
     },
     "traceIdNotFound": {
-      "translate": "Missing TraceId"
+      "translate": "TraceId が見つかりません"
     },
     "httpsResult": {
-      "translate": "All Https fetched successfully."
+      "translate": "すべての HTTPS の取得に成功しました"
     },
     "markedVulnerability": {
-      "translate": "Marked vulnerability"
+      "translate": "脆弱性をマークしました"
     },
     "failedToMark": {
-      "translate": "Failed to mark vulnerability"
+      "translate": "脆弱性のマークに失敗しました"
     },
     "vulnerabilityTagged": {
-      "translate": "Vulnerability tagged"
+      "translate": "脆弱性にタグを付けました"
     },
     "failedToTag": {
-      "translate": "Failed to tag"
+      "translate": "タグ付けに失敗しました"
     },
     "ASSESSARCHIVED": {
-      "translate": "application is archived/deleted"
+      "translate": "アプリケーションはアーカイブ済み/削除されています"
     },
     "ARCHIVED": {
-      "translate": "project is archived/deleted"
+      "translate": "プロジェクトはアーカイブ済み/削除されています"
+    },
+    "libraryFilterLists": {
+      "translate": "リストの取得に成功しました。"
+    },
+    "assessEnvironments": {
+      "translate": "環境の取得に成功しました"
+    },
+    "assessTags": {
+      "translate": "タグの取得に成功しました"
+    },
+    "assessLibraryData": {
+      "translate": "の日本語訳は以下の通りです：「Assessおよびライブラリの脆弱性の取得を正常に開始しました」"
+    },
+    "vulnerabilitesRetrieved": {
+      "translate": "脆弱性の取得に成功しました"
+    },
+    "libUsage": {
+      "translate": "ライブラリ使用状況レポートの取得に成功しました"
+    },
+    "libTags": {
+      "translate": "「ライブラリのタグを正常に取得しました」"
+    },
+    "libTagsUpdate": {
+      "translate": "「ライブラリのタグが正常に更新されました」"
+    },
+    "cveretrieved": {
+      "translate": "CVEの概要が正常に取得されました"
+    },
+    "cveOverViewUpdate": {
+      "translate": "CVEの概要が正常に更新されました"
     }
   },
   "persistResponse": {
@@ -668,11 +941,17 @@
     "autoRefreshSucess": {
       "translate": "脆弱性同期プロセスが完了しました"
     },
+    "assessAutoRefreshSuccess": {
+      "translate": "脆弱性とライブラリの同期プロセスが完了しました"
+    },
     "retrievingVulnerabilities": {
-      "translate": "脆弱性を取得しています"
+      "translate": "脆弱性を取得しています - スキャン中"
+    },
+    "assessRetrievingVulnerabilities": {
+      "translate": "脆弱性とライブラリを取得しています - 評価中"
     },
     "loadingFilters": {
-      "translate": "サーバー、ビルド番号、セッションメタデータのロード"
+      "translate": "タグ、環境、サーバー、ビルド番号、セッションメタデータを読み込み中"
     },
     "tagAlreadyApplied": {
       "translate": "タグはすでに適用されています"
@@ -694,6 +973,18 @@
     },
     "wrongRelativePath": {
       "translate": "ファイルパスが正しくありません。次のパスを基準にプロジェクトを開いてください"
+    },
+    "applicationFilterUpdatedSuccess": {
+      "translate": "脆弱性フィルターが正常に更新されました"
+    },
+    "scaFilterUpdatedSuccess": {
+      "translate": "ライブラリフィルターが正常に更新されました"
+    },
+    "scaClear": {
+      "translate": "ライブラリフィルターが正常に復元されました"
+    },
+    "vulnerabilityClear": {
+      "translate": "脆弱性フィルターが正常に復元されました"
     }
   },
   "contrastItems": {

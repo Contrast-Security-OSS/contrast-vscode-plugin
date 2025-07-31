@@ -2,20 +2,26 @@ import {
   addMarkByOrgId,
   addTagsByOrgId,
   getAssessVulnerabilities,
+  getCVEOverview,
+  getLibraryVulnerabilities,
   getProjectById,
   getScanResults,
+  getUsageForLibVul,
   getVulnerabilityEvents,
   getVulnerabilityHttps,
+  updateLibTags,
 } from '../api/services/apiService';
 import { PersistenceInstance } from '../utils/persistanceState';
 import { SETTING_KEYS, TOKEN } from '../utils/constants/commands';
-import { resolveFailure } from '../utils/errorHandling';
+import { resolveFailure, resolveSuccess } from '../utils/errorHandling';
 import {
   ApiResponse,
   AssessFilter,
+  commonResponse,
   ConfiguredProject,
   PersistedDTO,
   PrimaryConfig,
+  ScaFiltersType,
 } from '../../common/types';
 import {
   startBackgroundTimer,
@@ -26,12 +32,16 @@ import { localeI18ln } from '../../l10n';
 import {
   AssessRequest,
   ChildData,
+  CVENode,
+  CVEOverviewResponse,
   Datas,
   EventItem,
   EventLine,
   Events,
   HttpRequest,
   Level1Vulnerability,
+  LibraryNode,
+  LibraryUsage,
   updateParams,
 } from '../api/model/api.interface';
 import {
@@ -46,7 +56,7 @@ import {
 const cacheManager = require('cache-manager');
 
 // Initialize an in-memory cache with a time-to-live (TTL) of 5 minutes (300 seconds)
-const memoryCache = cacheManager.caching({
+export const memoryCache = cacheManager.caching({
   store: 'memory',
   max: 100,
   ttl: 86400,
@@ -271,7 +281,7 @@ export async function refreshCacheAssess(
   const data = await getAssessVulnerabilities(requestParams, params);
   if (data.code !== 200) {
     await memoryCache.reset();
-    return undefined;
+    return data;
   } else {
     await memoryCache.set('assess-' + requestParams.appId, data);
     return data;
@@ -524,5 +534,304 @@ export async function updateVulnerabilityTraceIDCache(): Promise<void> {
     cachedTraces.forEach(async (cacheData: string) => {
       await updateAccessVulnerabilities(cacheData);
     });
+  }
+}
+
+// Library Cache
+export async function getDataFromCacheLibrary(
+  requestBody: ScaFiltersType
+): Promise<ApiResponse> {
+  const data = await memoryCache.get('library-' + requestBody.appId);
+  if (data === null || data === undefined) {
+    return resolveFailure(
+      localeI18ln.getTranslation('apiResponse.vulnerabilityNotFound'),
+      400
+    );
+  }
+  return resolveSuccess('Cache fetched Successfully', 200, data);
+}
+
+export const refreshLibraryVulnerabilities = async (
+  requestBody: ScaFiltersType
+): Promise<ApiResponse | undefined> => {
+  const data = await getLibraryVulnerabilities(requestBody);
+
+  if (data.code !== 200) {
+    await memoryCache.reset();
+    return data;
+  } else {
+    await memoryCache.set('library-' + requestBody.appId, data.responseData);
+    return data;
+  }
+};
+
+/* commonRefreshAssessLibrariesCache: A common method which retieve both assess and SCA run-time vulnerabilities concurrently and store it in the cache */
+export const commonRefreshAssessLibrariesCache = async (
+  requestBody: ScaFiltersType,
+  requestParams: AssessRequest,
+  params: PrimaryConfig
+): Promise<ApiResponse | undefined> => {
+  const persistedData = PersistenceInstance.getByKey(
+    TOKEN.SETTING,
+    SETTING_KEYS.CONFIGPROJECT as keyof PersistedDTO
+  ) as ConfiguredProject[] | undefined;
+
+  const project = persistedData?.find(
+    (project: ConfiguredProject) =>
+      project.projectId === requestParams.appId && project.source === 'assess'
+  ) as ConfiguredProject | undefined;
+
+  if (project === undefined || project === null) {
+    return resolveFailure(
+      localeI18ln.getTranslation('apiResponse.projectNotFound'),
+      400
+    );
+  }
+
+  await stopBackgroundTimerAssess();
+  await memoryCache.reset();
+  const responseData = await Promise.allSettled([
+    refreshCacheAssess(requestParams, params),
+    refreshLibraryVulnerabilities(requestBody),
+  ]);
+
+  const result: commonResponse = {
+    assess:
+      responseData[0].status === 'fulfilled'
+        ? (responseData[0].value ?? null)
+        : null,
+    library:
+      responseData[1].status === 'fulfilled'
+        ? (responseData[1].value ?? null)
+        : null,
+  };
+  await startBackgroundTimerAssess(project.projectId as string);
+  return resolveSuccess(
+    localeI18ln.getTranslation('apiResponse.vulnerabilitesRetrieved'),
+    200,
+    result
+  );
+};
+
+/* updateUsageDetails: Method to update the usage details in the cache for library vulnerabilities. */
+export const updateUsageDetails = async (
+  hashId: string,
+  isUnmapped: boolean = false
+) => {
+  const persist = await getCacheFilterData();
+  if (persist.code === 400) {
+    return persist;
+  }
+  const persistData = persist.responseData as AssessFilter;
+  const params = {
+    apiKey: persistData.apiKey,
+    contrastURL: persistData.contrastURL,
+    userName: persistData.userName,
+    serviceKey: persistData.serviceKey,
+    organizationId: persistData.organizationId,
+    source: persistData.source,
+  };
+  const response = await getUsageForLibVul(
+    persistData.projectId,
+    hashId,
+    params
+  );
+  if (response.code === 200) {
+    const libVul = await memoryCache.get('library-' + persistData.projectId);
+    if (libVul !== undefined && Array.isArray(libVul?.child)) {
+      libVul.child.forEach((element: LibraryNode) => {
+        if (isUnmapped) {
+          element?.child?.forEach((childNode: any) => {
+            if (childNode?.overview?.hash === hashId) {
+              childNode.usage = {
+                ...childNode.usage,
+                ...(response.responseData as LibraryUsage),
+              };
+            }
+          });
+        } else if (element?.overview?.hash === hashId) {
+          element.usage = {
+            ...element.usage,
+            ...(response.responseData as LibraryUsage),
+          };
+        }
+      });
+      await memoryCache.set('library-' + persistData.projectId, libVul);
+      return libVul;
+    }
+  }
+};
+
+export async function updateLibTagsByHashId(
+  hashId: string,
+  tags: Array<string>,
+  tags_remove: Array<string>,
+  isUnmapped: boolean = false
+): Promise<ApiResponse | undefined> {
+  const persist = await getCacheFilterData();
+  if (persist.code === 400) {
+    return persist;
+  }
+  const persistData = persist.responseData as AssessFilter;
+  const params = {
+    apiKey: persistData.apiKey,
+    contrastURL: persistData.contrastURL,
+    userName: persistData.userName,
+    serviceKey: persistData.serviceKey,
+    organizationId: persistData.organizationId,
+    source: persistData.source,
+  };
+  const response = await updateLibTags(params, hashId, tags, tags_remove);
+  if (response.code === 200) {
+    const cachedData = await memoryCache.get(
+      'library-' + persistData.projectId
+    );
+    cachedData.child?.forEach((childItem: LibraryNode) => {
+      if (isUnmapped) {
+        childItem?.child?.forEach((nestedChild: any) => {
+          if (nestedChild?.overview?.hash === hashId) {
+            nestedChild.tags = tags;
+          }
+        });
+      } else if (childItem?.overview?.hash === hashId) {
+        childItem.tags = tags;
+      }
+    });
+    await memoryCache.set('library-' + persistData.projectId, cachedData);
+    ShowInformationPopup(
+      localeI18ln.getTranslation('apiResponse.libTagsUpdate')
+    );
+    return cachedData;
+  } else {
+    const errorTag = localeI18ln.getTranslation('apiResponse.failedToTag');
+    ShowErrorPopup(
+      errorTag !== null && errorTag !== undefined
+        ? errorTag
+        : 'Oops! Something went wrong.'
+    );
+  }
+}
+
+export async function updateCVEOverview(
+  cves: string
+): Promise<ApiResponse | undefined> {
+  const persist = await getCacheFilterData();
+
+  if (persist.code === 400) {
+    return persist;
+  }
+
+  const persistData = persist.responseData as AssessFilter;
+  const params = {
+    apiKey: persistData.apiKey,
+    contrastURL: persistData.contrastURL,
+    userName: persistData.userName,
+    serviceKey: persistData.serviceKey,
+    organizationId: persistData.organizationId,
+    source: persistData.source,
+  };
+
+  const response = await getCVEOverview(cves, params);
+  if (response.code === 200) {
+    const cachedData = await memoryCache.get(
+      'library-' + persistData.projectId
+    );
+    const { cve, apps, servers, impactStats } =
+      response.responseData as CVEOverviewResponse;
+    cachedData.child?.forEach((childItem: LibraryNode) => {
+      childItem.child?.forEach((nestedChild: CVENode) => {
+        if (nestedChild?.label === cves) {
+          nestedChild.overview.firstSeen =
+            new Date(Number(cve.firstSeen)).toISOString().split('T')[0] ?? '';
+          nestedChild.overview.nvdModified =
+            new Date(Number(cve.nvdModified)).toISOString().split('T')[0] ?? '';
+          nestedChild.overview.nvdPublished =
+            new Date(Number(cve.nvdPublished)).toISOString().split('T')[0] ??
+            '';
+          nestedChild.overview.severityAndMetrics = [
+            {
+              name: 'CVSS v3.1',
+              score: cve?.cvssv3?.baseScore ?? 0,
+              severity: cve?.cvssv3?.severity ?? '',
+            },
+            {
+              name: 'Impact Score',
+              score: cve?.cvssv3?.impactSubscore ?? 0,
+              severity: '',
+            },
+            {
+              name: 'Exploitability Score',
+              score: cve?.cvssv3?.exploitabilitySubscore ?? 0,
+              severity: '',
+            },
+            {
+              name: 'EPSS',
+              score: cve.epssScore ?? 0,
+              severity: '',
+            },
+          ];
+          nestedChild.overview.vector = {
+            label: cve?.cvssv3?.vector ?? '',
+            vectors: [
+              {
+                label: 'Attack vector (AV)',
+                value: cve?.cvssv3?.attackVector ?? '',
+              },
+              {
+                label: 'Attack complexity (AC)',
+                value: cve?.cvssv3?.attackComplexity ?? '',
+              },
+              {
+                label: 'Privileges required (PR)',
+                value: cve?.cvssv3?.privilegesRequired ?? '',
+              },
+              {
+                label: 'User Interaction (UI)',
+                value: cve?.cvssv3?.userInteraction ?? '',
+              },
+              {
+                label: 'Scope (S)',
+                value: cve?.cvssv3?.scope ?? '',
+              },
+              {
+                label: 'Confidentiality (C)',
+                value: cve?.cvssv3?.confidentialityImpact ?? '',
+              },
+              {
+                label: 'Integrity (I)',
+                value: cve?.cvssv3?.integrityImpact ?? '',
+              },
+              {
+                label: 'Availability (A)',
+                value: cve?.cvssv3?.availabilityImpact ?? '',
+              },
+            ],
+          };
+          nestedChild.overview.organizationalImpact = [
+            {
+              name: 'Applications',
+              impactedAppCount: impactStats?.impactedAppCount ?? 0,
+              totalAppCount: impactStats?.totalAppCount ?? 0,
+              appPercentage: impactStats?.appPercentage ?? 0,
+            },
+            {
+              name: 'Servers',
+              impactedServerCount: impactStats?.impactedServerCount ?? 0,
+              totalServerCount: impactStats?.totalServerCount ?? 0,
+              serverPercentage: impactStats?.serverPercentage ?? 0,
+            },
+          ];
+          nestedChild.overview.applications = apps?.map((val: any) => {
+            return val.name;
+          });
+          nestedChild.overview.servers = servers?.map((val: any) => {
+            return val.name;
+          });
+        }
+      });
+    });
+
+    await memoryCache.set('library-' + persistData.projectId, cachedData);
+    return cachedData;
   }
 }

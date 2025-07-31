@@ -144,8 +144,8 @@ function ContrastScan() {
           <img src={ScanImg} alt="Scan image is missed" />
         </div>
       </div>
-      <div className="c-assess-panel" style={{ marginTop: '10px' }}>
-        <div className="c-assess-panel-header">
+      <div className="c-panel" style={{ marginTop: '10px' }}>
+        <div className="c-panel-header">
           <TabGroup onTabChange={handleTabChange}>
             {tabs.map((tab) => (
               <Tab key={tab.id} title={tab.title} isActive={tab.active} />

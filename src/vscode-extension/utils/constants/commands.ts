@@ -56,6 +56,8 @@ export enum WEBVIEW_COMMANDS {
   GET_CONFIGURED_APPLICATIONS = 'getConfiguredApplications',
   GET_SERVER_LIST_BY_ORG_ID = 'getServerListbyOrgId',
   GET_BUILD_NUMBER = 'getBuildNumber',
+  GET_ASSESS_ENVIRONMENTS = 'getAssessEnvironmets',
+  GET_ASSESS_TAGS = 'getAssessTags',
   GET_CUSTOM_SESSION_METADATA = 'getCustomSessionMetaData',
   GET_MOST_RECENT_METADATA = 'getMostRecentMetaData',
   COMMON_MESSAGE = 'commonMessage',
@@ -78,6 +80,27 @@ export enum WEBVIEW_COMMANDS {
   ASSESS_OPEN_VULNERABILITY_FILE = 'openAssessVulnerabilityFile',
   ASSESS_MANUAL_REFRESH_BACKGROUND_RUNNER = 'assessManulaRefreshBackgroundRunner',
   ASSESS_REFRESH_BACKGROUND_RUNNER_ACROSS_IDS = 'assessRefreshBackgroundRunnerAcrossIds',
+
+  // SCA
+  SCA_ENVIRONMENTS_LIST = 'scaEnvironmentsList',
+  SCA_SERVERS_LIST = 'scaServersList',
+  SCA_QUICKVIEW_LIST = 'scaQuickViewist',
+  SCA_LIBRARY_USAGE_LIST = 'scaLibraryUsageList',
+  SCA_LIBRARY_LICENSES_LIST = 'scaLibraryLicensesList',
+  SCA_TAG_LIST = 'scaTagList',
+  SCA_GET_FILTERS = 'scaGetFilters',
+  SCA_UPDATE_FILTERS = 'scaUpdateFilters',
+  SCA_SEVERITIES = 'scaSeverities',
+  SCA_STATUS = 'scaStatus',
+  SCA_GET_ALL_FILES_VULNERABILITY = 'scaGetAllFilesVulnerability',
+  SCA_UPDATE_VULNERABILITY_USAGE = 'scaUpdateVulnerabilityUsage',
+  SCA_ORG_TAGS = 'scaOrganizationTags',
+  SCA_TAG_OK_BEHAVIOUR = 'scaTagOkBehaviour',
+  SCA_UPDATE_CVE_OVERVIEW = 'scaUpdateCveOverview',
+  SCA_UPDATE_CVE_PATH = 'scaUpdateCvePath',
+  SCA_LIBRARY_PATH_REDIRECT = 'scaLibraryPathRedirect',
+  SCA_AUTO_REFRESH = 'scaAutoRefresh',
+  SCA_GET_INITIAL_ALL_FILES_VULNERABILITY = 'scaGetInitialsAllFilesVulnerability',
 }
 
 export enum EXTENTION_COMMANDS {
@@ -91,9 +114,9 @@ export enum EXTENTION_COMMANDS {
 }
 
 export enum TOKEN {
-  SETTING = 'setting',
-  SCAN = 'scan',
-  ASSESS = 'Assess',
+  SETTING = 'SETTING',
+  SCAN = 'SCAN',
+  ASSESS = 'ASSESS',
 }
 
 export enum SETTING_KEYS {
@@ -101,9 +124,10 @@ export enum SETTING_KEYS {
 }
 
 export enum SCAN_KEYS {
-  FILTERS = 'filters',
+  FILTERS = 'scaFilters',
 }
 
 export enum ASSESS_KEYS {
-  FILTERS = 'filters',
+  ASSESS_FILTERS = 'assessFilters',
+  SCA_FILTERS = 'scaFilters',
 }
