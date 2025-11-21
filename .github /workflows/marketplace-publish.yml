@@ -2,7 +2,7 @@ name: Publish VS Code Extension
 
 on:
   push:
-    branches: [ "sacumen-devops-cicd" ]
+    branches: [ "nitish-contrast24-patch-1" ]
   workflow_dispatch:
 
 permissions:
