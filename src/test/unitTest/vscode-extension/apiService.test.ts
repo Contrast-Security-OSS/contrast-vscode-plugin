@@ -27,52 +27,66 @@ import { l10n } from '../../../l10n';
 import { loggerInstance } from '../../../vscode-extension/logging/logger';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-jest.mock('vscode', () => ({
-  env: {
-    language: 'en',
-    appName: 'VSCode',
-  },
-  workspace: {
-    workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
-  },
-  window: {
-    activeTextEditor: null,
-  },
+jest.mock('vscode', () => {
+  const UIKind = { Desktop: 1, Web: 2 };
+  return {
+    UIKind,
+    registerContrastActivityBar: {
+      onDidChangeVisibility: jest.fn().mockReturnValue({ dispose: jest.fn() }),
+    },
+    env: {
+      language: 'en',
+      appName: 'VSCode',
+      uiKind: UIKind.Desktop,
+    },
+    workspace: {
+      onDidChangeConfiguration: jest.fn(() => {
+        return { dispose: jest.fn() };
+      }),
+      workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    },
+    window: {
+      activeTextEditor: null,
+      createTreeView: jest.fn().mockReturnValue({
+        onDidChangeVisibility: jest.fn(),
+      }),
+    },
 
-  TreeItem: class {
-    [x: string]: { dark: Uri; light: Uri };
-    constructor(
-      label: { dark: Uri; light: Uri },
-      command: any = null,
-      icon: any = null
-    ) {
-      this.label = label;
-      if (command !== null) {
-        this.command = {
-          title: label,
-          command: command,
-        } as any;
+    TreeItem: class {
+      [x: string]: { dark: Uri; light: Uri };
+      constructor(
+        label: { dark: Uri; light: Uri },
+        command: any = null,
+        icon: any = null
+      ) {
+        this.label = label;
+        if (command !== null) {
+          this.command = {
+            title: label,
+            command: command,
+          } as any;
+        }
+        if (icon !== null) {
+          const projectRoot = path.resolve(__dirname, '..');
+          const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
+          this.iconPath = {
+            dark: iconPath,
+            light: iconPath,
+          };
+        }
       }
-      if (icon !== null) {
-        const projectRoot = path.resolve(__dirname, '..');
-        const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
-        this.iconPath = {
-          dark: iconPath,
-          light: iconPath,
-        };
-      }
-    }
-  },
-  Uri: {
-    file: jest.fn().mockReturnValue('mockUri'),
-  },
-  commands: {
-    registerCommand: jest.fn(),
-  },
-  languages: {
-    registerHoverProvider: jest.fn(),
-  },
-}));
+    },
+    Uri: {
+      file: jest.fn().mockReturnValue('mockUri'),
+    },
+    commands: {
+      registerCommand: jest.fn(),
+    },
+    languages: {
+      registerHoverProvider: jest.fn(),
+    },
+  };
+});
 
 jest.mock('../../../vscode-extension/api/services/apiService', () => ({
   ...jest.requireActual('../../../vscode-extension/api/services/apiService'),
@@ -228,7 +242,7 @@ describe('VS Code Extension Plugin Tests', () => {
       .reply(200, {});
 
     const response = await getProjectById(params);
-    expect(response).toBe(true);
+    expect(response).toBe(false);
   });
 
   it('should fetch project by ID successfully', async () => {
@@ -426,7 +440,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       const response = await getAllScans(params);
       expect(response.code).toBe(500);
-      expect(loggerInstance.logMessage).toHaveBeenCalledTimes(7);
+      expect(loggerInstance.logMessage).toHaveBeenCalledTimes(8);
       expect(response.message).toBe(
         local.getTranslation('apiResponse.errorFetchingScanResult')
       );
@@ -1283,7 +1297,7 @@ describe('VS Code Extension Plugin Tests', () => {
         code: 400,
         status: 'failure',
         responseData: null,
-        message: 'Project not Configured',
+        message: 'Project not Configured.',
       });
     });
 
@@ -1342,7 +1356,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 200,
-        message: 'Library Usage report retrieved successfully',
+        message: 'Library Usage report retrieved successfully.',
         responseData: mockResponse,
         status: 'success',
       });
@@ -1371,7 +1385,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1400,7 +1414,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1429,7 +1443,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1475,7 +1489,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 200,
-        message: 'Library Tags fetched successfully',
+        message: 'Library Tags fetched successfully.',
         responseData: mockResponse.tags,
         status: 'success',
       });
@@ -1500,7 +1514,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1525,7 +1539,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1550,7 +1564,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1601,7 +1615,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 200,
-        message: 'Library Tags updated successfully',
+        message: 'Library Tags updated successfully.',
         responseData: mockResponse.messages,
         status: 'success',
       });
@@ -1626,7 +1640,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1651,7 +1665,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1676,7 +1690,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1722,7 +1736,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 200,
-        message: "CVE's Overview Retrieved successfully",
+        message: "CVE's Overview Retrieved successfully.",
         responseData: mockCVEResponse,
         status: 'success',
       });
@@ -1737,7 +1751,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1757,7 +1771,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1774,7 +1788,7 @@ describe('VS Code Extension Plugin Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });

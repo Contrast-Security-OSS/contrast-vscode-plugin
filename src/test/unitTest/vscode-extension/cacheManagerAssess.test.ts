@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+
 import { localeI18ln } from '../../../l10n';
 import { PersistenceInstance } from '../../../vscode-extension/utils/persistanceState';
 import {
@@ -14,8 +16,6 @@ import {
 } from '../../../vscode-extension/cache/cacheManager';
 import { resolveFailure } from '../../../vscode-extension/utils/errorHandling';
 
-import { Uri } from 'vscode';
-import path from 'path';
 import { getCacheFilterData } from '../../../vscode-extension/utils/commonUtil';
 import {
   startBackgroundTimerAssess,
@@ -29,58 +29,84 @@ jest.mock('../../../vscode-extension/api/services/apiService');
 jest.mock('../../../vscode-extension/utils/persistanceState');
 jest.mock('../../../vscode-extension/utils/errorHandling');
 
-jest.mock('vscode', () => ({
-  env: {
-    language: 'en',
-    appName: 'VSCode',
-  },
-  workspace: {
-    workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
-  },
-  window: {
-    activeTextEditor: {
-      document: {
-        fileName: 'test.js',
-      },
-    },
-    showErrorMessage: jest.fn(),
-    ShowErrorPopup: jest.fn(),
-    showInformationMessage: jest.fn(),
-  },
-  TreeItem: class {
-    [x: string]: { dark: Uri; light: Uri };
-    constructor(
-      label: { dark: Uri; light: Uri },
-      command: any = null,
-      icon: any = null
-    ) {
-      this.label = label;
-      if (command !== null) {
-        this.command = {
-          title: label,
-          command: command,
-        } as any;
-      }
-      if (icon !== null) {
-        const projectRoot = path.resolve(__dirname, '..');
-        const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
-        this.iconPath = {
-          dark: iconPath,
-          light: iconPath,
-        };
+// Put this before any imports that use 'vscode', or move to __mocks__/vscode.ts and call `jest.mock('vscode')`.
+jest.mock(
+  'vscode',
+  () => {
+    const path = require('path');
+
+    const UIKind = { Desktop: 1, Web: 2 };
+
+    const Uri = {
+      file: jest.fn((p: string) => ({ fsPath: p, path: p, toString: () => p })),
+      joinPath: jest.fn((base: any, ...segs: string[]): any => {
+        const basePath = typeof base === 'string' ? base : base.fsPath;
+        return Uri.file(path.join(basePath, ...segs));
+      }),
+    };
+
+    // return a disposable whenever VS Code would normally return one
+    const disposable = () => ({ dispose: jest.fn() });
+
+    class TreeItem {
+      label: any;
+      command?: { title: string; command: string };
+      iconPath?: { dark: any; light: any };
+      constructor(label: any, command: any = null, icon: any = null) {
+        this.label = label;
+        if (command) {
+          this.command = {
+            title: typeof label === 'string' ? label : 'Command',
+            command,
+          };
+        }
+        if (icon) {
+          const iconPath = Uri.file(path.join(process.cwd(), 'assets', icon));
+          this.iconPath = { dark: iconPath, light: iconPath };
+        }
       }
     }
+
+    return {
+      // top-level namespaces (what your code imports from 'vscode')
+      UIKind,
+      Uri,
+      commands: {
+        registerCommand: jest.fn(() => disposable()), // <-- now defined at top level
+        executeCommand: jest.fn(),
+      },
+      env: {
+        language: 'en',
+        appName: 'VSCode',
+        uiKind: UIKind.Desktop,
+      },
+      workspace: {
+        workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+        onDidChangeConfiguration: jest.fn(() => disposable()),
+        getConfiguration: jest.fn(() => ({
+          get: jest.fn(),
+          update: jest.fn(),
+        })),
+      },
+      window: {
+        activeTextEditor: { document: { fileName: 'test.js' } },
+        createTreeView: jest.fn(() => ({
+          onDidChangeVisibility: jest.fn(),
+          reveal: jest.fn(),
+          dispose: jest.fn(),
+        })),
+        showErrorMessage: jest.fn(),
+        showInformationMessage: jest.fn(),
+      },
+      languages: {
+        registerHoverProvider: jest.fn(() => disposable()),
+      },
+      // classes
+      TreeItem,
+    };
   },
-  Uri: {
-    file: jest.fn().mockReturnValue('mockUri'),
-  },
-  commands: {
-    registerCommand: jest.fn(),
-  },
-  languages: {
-    registerHoverProvider: jest.fn(),
-  },
-}));
+  { virtual: true }
+);
 
 jest.mock('cache-manager', () => ({
   caching: jest.fn().mockReturnValue({
@@ -540,10 +566,10 @@ describe('Cache Management Tests', () => {
 
       const response = await getDataFromCacheAssess(requestParams, params);
       expect(resolveFailure).toHaveBeenCalledWith(
-        'Project not Configured',
+        'Project not Configured.',
         400
       );
-      expect(response).toEqual(resolveFailure('Project not Configured', 400));
+      expect(response).toEqual(resolveFailure('Project not Configured.', 400));
     });
 
     it('should return failure if cache exceeds size limit after refreshing data', async () => {
@@ -586,10 +612,10 @@ describe('Cache Management Tests', () => {
 
       const response = await getDataFromCacheAssess(requestParams, params);
       expect(resolveFailure).toHaveBeenCalledWith(
-        'Project not Configured',
+        'Project not Configured.',
         400
       );
-      expect(response).toEqual(resolveFailure('Project not Configured', 400));
+      expect(response).toEqual(resolveFailure('Project not Configured.', 400));
     });
 
     it('should return data from cache if available', async () => {
@@ -623,10 +649,10 @@ describe('Cache Management Tests', () => {
 
       const response = await getDataFromCacheAssess(requestParams, params);
       expect(resolveFailure).toHaveBeenCalledWith(
-        'Project not Configured',
+        'Project not Configured.',
         400
       );
-      expect(response).toEqual(resolveFailure('Project not Configured', 400));
+      expect(response).toEqual(resolveFailure('Project not Configured.', 400));
     });
 
     it('should handle cache miss, refresh data, and start the background timer', async () => {

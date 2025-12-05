@@ -23,7 +23,7 @@
       "userName": {
         "translate": "User Name",
         "placeholder": "Enter User Name",
-        "note": "Please enter the valid Email-ID"
+        "note": "Please enter the valid Email-ID/Username"
       },
       "serviceKey": {
         "translate": "Service Key",
@@ -292,6 +292,10 @@
               {
                 "name": "remediated",
                 "translate": "Remediated"
+              },
+              {
+                "name": "remediatedAutoVerified",
+                "translate": "Remediated Auto Verified"
               },
               {
                 "name": "fixed",
@@ -668,118 +672,118 @@
         "translate": "Redirect"
       },
       "refreshServersAndBuildNumbers": {
-        "translate": "Refresh environments, servers, tags, and build numbers"
+        "translate": "Refresh environments, servers, tags, and build numbers."
       },
       "clearsServersAndBuildNumbers": {
-        "translate": "Clear environments, servers, tags, and build numbers"
+        "translate": "Clear environments, servers, tags, and build numbers."
       },
       "clearsAllAppliedFilters": {
-        "translate": "Clears all applied filters"
+        "translate": "Clears all applied filters."
       },
       "fetchVulnerabilities": {
-        "translate": "Fetch vulnerabilities"
+        "translate": "Fetch vulnerabilities."
       },
       "assessRun": {
-        "translate": "Search for vulnerabilities and its libraries with these filter settings"
+        "translate": "Search for vulnerabilities and its libraries with these filter settings."
       },
       "vulnerabilitySave": {
-        "translate": "Saves current selected filter"
+        "translate": "Saves current selected filter."
       },
       "vulnerabilityClear": {
-        "translate": "Restores to default value"
+        "translate": "Restores to default value."
       },
       "libraryRefresh": {
-        "translate": "Refresh’s Servers, Quick View, Library Usage, Library Licence type and Tags"
+        "translate": "Refresh’s Servers, Quick View, Library Usage, Library Licence type and Tags."
       },
       "libraryClear": {
-        "translate": "Clear’s Servers, Quick View, Library Usage, Library Licence type and Tags"
+        "translate": "Clear’s Servers, Quick View, Library Usage, Library Licence type and Tags."
       }
     }
   },
   "apiResponse": {
     "projectsFetchedSuccessful": {
-      "translate": "Projects Fetched Successfully"
+      "translate": "Projects Fetched Successfully."
     },
     "badRequest": {
-      "translate": "Authentication failure"
+      "translate": "Authentication failure."
     },
     "authenticationFailure": {
-      "translate": "Authentication failure"
+      "translate": "Authentication failure."
     },
     "missingOneOrMoreError": {
       "translate": "Missing one or more required parameters."
     },
     "scanFetchedSuccessful": {
-      "translate": "Scan results fetched successfully"
+      "translate": "Scan results fetched successfully."
     },
     "projectNotFound": {
-      "translate": "Project not Configured"
+      "translate": "Project not Configured."
     },
     "failedToFecthScanResult": {
-      "translate": "Failed to fetch scan results"
+      "translate": "Failed to fetch scan results."
     },
     "errorFetchingScanResult": {
-      "translate": "Error fetching scan results"
+      "translate": "Error fetching scan results."
     },
     "configureFilter": {
-      "translate": "Please configure Filters to limit the subset of data"
+      "translate": "Please configure Filters to limit the subset of data."
     },
     "fileNotFound": {
-      "translate": "File not found"
+      "translate": "File not found."
     },
     "successfullyResetTimer": {
-      "translate": "Successfully reset timer"
+      "translate": "Successfully reset timer."
     },
     "scanRetrievedSuccessful": {
-      "translate": "Scans Retrieved Successfully"
+      "translate": "Scans Retrieved Successfully."
     },
     "failedToRetrieveScan": {
-      "translate": "Failed to retrieve scans"
+      "translate": "Failed to retrieve scans."
     },
     "scanRetrievedByIdSuccessful": {
-      "translate": "Scans Retrieved Successfully"
+      "translate": "Scans Retrieved Successfully."
     },
     "failedToRetrieveScanById": {
-      "translate": "Failed to retrieve scans"
+      "translate": "Failed to retrieve scans."
     },
     "errorFetchingScanById": {
-      "translate": "Error fetching sacn results"
+      "translate": "Error fetching sacn results."
     },
     "foundIssues": {
       "translate": "Found {0} issues in {1} files(s)"
     },
     "failedToRefreshCache": {
-      "translate": "Failed to refresh cache"
+      "translate": "Failed to refresh cache."
     },
     "fileDataFetchedSuccess": {
-      "translate": "File Data fetched Successfully"
+      "translate": "File Data fetched Successfully."
     },
     "noActiveFile": {
-      "translate": "No active file is currently opened"
+      "translate": "No active file is currently opened."
     },
     "allFillDataFetchedSuccessful": {
-      "translate": "All File Data fetched Successfully"
+      "translate": "All File Data fetched Successfully."
     },
     "fetchingProjectDetails": {
       "translate": "Fetching Project Details."
     },
     "vulnerabilityNotFound": {
-      "translate": "Sorry we can't find the Vulnerabilities for this project"
+      "translate": "Sorry we can't find the Vulnerabilities for this project."
     },
     "cacheStarted": {
-      "translate": "cache started"
+      "translate": "cache started."
     },
     "cacheCompleted": {
-      "translate": "cache completed"
+      "translate": "cache completed."
     },
     "packageInfoSuccess": {
-      "translate": "Successfully retrieved package information"
+      "translate": "Successfully retrieved package information."
     },
     "refineFilter": {
-      "translate": "There are more than 12,000 records. Please refine your filter criteria to fetch vulnerabilities"
+      "translate": "There are more than 12,000 records. Please refine your filter criteria to fetch vulnerabilities."
     },
     "fecthingApplication": {
-      "translate": "Fetching application details..."
+      "translate": "Fetching application details."
     },
     "fechedSuccess": {
       "translate": "Applications fetched successfully."
@@ -821,78 +825,78 @@
       "translate": "All Events fetched successfully."
     },
     "addVulnerabilitySuccessfully": {
-      "translate": "1 Vulnerability successfully marked as Reported"
+      "translate": "1 Vulnerability successfully marked as Reported."
     },
     "assessVulnerbilitySuccess": {
-      "translate": "Successfully fetched vulnerabilities and libraries"
+      "translate": "Successfully fetched vulnerabilities and libraries."
     },
     "traceIdNotFound": {
-      "translate": "Missing TraceId"
+      "translate": "Missing TraceId."
     },
     "httpsResult": {
       "translate": "All Https fetched successfully."
     },
     "markedVulnerability": {
-      "translate": "Marked vulnerability"
+      "translate": "Marked vulnerability."
     },
     "failedToMark": {
-      "translate": "Failed to mark vulnerability"
+      "translate": "Failed to mark vulnerability."
     },
     "vulnerabilityTagged": {
-      "translate": "Vulnerability tagged"
+      "translate": "Vulnerability tagged."
     },
     "failedToTag": {
-      "translate": "Failed to tag"
+      "translate": "Failed to tag."
     },
     "ASSESSARCHIVED": {
-      "translate": "application is archived/deleted"
+      "translate": "application is archived/deleted."
     },
     "ARCHIVED": {
-      "translate": "project is archived/deleted"
+      "translate": "project is archived/deleted."
     },
     "libraryFilterLists": {
       "translate": "list fetched successfully."
     },
     "assessEnvironments": {
-      "translate": "Environments fetched successfully"
+      "translate": "Environments fetched successfully."
     },
     "assessTags": {
-      "translate": "Tags fetched successfully"
+      "translate": "Tags fetched successfully."
     },
     "assessLibraryData": {
-      "translate": "Successfully initiated retrieving assess and library vulnerabilities"
+      "translate": "Successfully initiated retrieving assess and library vulnerabilities."
     },
     "vulnerabilitesRetrieved": {
-      "translate": "Vulnerabilities retrieved successfully"
+      "translate": "Vulnerabilities retrieved successfully."
     },
     "libUsage": {
-      "translate": "Library Usage report retrieved successfully"
+      "translate": "Library Usage report retrieved successfully."
     },
     "libTags": {
-      "translate": "Library Tags fetched successfully"
+      "translate": "Library Tags fetched successfully."
     },
     "libTagsUpdate": {
-      "translate": "Library Tags updated successfully"
+      "translate": "Library Tags updated successfully."
     },
     "cveretrieved": {
-      "translate": "CVE's Overview Retrieved successfully"
+      "translate": "CVE's Overview Retrieved successfully."
     },
     "cveOverViewUpdate": {
-      "translate": "CVE's Overview Updated successfully"
+      "translate": "CVE's Overview Updated successfully."
     }
   },
   "persistResponse": {
     "errorOccurred": {
-      "translate": "Something went wrong, Please try again"
+      "translate": "Something went wrong, Please try again."
     },
     "fetchAllProjectsSuccess": {
-      "translate": "Got all records successfully"
+      "translate": "Got all records successfully."
     },
     "projectAddedSuccess": {
-      "translate": "Project Added Successfully"
+      "translate": "Project Added Successfully."
     },
     "projectUpdatedSuccess": {
-      "translate": "Project Updated Successfully"
+      "translate": "Project Updated Successfully."
     },
     "projectDeletedSuccess": {
       "translate": "Project deleted successfully."
@@ -901,16 +905,16 @@
       "translate": "Project is not configured. Please add the project in settings before proceeding."
     },
     "projectDeletionFailed": {
-      "translate": "Unable to delete Project"
+      "translate": "Unable to delete Project."
     },
     "deletePreConfirm": {
       "translate": "Are you sure you want to delete the Project?"
     },
     "applicationAddedSuccess": {
-      "translate": "Application Added Successfully"
+      "translate": "Application Added Successfully."
     },
     "applicationUpdatedSuccess": {
-      "translate": "Application Updated Successfully"
+      "translate": "Application Updated Successfully."
     },
     "applicationDeletedSuccess": {
       "translate": "Application deleted successfully."
@@ -919,52 +923,52 @@
       "translate": "Application is not configured. Please select an application and run it in the Retrieve Vulnerability Filter screen before proceeding."
     },
     "applicationDeletionFailed": {
-      "translate": "Unable to delete Application"
+      "translate": "Unable to delete Application."
     },
     "deletePreConfirmApplication": {
       "translate": "Are you sure you want to delete the Application?"
     },
     "organizationNotFound": {
-      "translate": "Organization ID not found"
+      "translate": "Organization ID not found."
     },
     "filterUpdatedSuccess": {
-      "translate": "Filters updated successfully"
+      "translate": "Filters updated successfully."
     },
     "filterRetrivedSucess": {
-      "translate": "Filters retrieved successfully"
+      "translate": "Filters retrieved successfully."
     },
     "vulnerabilityNotFound": {
       "translate": "No vulnerabilities found for this file."
     },
     "vulnerabilityNotFoundForFilters": {
-      "translate": "No vulnerabilities Found for the selected filters"
+      "translate": "No vulnerabilities Found for the selected filters."
     },
     "autoRefreshSucess": {
-      "translate": "Vulnerability Sync Process Completed"
+      "translate": "Vulnerability Sync Process Completed."
     },
     "assessAutoRefreshSuccess": {
-      "translate": "Vulnerability and library Sync Process Completed"
+      "translate": "Vulnerability and library Sync Process Completed."
     },
     "retrievingVulnerabilities": {
-      "translate": "Retrieving vulnerabilities - Scan"
+      "translate": "Retrieving vulnerabilities - Scan."
     },
     "assessRetrievingVulnerabilities": {
-      "translate": "Retrieving vulnerabilities and libraries - Assess"
+      "translate": "Retrieving vulnerabilities and libraries - Assess."
     },
     "loadingFilters": {
-      "translate": "Loading tags, environments, servers, build numbers and session metadata"
+      "translate": "Loading tags, environments, servers, build numbers and session metadata."
     },
     "tagAlreadyApplied": {
-      "translate": "Tag already applied"
+      "translate": "Tag already applied."
     },
     "tagAlreadyAvailable": {
-      "translate": "Tag with the same name exists select from Existing tags"
+      "translate": "Tag with the same name exists select from Existing tags."
     },
     "vulnerabilityTagged": {
-      "translate": "Vulnerability tagged"
+      "translate": "Vulnerability tagged."
     },
     "tagLengthExceeded": {
-      "translate": "Tag length cannot be more than 72 characters"
+      "translate": "Tag length cannot be more than 72 characters."
     },
     "scanInterlockWarning": {
       "translate": "Switching to the Scan screen will clear the Assess-related cache. Do you want to proceed?"
@@ -976,16 +980,16 @@
       "translate": "Incorrect file path detected. Please open the project relative to"
     },
     "applicationFilterUpdatedSuccess": {
-      "translate": "Vulnerability filter updated successfully"
+      "translate": "Vulnerability filter updated successfully."
     },
     "scaFilterUpdatedSuccess": {
-      "translate": "Library filter updated successfully"
+      "translate": "Library filter updated successfully."
     },
     "scaClear": {
-      "translate": "Library filter restored successfully"
+      "translate": "Library filter restored successfully."
     },
     "vulnerabilityClear": {
-      "translate": "Vulnerability filter restored successfully"
+      "translate": "Vulnerability filter restored successfully."
     }
   },
   "contrastItems": {

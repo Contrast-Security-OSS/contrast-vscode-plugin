@@ -56,52 +56,63 @@ jest.mock(
 );
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-jest.mock('vscode', () => ({
-  env: {
-    language: 'en',
-    appName: 'VSCode',
-  },
-  workspace: {
-    workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
-  },
-  window: {
-    activeTextEditor: null,
-  },
+jest.mock('vscode', () => {
+  const UIKind = { Desktop: 1, Web: 2 };
+  return {
+    UIKind,
+    env: {
+      language: 'en',
+      appName: 'VSCode',
+      uiKind: UIKind.Desktop,
+    },
+    workspace: {
+      onDidChangeConfiguration: jest.fn(() => {
+        return { dispose: jest.fn() };
+      }),
+      workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+    },
+    window: {
+      activeTextEditor: null,
+      createTreeView: jest.fn().mockReturnValue({
+        onDidChangeVisibility: jest.fn(),
+      }),
+    },
 
-  TreeItem: class {
-    [x: string]: { dark: Uri; light: Uri };
-    constructor(
-      label: { dark: Uri; light: Uri },
-      command: any = null,
-      icon: any = null
-    ) {
-      this.label = label;
-      if (command !== null) {
-        this.command = {
-          title: label,
-          command: command,
-        } as any;
+    TreeItem: class {
+      [x: string]: { dark: Uri; light: Uri };
+      constructor(
+        label: { dark: Uri; light: Uri },
+        command: any = null,
+        icon: any = null
+      ) {
+        this.label = label;
+        if (command !== null) {
+          this.command = {
+            title: label,
+            command: command,
+          } as any;
+        }
+        if (icon !== null) {
+          const projectRoot = path.resolve(__dirname, '..');
+          const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
+          this.iconPath = {
+            dark: iconPath,
+            light: iconPath,
+          };
+        }
       }
-      if (icon !== null) {
-        const projectRoot = path.resolve(__dirname, '..');
-        const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
-        this.iconPath = {
-          dark: iconPath,
-          light: iconPath,
-        };
-      }
-    }
-  },
-  Uri: {
-    file: jest.fn().mockReturnValue('mockUri'),
-  },
-  commands: {
-    registerCommand: jest.fn(),
-  },
-  languages: {
-    registerHoverProvider: jest.fn(),
-  },
-}));
+    },
+    Uri: {
+      file: jest.fn().mockReturnValue('mockUri'),
+    },
+    commands: {
+      registerCommand: jest.fn(),
+    },
+    languages: {
+      registerHoverProvider: jest.fn(),
+    },
+  };
+});
 
 (ShowInformationPopup as jest.Mock).mockResolvedValue(
   'Fetching Project Details.'
@@ -1512,7 +1523,7 @@ describe('API Service Unit Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });
@@ -1531,7 +1542,7 @@ describe('API Service Unit Tests', () => {
 
       expect(response).toEqual({
         code: 500,
-        message: 'Authentication failure',
+        message: 'Authentication failure.',
         responseData: null,
         status: 'failure',
       });

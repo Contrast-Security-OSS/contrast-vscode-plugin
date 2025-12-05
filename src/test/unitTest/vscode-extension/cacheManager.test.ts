@@ -290,7 +290,7 @@ describe('Cache Management Tests', () => {
       await getDataFromCache();
 
       expect(ShowInformationPopup).toHaveBeenCalledWith(
-        'project is archived/deleted'
+        'project is archived/deleted.'
       );
       expect(stopBackgroundTimerAssess).toHaveBeenCalled();
       expect(memoryCache.reset).toHaveBeenCalled();

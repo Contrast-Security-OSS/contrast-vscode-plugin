@@ -71,6 +71,7 @@ jest.mock('../../../vscode-extension/utils/commonUtil', () => ({
   getVulnerabilitiesRefreshCycle: jest.fn(),
   refreshCacheAssess: jest.fn(),
   getCacheFilterData: jest.fn(),
+  DateTime: jest.fn(() => '2025-01-01T00:00:00.000Z'),
 }));
 
 jest.mock('../../../vscode-extension/cache/cacheManager', () => ({
@@ -269,7 +270,7 @@ describe('Background Timer Tests', () => {
         data: '123',
       });
 
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Auto-Refresh - Vulnerability Sync Process Completed`;
+      const logData = `Start Time: ${DateTime()} | End Time: ${DateTime()} | Message: Auto-Refresh - Vulnerability Sync Process Completed`;
       expect(mockLogMessage).toHaveBeenCalledWith(LogLevel.INFO, logData);
     });
 

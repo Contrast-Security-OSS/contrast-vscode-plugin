@@ -22,7 +22,7 @@
       "userName": {
         "translate": "ユーザー名",
         "placeholder": "ユーザー名を入力してください",
-        "note": "有効なメールIDを入力してください"
+        "note": "有効なメールアドレス／ユーザー名を入力してください"
       },
       "serviceKey": {
         "translate": "サービスキー",
@@ -291,6 +291,10 @@
               {
                 "name": "remediated",
                 "translate": "修正済み"
+              },
+              {
+                "name": "remediatedAutoVerified",
+                "translate": "自動検証済み修復"
               },
               {
                 "name": "fixed",
@@ -697,273 +701,273 @@
   },
   "apiResponse": {
     "projectsFetchedSuccessful": {
-      "translate": "プロジェクトの取得に成功しました"
+      "translate": "プロジェクトの取得に成功しました."
     },
     "badRequest": {
-      "translate": "認証エラー"
+      "translate": "認証エラー."
     },
     "authenticationFailure": {
-      "translate": "認証エラー"
+      "translate": "認証エラー."
     },
     "missingOneOrMoreError": {
       "translate": "必要なパラメータの一部が不足しています。"
     },
     "scanFetchedSuccessful": {
-      "translate": "スキャン結果の取得に成功しました"
+      "translate": "スキャン結果の取得に成功しました."
     },
     "projectNotFound": {
-      "translate": "プロジェクトが構成されていません"
+      "translate": "プロジェクトが構成されていません."
     },
     "failedToFecthScanResult": {
-      "translate": "スキャン結果の取得に失敗しました"
+      "translate": "スキャン結果の取得に失敗しました."
     },
     "errorFetchingScanResult": {
-      "translate": "スキャン結果の取得中にエラーが発生しました"
+      "translate": "スキャン結果の取得中にエラーが発生しました."
     },
     "configureFilter": {
-      "translate": "データのサブセットを制限するフィルタを設定してください"
+      "translate": "データのサブセットを制限するフィルタを設定してください."
     },
     "fileNotFound": {
-      "translate": "ファイルが見つかりません"
+      "translate": "ファイルが見つかりません."
     },
     "successfullyResetTimer": {
-      "translate": "タイマーを正常にリセットしました"
+      "translate": "タイマーを正常にリセットしました."
     },
     "scanRetrievedSuccessful": {
-      "translate": "スキャンを正常に取得しました"
+      "translate": "スキャンを正常に取得しました."
     },
     "failedToRetrieveScan": {
-      "translate": "スキャンの取得に失敗しました"
+      "translate": "スキャンの取得に失敗しました."
     },
     "scanRetrievedByIdSuccessful": {
-      "translate": "スキャンを正常に取得しました"
+      "translate": "スキャンを正常に取得しました."
     },
     "failedToRetrieveScanById": {
-      "translate": "スキャンの取得に失敗しました"
+      "translate": "スキャンの取得に失敗しました."
     },
     "errorFetchingScanById": {
-      "translate": "スキャン結果の取得中にエラーが発生しました"
+      "translate": "スキャン結果の取得中にエラーが発生しました."
     },
     "foundIssues": {
-      "translate": "{1} ファイル中に {0} の問題が見つかりました"
+      "translate": "{1} ファイル中に {0} の問題が見つかりました."
     },
     "failedToRefreshCache": {
-      "translate": "キャッシュの更新に失敗しました"
+      "translate": "キャッシュの更新に失敗しました."
     },
     "fileDataFetchedSuccess": {
-      "translate": "ファイルデータの取得に成功しました"
+      "translate": "ファイルデータの取得に成功しました."
     },
     "noActiveFile": {
-      "translate": "現在アクティブなファイルが開いていません"
+      "translate": "現在アクティブなファイルが開いていません."
     },
     "allFillDataFetchedSuccessful": {
-      "translate": "すべてのファイルデータの取得に成功しました"
+      "translate": "すべてのファイルデータの取得に成功しました."
     },
     "fetchingProjectDetails": {
       "translate": "プロジェクト詳細を取得しています."
     },
     "vulnerabilityNotFound": {
-      "translate": "申し訳ありませんが、このプロジェクトの脆弱性は見つかりませんでした"
+      "translate": "申し訳ありませんが、このプロジェクトの脆弱性は見つかりませんでした."
     },
     "cacheStarted": {
-      "translate": "キャッシュを開始しました"
+      "translate": "キャッシュを開始しました."
     },
     "cacheCompleted": {
-      "translate": "キャッシュが完了しました"
+      "translate": "キャッシュが完了しました."
     },
     "packageInfoSuccess": {
-      "translate": "パッケージ情報の取得に成功しました"
+      "translate": "パッケージ情報の取得に成功しました."
     },
     "refineFilter": {
-      "translate": "12,000件以上のレコードがあります。フィルター条件を絞って脆弱性を取得してください"
+      "translate": "12,000件以上のレコードがあります。フィルター条件を絞って脆弱性を取得してください."
     },
     "fecthingApplication": {
-      "translate": "アプリケーションの詳細を取得中..."
+      "translate": "アプリケーションの詳細を取得中."
     },
     "fechedSuccess": {
-      "translate": "アプリケーションの取得に成功しました"
+      "translate": "アプリケーションの取得に成功しました."
     },
     "somethingWentWrong": {
-      "translate": "問題が発生しました"
+      "translate": "問題が発生しました."
     },
     "serverListFetched": {
-      "translate": "サーバーリストの取得に成功しました"
+      "translate": "サーバーリストの取得に成功しました."
     },
     "buildnumberFetched": {
-      "translate": "ビルド番号の取得に成功しました"
+      "translate": "ビルド番号の取得に成功しました."
     },
     "customSessionMetaDataFetched": {
-      "translate": "カスタムセッションメタデータの取得に成功しました"
+      "translate": "カスタムセッションメタデータの取得に成功しました."
     },
     "MostRecentMetaDataFetched": {
-      "translate": "最新のメタデータの取得に成功しました"
+      "translate": "最新のメタデータの取得に成功しました."
     },
     "getAllTags": {
-      "translate": "すべてのタグの取得に成功しました"
+      "translate": "すべてのタグの取得に成功しました."
     },
     "vulnerabilitysuccessfully": {
-      "translate": "脆弱性のタグ付けに成功しました"
+      "translate": "脆弱性のタグ付けに成功しました."
     },
     "tracesFetched": {
-      "translate": "トレースの取得に成功しました"
+      "translate": "トレースの取得に成功しました."
     },
     "storyResult": {
-      "translate": "行番号とファイル名の取得に成功しました"
+      "translate": "行番号とファイル名の取得に成功しました."
     },
     "storyText": {
-      "translate": "ストーリー結果の取得に成功しました"
+      "translate": "ストーリー結果の取得に成功しました."
     },
     "recommendationText": {
-      "translate": "すべての推奨テキストの取得に成功しました"
+      "translate": "すべての推奨テキストの取得に成功しました."
     },
     "eventsResult": {
-      "translate": "すべてのイベントの取得に成功しました"
+      "translate": "すべてのイベントの取得に成功しました."
     },
     "addVulnerabilitySuccessfully": {
-      "translate": "1件の脆弱性を報告済みにマークしました"
+      "translate": "1件の脆弱性を報告済みにマークしました."
     },
     "assessVulnerbilitySuccess": {
-      "translate": "脆弱性とライブラリの取得に成功しました"
+      "translate": "脆弱性とライブラリの取得に成功しました."
     },
     "traceIdNotFound": {
-      "translate": "TraceId が見つかりません"
+      "translate": "TraceId が見つかりません."
     },
     "httpsResult": {
-      "translate": "すべての HTTPS の取得に成功しました"
+      "translate": "すべての HTTPS の取得に成功しました."
     },
     "markedVulnerability": {
-      "translate": "脆弱性をマークしました"
+      "translate": "脆弱性をマークしました."
     },
     "failedToMark": {
-      "translate": "脆弱性のマークに失敗しました"
+      "translate": "脆弱性のマークに失敗しました."
     },
     "vulnerabilityTagged": {
-      "translate": "脆弱性にタグを付けました"
+      "translate": "脆弱性にタグを付けました."
     },
     "failedToTag": {
-      "translate": "タグ付けに失敗しました"
+      "translate": "タグ付けに失敗しました."
     },
     "ASSESSARCHIVED": {
-      "translate": "アプリケーションはアーカイブ済み/削除されています"
+      "translate": "アプリケーションはアーカイブ済み/削除されています."
     },
     "ARCHIVED": {
-      "translate": "プロジェクトはアーカイブ済み/削除されています"
+      "translate": "プロジェクトはアーカイブ済み/削除されています."
     },
     "libraryFilterLists": {
       "translate": "リストの取得に成功しました。"
     },
     "assessEnvironments": {
-      "translate": "環境の取得に成功しました"
+      "translate": "環境の取得に成功しました."
     },
     "assessTags": {
-      "translate": "タグの取得に成功しました"
+      "translate": "タグの取得に成功しました."
     },
     "assessLibraryData": {
-      "translate": "の日本語訳は以下の通りです：「Assessおよびライブラリの脆弱性の取得を正常に開始しました」"
+      "translate": "の日本語訳は以下の通りです：「Assessおよびライブラリの脆弱性の取得を正常に開始しました."
     },
     "vulnerabilitesRetrieved": {
-      "translate": "脆弱性の取得に成功しました"
+      "translate": "脆弱性の取得に成功しました."
     },
     "libUsage": {
-      "translate": "ライブラリ使用状況レポートの取得に成功しました"
+      "translate": "ライブラリ使用状況レポートの取得に成功しました."
     },
     "libTags": {
-      "translate": "「ライブラリのタグを正常に取得しました」"
+      "translate": "「ライブラリのタグを正常に取得しました."
     },
     "libTagsUpdate": {
-      "translate": "「ライブラリのタグが正常に更新されました」"
+      "translate": "「ライブラリのタグが正常に更新されました."
     },
     "cveretrieved": {
-      "translate": "CVEの概要が正常に取得されました"
+      "translate": "CVEの概要が正常に取得されました."
     },
     "cveOverViewUpdate": {
-      "translate": "CVEの概要が正常に更新されました"
+      "translate": "CVEの概要が正常に更新されました."
     }
   },
   "persistResponse": {
     "errorOccurred": {
-      "translate": "何かがうまくいきませんでした。もう一度お試しください"
+      "translate": "何かがうまくいきませんでした。もう一度お試しください."
     },
     "fetchAllProjectsSuccess": {
-      "translate": "すべてのレコードを正常に取得しました"
+      "translate": "すべてのレコードを正常に取得しました."
     },
     "projectAddedSuccess": {
-      "translate": "プロジェクトが正常に追加されました"
+      "translate": "プロジェクトが正常に追加されました."
     },
     "projectUpdatedSuccess": {
-      "translate": "プロジェクトが正常に更新されました"
+      "translate": "プロジェクトが正常に更新されました."
     },
     "projectDeletedSuccess": {
-      "translate": "プロジェクトが正常に削除されました。"
+      "translate": "プロジェクトが正常に削除されました."
     },
     "projectNotConfigured": {
-      "translate": "プロジェクトが設定されていません。進む前に設定にプロジェクトを追加してください。"
+      "translate": "プロジェクトが設定されていません。進む前に設定にプロジェクトを追加してください."
     },
     "projectDeletionFailed": {
-      "translate": "プロジェクトの削除に失敗しました"
+      "translate": "プロジェクトの削除に失敗しました."
     },
     "deletePreConfirm": {
       "translate": "プロジェクトを削除してもよろしいですか？"
     },
     "applicationAddedSuccess": {
-      "translate": "アプリケーションが正常に追加されました"
+      "translate": "アプリケーションが正常に追加されました."
     },
     "applicationUpdatedSuccess": {
-      "translate": "アプリケーションが正常に更新されました"
+      "translate": "アプリケーションが正常に更新されました."
     },
     "applicationDeletedSuccess": {
-      "translate": "アプリケーションが正常に削除されました。"
+      "translate": "アプリケーションが正常に削除されました."
     },
     "applicationNotConfigured": {
-      "translate": "アプリケーションが構成されていません。続行する前に、アプリケーションを選択して「脆弱性フィルターの取得」画面で実行してください。"
+      "translate": "アプリケーションが構成されていません。続行する前に、アプリケーションを選択して「脆弱性フィルターの取得」画面で実行してください."
     },
     "applicationDeletionFailed": {
-      "translate": "アプリケーションを削除できませんでした"
+      "translate": "アプリケーションを削除できませんでした."
     },
     "deletePreConfirmApplication": {
       "translate": "本当にアプリケーションを削除しますか？"
     },
     "organizationNotFound": {
-      "translate": "組織が見つかりません"
+      "translate": "組織が見つかりません."
     },
     "filterUpdatedSuccess": {
-      "translate": "フィルタが正常に更新されました"
+      "translate": "フィルタが正常に更新されました."
     },
     "filterRetrivedSucess": {
-      "translate": "フィルタが正常に取得されました"
+      "translate": "フィルタが正常に取得されました."
     },
     "vulnerabilityNotFound": {
-      "translate": "このファイルの脆弱性は見つかりませんでした。スキャンの脆弱性レポートを確認してください"
+      "translate": "このファイルの脆弱性は見つかりませんでした。スキャンの脆弱性レポートを確認してください."
     },
     "vulnerabilityNotFoundForFilters": {
-      "translate": "選択したフィルターに対する脆弱性は見つかりませんでした"
+      "translate": "選択したフィルターに対する脆弱性は見つかりませんでした."
     },
     "autoRefreshSucess": {
-      "translate": "脆弱性同期プロセスが完了しました"
+      "translate": "脆弱性同期プロセスが完了しました."
     },
     "assessAutoRefreshSuccess": {
-      "translate": "脆弱性とライブラリの同期プロセスが完了しました"
+      "translate": "脆弱性とライブラリの同期プロセスが完了しました."
     },
     "retrievingVulnerabilities": {
-      "translate": "脆弱性を取得しています - スキャン中"
+      "translate": "脆弱性を取得しています - スキャン中."
     },
     "assessRetrievingVulnerabilities": {
-      "translate": "脆弱性とライブラリを取得しています - 評価中"
+      "translate": "脆弱性とライブラリを取得しています - 評価中."
     },
     "loadingFilters": {
-      "translate": "タグ、環境、サーバー、ビルド番号、セッションメタデータを読み込み中"
+      "translate": "タグ、環境、サーバー、ビルド番号、セッションメタデータを読み込み中."
     },
     "tagAlreadyApplied": {
-      "translate": "タグはすでに適用されています"
+      "translate": "タグはすでに適用されています."
     },
     "tagAlreadyAvailable": {
-      "translate": "同じ名前のタグが存在します。既存のタグから選択してください"
+      "translate": "同じ名前のタグが存在します。既存のタグから選択してください."
     },
     "vulnerabilityTagged": {
-      "translate": "脆弱性がタグ付けされました"
+      "translate": "脆弱性がタグ付けされました."
     },
     "tagLengthExceeded": {
-      "translate": "タグの長さは72文字を超えることはできません"
+      "translate": "タグの長さは72文字を超えることはできません."
     },
     "scanInterlockWarning": {
       "translate": "スキャン画面に切り替えると、アセス関連のキャッシュがクリアされます。続行しますか？"
@@ -972,19 +976,19 @@
       "translate": "アセス画面に切り替えると、スキャン関連のキャッシュがクリアされます。続行しますか？"
     },
     "wrongRelativePath": {
-      "translate": "ファイルパスが正しくありません。次のパスを基準にプロジェクトを開いてください"
+      "translate": "ファイルパスが正しくありません。次のパスを基準にプロジェクトを開いてください."
     },
     "applicationFilterUpdatedSuccess": {
-      "translate": "脆弱性フィルターが正常に更新されました"
+      "translate": "脆弱性フィルターが正常に更新されました."
     },
     "scaFilterUpdatedSuccess": {
-      "translate": "ライブラリフィルターが正常に更新されました"
+      "translate": "ライブラリフィルターが正常に更新されました."
     },
     "scaClear": {
-      "translate": "ライブラリフィルターが正常に復元されました"
+      "translate": "ライブラリフィルターが正常に復元されました."
     },
     "vulnerabilityClear": {
-      "translate": "脆弱性フィルターが正常に復元されました"
+      "translate": "脆弱性フィルターが正常に復元されました."
     }
   },
   "contrastItems": {

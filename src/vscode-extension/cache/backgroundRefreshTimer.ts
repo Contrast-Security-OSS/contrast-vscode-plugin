@@ -20,6 +20,7 @@ import { loggerInstance } from '../logging/logger';
 //to set inteval based on the recycle time
 let interval: ReturnType<typeof setInterval> | undefined;
 export async function startBackgroundTimer(projectId: string): Promise<void> {
+  const startTime: string = DateTime();
   const persistedData = PersistenceInstance.getByKey(
     TOKEN.SETTING,
     SETTING_KEYS.CONFIGPROJECT as keyof PersistedDTO
@@ -58,12 +59,12 @@ export async function startBackgroundTimer(projectId: string): Promise<void> {
           window.showInformationMessage(
             `${localeI18ln.getTranslation('persistResponse.autoRefreshSucess')} ${formatDate(new Date())}`
           );
-          const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Auto-Refresh - Vulnerability Sync Process Completed`;
+          const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Auto-Refresh - Vulnerability Sync Process Completed`;
           void loggerInstance?.logMessage(LogLevel.INFO, logData);
         }
       } catch (err) {
         if (err instanceof Error) {
-          const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Auto-Refresh - ${err.message} \n`;
+          const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Auto-Refresh - ${err.message} \n`;
           void loggerInstance?.logMessage(LogLevel.ERROR, logData);
         }
         console.error(

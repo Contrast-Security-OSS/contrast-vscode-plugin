@@ -4,8 +4,6 @@ import {
   getApplicationById,
   getAssessVulnerabilities,
 } from '../../../vscode-extension/api/services/apiService';
-import { Uri } from 'vscode';
-import path from 'path';
 import {
   GetAllConfiguredProjects,
   GetAssessFilter,
@@ -14,7 +12,8 @@ import { localeI18ln } from '../../../l10n';
 import { getAllAssessFilters } from '../../../vscode-extension/utils/helper';
 import { ShowErrorPopup } from '../../../vscode-extension/commands/ui-commands/messageHandler';
 import { stopBackgroundTimerAssess } from '../../../vscode-extension/cache/backgroundRefreshTimerAssess';
-// import { newData } from '../../../vscode-extension/api/model/api.interface';
+
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 
 jest.mock('../../../vscode-extension/api/services/apiService', () => ({
   ...jest.requireActual('../../../vscode-extension/api/services/apiService'),
@@ -59,46 +58,88 @@ jest.mock('../../../vscode-extension/logging/logger', () => ({
 }));
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-jest.mock('vscode', () => ({
-  env: {
-    language: 'en',
-    appName: 'VSCode',
-  },
-  workspace: {
-    workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
-  },
-  window: {
-    activeTextEditor: null,
-  },
+// Put this BEFORE any import that indirectly imports 'vscode'
+jest.mock(
+  'vscode',
+  () => {
+    const path = require('path');
 
-  TreeItem: class {
-    [x: string]: { dark: Uri; light: Uri };
-    constructor(
-      label: { dark: Uri; light: Uri },
-      command: any = null,
-      icon: any = null
-    ) {
-      this.label = label;
-      if (command !== null) {
-        this.command = {
-          title: label,
-          command: command,
-        } as any;
-      }
-      if (icon !== null) {
-        const projectRoot = path.resolve(__dirname, '..');
-        const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
-        this.iconPath = {
-          dark: iconPath,
-          light: iconPath,
-        };
+    const disposable = () => ({ dispose: jest.fn() });
+
+    const UIKind = { Desktop: 1, Web: 2 };
+
+    const Uri = {
+      file: jest.fn((p: string) => ({ fsPath: p, path: p, toString: () => p })),
+      joinPath: jest.fn((base: any, ...segs: string[]): any => {
+        const basePath = typeof base === 'string' ? base : base.fsPath;
+        return Uri.file(path.join(basePath, ...segs));
+      }),
+    };
+
+    class TreeItem {
+      label: any;
+      command?: { title: string; command: string };
+      iconPath?: { dark: any; light: any };
+      constructor(label: any, command: any = null, icon: any = null) {
+        this.label = label;
+        if (command) {
+          this.command = {
+            title: typeof label === 'string' ? label : 'Command',
+            command,
+          };
+        }
+        if (icon) {
+          const iconPath = Uri.file(path.join(process.cwd(), 'assets', icon));
+          this.iconPath = { dark: iconPath, light: iconPath };
+        }
       }
     }
+
+    return {
+      UIKind,
+      version: '1.93.0',
+      Uri,
+
+      env: {
+        language: 'en',
+        appName: 'VSCode',
+        uiKind: UIKind.Desktop,
+      },
+
+      workspace: {
+        workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+        onDidChangeConfiguration: jest.fn(() => disposable()),
+        getConfiguration: jest.fn(() => ({
+          get: jest.fn(),
+          update: jest.fn(),
+        })),
+      },
+
+      window: {
+        activeTextEditor: null,
+        createTreeView: jest.fn(() => ({
+          onDidChangeVisibility: jest.fn(),
+          reveal: jest.fn(),
+          dispose: jest.fn(),
+        })),
+        showErrorMessage: jest.fn(),
+        showInformationMessage: jest.fn(),
+      },
+
+      commands: {
+        registerCommand: jest.fn(() => disposable()),
+        executeCommand: jest.fn(),
+      },
+
+      languages: {
+        registerHoverProvider: jest.fn(() => disposable()),
+      },
+
+      TreeItem,
+    };
   },
-  Uri: {
-    file: jest.fn().mockReturnValue('mockUri'),
-  },
-}));
+  { virtual: true } // helpful if 'vscode' isn't installed in Jest env
+);
 
 jest.mock(
   '../../../vscode-extension/commands/ui-commands/webviewHandler',

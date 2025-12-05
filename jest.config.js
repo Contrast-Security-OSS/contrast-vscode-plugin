@@ -1,22 +1,31 @@
+// jest.config.js
 module.exports = {
-  preset: 'ts-jest', // Use ts-jest preset to work with TypeScript
-  testEnvironment: 'jest-environment-jsdom', // Simulate a browser environment
+  preset: 'ts-jest',
+  testEnvironment: 'jest-environment-jsdom',
+
+  // 👇 Limit Jest to unit tests only
+  roots: ['<rootDir>/src/test/unitTest'],
+
+  // Only pick test files inside src/test
+  testMatch: ['**/?(*.)+(test|spec).+(ts|tsx|js|jsx)'],
+
+  // Ignore compiled output and VS Code test runtime folders
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    '/out/',
+    '/.vscode-test/',
+  ],
+  modulePathIgnorePatterns: ['/dist/', '/out/'],
+
   moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy', // Mock CSS imports if using any CSS or TailwindCSS
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^vscode$': '<rootDir>/__mocks__/vscode.js',
   },
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'], // Setup Jest DOM matchers
-  testPathIgnorePatterns: ['/node_modules/', '/dist/'], // Ignore compiled files
+
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        tsconfig: 'tsconfig.json',
-        // Any other ts-jest configurations you need here
-      },
-    ],
-  },
-  globals: {
-    testMatch: ['**/test/**/*.test.(ts|tsx|js|jsx)'],
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
 };

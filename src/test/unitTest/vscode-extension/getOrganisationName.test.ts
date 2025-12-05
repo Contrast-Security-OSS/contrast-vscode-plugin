@@ -10,58 +10,66 @@ jest.mock('../../../webview/utils/authBase64', () => ({
   authBase64: jest.fn(),
 }));
 
-jest.mock('vscode', () => ({
-  env: {
-    language: 'en',
-    appName: 'VSCode',
-  },
-  workspace: {
-    workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
-    onDidChangeConfiguration: jest.fn(),
-  },
-  window: {
-    activeTextEditor: {
-      document: {
-        fileName: 'test.js',
-      },
+jest.mock('vscode', () => {
+  const UIKind = { Desktop: 1, Web: 2 };
+  return {
+    UIKind,
+    env: {
+      language: 'en',
+      appName: 'VSCode',
+      uiKind: UIKind.Desktop,
     },
-  },
-  TreeItem: class {
-    [x: string]: { dark: Uri; light: Uri };
-    constructor(
-      label: { dark: Uri; light: Uri },
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      command: any = null,
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      icon: any = null
-    ) {
-      this.label = label;
-      if (command !== null) {
-        this.command = {
-          title: label,
-          command: command,
-        } as any;
+    workspace: {
+      workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+      onDidChangeConfiguration: jest.fn(),
+    },
+    window: {
+      activeTextEditor: {
+        document: {
+          fileName: 'test.js',
+        },
+      },
+      createTreeView: jest.fn().mockReturnValue({
+        onDidChangeVisibility: jest.fn(),
+      }),
+    },
+    TreeItem: class {
+      [x: string]: { dark: Uri; light: Uri };
+      constructor(
+        label: { dark: Uri; light: Uri },
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        command: any = null,
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        icon: any = null
+      ) {
+        this.label = label;
+        if (command !== null) {
+          this.command = {
+            title: label,
+            command: command,
+          } as any;
+        }
+        if (icon !== null) {
+          const projectRoot = path.resolve(__dirname, '..');
+          const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
+          this.iconPath = {
+            dark: iconPath,
+            light: iconPath,
+          };
+        }
       }
-      if (icon !== null) {
-        const projectRoot = path.resolve(__dirname, '..');
-        const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
-        this.iconPath = {
-          dark: iconPath,
-          light: iconPath,
-        };
-      }
-    }
-  },
-  Uri: {
-    file: jest.fn().mockReturnValue('mockUri'),
-  },
-  commands: {
-    registerCommand: jest.fn(),
-  },
-  languages: {
-    registerHoverProvider: jest.fn(),
-  },
-}));
+    },
+    Uri: {
+      file: jest.fn().mockReturnValue('mockUri'),
+    },
+    commands: {
+      registerCommand: jest.fn(),
+    },
+    languages: {
+      registerHoverProvider: jest.fn(),
+    },
+  };
+});
 
 jest.mock(
   '../../../vscode-extension/commands/ui-commands/webviewHandler',

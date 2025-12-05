@@ -86,11 +86,11 @@ import { getFilePathuri } from '../../utils/helper';
 
 import axiosRetry from 'axios-retry';
 import { loggerInstance } from '../../logging/logger';
-import { decrypt } from '../../utils/encryptDecrypt';
 import { AxiosInstance } from 'axios';
 import { stopBackgroundTimerAssess } from '../../cache/backgroundRefreshTimerAssess';
 import { ContrastPanelInstance } from '../../commands/ui-commands/webviewHandler';
 import path from 'path';
+import { secrets } from '../../../vscode-extension/commands';
 
 const os = require('os');
 
@@ -105,7 +105,7 @@ axiosRetry(axios, {
 axios.defaults.timeout = 100 * 1000;
 
 const headers = {
-  'User-Agent': `<${pkg.name}>/<${pkg.version}>(platform=VSCode;version=${os.release()};os=${os.platform()};version=${vscode.version})`,
+  'User-Agent': `<${pkg.name}>/<${pkg.version}>(platform=${getPlatformDetail()};version=${os.release()};os=${os.platform()};version=${vscode.version})`,
 };
 export const axiosController = new AbortController();
 
@@ -119,6 +119,7 @@ function getAxiosClient(contrastURL: string): AxiosInstance {
 }
 
 async function getAllProjectList(params: PrimaryConfig): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const { apiKey, contrastURL, userName, serviceKey, organizationId, source } =
     params;
   if (
@@ -178,8 +179,7 @@ async function getAllProjectList(params: PrimaryConfig): Promise<ApiResponse> {
           (t) => t.name.trim().toLowerCase() === item.name.trim().toLowerCase()
         ) === index
     );
-
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Projects Fetched Successfully | Total number of Projects : ${uniqueProjects.length} \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Projects Fetched Successfully | Total number of Projects : ${uniqueProjects.length} \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
     ShowInformationPopup(
       localeI18ln.getTranslation('apiResponse.projectsFetchedSuccessful')
@@ -191,8 +191,9 @@ async function getAllProjectList(params: PrimaryConfig): Promise<ApiResponse> {
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Retrieve Projects - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Retrieve Projects - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
+      console.error('error', error);
       ShowInformationPopup(
         localeI18ln.getTranslation('apiResponse.authenticationFailure')
       );
@@ -208,21 +209,19 @@ async function getProjectById(
   params: ConfiguredProject,
   isManual = true
 ): Promise<boolean> {
-  const {
-    apiKey,
-    userName,
-    serviceKey,
-    organizationId,
-    source,
-    projectId,
-    contrastURL,
-  } = params;
+  const { userName, organizationId, source, projectId, contrastURL } = params;
   const baseUrl = source === 'scan' ? 'sast' : 'assess';
 
   try {
     const client = getAxiosClient(contrastURL);
-    const decryptApiKey = isManual ? apiKey : decrypt(apiKey);
-    const decryptSecretKey = isManual ? serviceKey : decrypt(serviceKey);
+    const serviceKey = await secrets.getSecret(params.serviceKey);
+    const apiKey = await secrets.getSecret(params.apiKey);
+    const decryptApiKey = isManual ? params.apiKey : apiKey;
+    const decryptSecretKey = isManual ? params.serviceKey : serviceKey;
+
+    if (decryptApiKey === undefined || decryptSecretKey === undefined) {
+      throw new Error('Missing API key or Service key in secret storage');
+    }
 
     const response = await client.get(
       `/${baseUrl}/organizations/${organizationId}/projects/${projectId}`,
@@ -299,6 +298,7 @@ const getAllFilesVulnerability = () => {
 };
 
 async function getScanResults(projectId: string): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   let allResults: Vulnerability[] = [];
   const response: ApiResponse = await GetAllConfiguredProjects();
   const configuredProjects: ConfiguredProject[] =
@@ -402,8 +402,7 @@ async function getScanResults(projectId: string): Promise<ApiResponse> {
       }
     }
     const parsedJson = parseSourceJson(allResults);
-
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: ${formatString(
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: ${formatString(
       'Found {0} issues in {1} files(s)',
       parsedJson.issuesCount,
       parsedJson.filesCount
@@ -423,7 +422,7 @@ async function getScanResults(projectId: string): Promise<ApiResponse> {
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Unable to retrieve the project as it has been deleted from the organization table. \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Unable to retrieve the project as it has been deleted from the organization table. \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
 
@@ -435,6 +434,7 @@ async function getScanResults(projectId: string): Promise<ApiResponse> {
 }
 
 async function getProjectVulnerabilties(): Promise<ApiResponse | undefined> {
+  const startTime: string = DateTime();
   const projectVulnerabilities: ApiResponse = await getDataFromCache();
   const vulnerabilities = projectVulnerabilities?.responseData as ProjectSource;
   if (vulnerabilities?.issuesCount > 15000) {
@@ -445,11 +445,11 @@ async function getProjectVulnerabilties(): Promise<ApiResponse | undefined> {
   }
   if (projectVulnerabilities.code === 200) {
     ShowInformationPopup(projectVulnerabilities.message);
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Vulnerabilities Retrieved from Cache \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Vulnerabilities Retrieved from Cache \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
     return projectVulnerabilities;
   } else {
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Unable to retrieve vulnerabilities from Cache \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Unable to retrieve vulnerabilities from Cache \n`;
     void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     ShowErrorPopup(projectVulnerabilities.message);
   }
@@ -578,6 +578,7 @@ async function resetTimer(): Promise<ApiResponse> {
 }
 
 async function getAllScans(params: ConfiguredProject): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const {
     apiKey,
     userName,
@@ -615,7 +616,7 @@ async function getAllScans(params: ConfiguredProject): Promise<ApiResponse> {
         totalPages = response.data.totalPages;
         page++;
       } else {
-        const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Failed to retrieve scans \n`;
+        const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Failed to retrieve scans \n`;
         void loggerInstance?.logMessage(LogLevel.ERROR, logData);
         return resolveFailure(
           localeI18ln.getTranslation('apiResponse.failedToRetrieveScan'),
@@ -623,7 +624,7 @@ async function getAllScans(params: ConfiguredProject): Promise<ApiResponse> {
         );
       }
     } while (page <= totalPages);
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Scans Retrieved Successfully \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Scans Retrieved Successfully \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
     return resolveSuccess(
       localeI18ln.getTranslation('apiResponse.scanRetrievedSuccessful'),
@@ -724,6 +725,16 @@ const getOrganisationName = async (ConfigData: ConfiguredProject) => {
   }
 };
 
+function getPlatformDetail(): 'Gitpod (Web IDE)' | 'VSCode (Desktop IDE)' {
+  const uiKind = vscode.env.uiKind;
+  const isWeb: boolean = uiKind === vscode.UIKind.Web;
+
+  const platform: 'Gitpod (Web IDE)' | 'VSCode (Desktop IDE)' = isWeb
+    ? 'Gitpod (Web IDE)'
+    : 'VSCode (Desktop IDE)';
+  return platform;
+}
+
 async function getPackageInformation(): Promise<ApiResponse> {
   return resolveSuccess(
     localeI18ln.getTranslation('apiResponse.packageInfoSuccess'),
@@ -739,12 +750,13 @@ async function getPackageInformation(): Promise<ApiResponse> {
       },
       osWithVersion: os.platform() + '-' + os.release(),
       IDEVersion: vscode.version,
-      platform: 'VSCode',
+      platform: getPlatformDetail(),
     }
   );
 }
 
 async function getScanResultById(scanId: string): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const projectName = await onlyGetOpenedFolderName();
 
   const persistedData = PersistenceInstance.getByKey(
@@ -773,22 +785,26 @@ async function getScanResultById(scanId: string): Promise<ApiResponse> {
       const baseUrl = project.source === 'scan' ? 'sast' : 'assess';
       const client = getAxiosClient(project.contrastURL);
 
+      const decryptApiKey = await secrets.getSecret(project.apiKey);
+      const decryptSecretKey = await secrets.getSecret(project.serviceKey);
+
+      if (decryptApiKey === undefined || decryptSecretKey === undefined) {
+        throw new Error('Missing API key or Service key in secret storage');
+      }
+
       const response = await client.get(
         `/${baseUrl}/organizations/${project.organizationId}/projects/${project.projectId}/results/${scanId}`,
         {
           headers: {
-            'Api-Key': decrypt(project.apiKey),
-            Authorization: authBase64(
-              project.userName,
-              decrypt(project.serviceKey)
-            ),
+            'Api-Key': decryptApiKey,
+            Authorization: authBase64(project.userName, decryptSecretKey),
             ...headers,
           },
         }
       );
 
       if (response.status === 200) {
-        const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Scans Retrieved Successfully \n`;
+        const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Scans Retrieved Successfully \n`;
         void loggerInstance?.logMessage(LogLevel.INFO, logData);
         await updateAdvice(scanId, response.data.risk);
 
@@ -798,7 +814,7 @@ async function getScanResultById(scanId: string): Promise<ApiResponse> {
           response.data.risk
         );
       } else {
-        const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Failed to retrieve scans \n`;
+        const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Failed to retrieve scans \n`;
         void loggerInstance?.logMessage(LogLevel.ERROR, logData);
         return resolveFailure(
           localeI18ln.getTranslation('apiResponse.failedToRetrieveScanById'),
@@ -821,6 +837,7 @@ async function getScanResultById(scanId: string): Promise<ApiResponse> {
 async function getAllApplicationsByOrgId(
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -909,7 +926,7 @@ async function getAllApplicationsByOrgId(
         ) === index
     );
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Applications fetched successfully \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Applications fetched successfully | Total applications: ${uniqueApplications.length}\n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     ShowInformationPopup(
@@ -923,7 +940,7 @@ async function getAllApplicationsByOrgId(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving applications - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving applications - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       ShowErrorPopup(
@@ -949,6 +966,7 @@ async function getApplicationById(
   applicationId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -988,7 +1006,7 @@ async function getApplicationById(
       return resolveFailure('Bad request', 400);
     }
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Applications fetched successfully | Total applications: ${allApplication.length} \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Applications fetched successfully \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     return resolveSuccess(
@@ -998,7 +1016,7 @@ async function getApplicationById(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving applications - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving applications - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -1019,6 +1037,7 @@ async function getServerListbyOrgId(
   appId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1065,7 +1084,7 @@ async function getServerListbyOrgId(
         ) === index
     );
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: ServerList fetched successfully | Total ServerList: ${uniqueServerList.length} \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: ServerList fetched successfully | Total ServerList: ${uniqueServerList.length} \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     return resolveSuccess(
@@ -1075,7 +1094,7 @@ async function getServerListbyOrgId(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -1096,6 +1115,7 @@ async function getBuildNumber(
   appId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1143,7 +1163,7 @@ async function getBuildNumber(
         ) === index
     );
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: BuildNumber fetched successfully | Total BuildNumber: ${uniqueBuildNumber.length} \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: BuildNumber fetched successfully | Total BuildNumber: ${uniqueBuildNumber.length} \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     return resolveSuccess(
@@ -1153,7 +1173,7 @@ async function getBuildNumber(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving BuildNumber - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving BuildNumber - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -1174,6 +1194,7 @@ async function getCustomSessionMetaData(
   appId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1225,7 +1246,7 @@ async function getCustomSessionMetaData(
         ) === index
     );
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: CustomSessionMetaData fetched successfully | Total applications: ${uniqueCustomSessionMetaData.length} \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: CustomSessionMetaData fetched successfully | Total applications: ${uniqueCustomSessionMetaData.length} \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     return resolveSuccess(
@@ -1235,7 +1256,7 @@ async function getCustomSessionMetaData(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving CustomSessionMetaData - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving CustomSessionMetaData - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -1256,6 +1277,7 @@ async function getMostRecentMetaData(
   appId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1296,7 +1318,7 @@ async function getMostRecentMetaData(
       );
     }
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: MostRecentMetaData fetched successfully | Total MostRecentMetaData: ${allMostRecentMetaData.length} \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: MostRecentMetaData fetched successfully | Total MostRecentMetaData: ${allMostRecentMetaData.length} \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     return resolveSuccess(
@@ -1306,7 +1328,7 @@ async function getMostRecentMetaData(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving MostRecentMetaData - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving MostRecentMetaData - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -1326,6 +1348,7 @@ async function getListOfTagsByOrgId(
   orgId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1362,7 +1385,7 @@ async function getListOfTagsByOrgId(
       );
     }
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: allListOfTagsByOrgId fetched successfully | Total allListOfTagsByOrgId: ${allListOfTagsByOrgId.length} \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: allListOfTagsByOrgId fetched successfully | Total allListOfTagsByOrgId: ${allListOfTagsByOrgId.length} \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     return resolveSuccess(
@@ -1372,7 +1395,7 @@ async function getListOfTagsByOrgId(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving allListOfTagsByOrgId - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving allListOfTagsByOrgId - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -1395,6 +1418,7 @@ async function addTagsByOrgId(
   tags_remove: string[],
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1439,7 +1463,7 @@ async function addTagsByOrgId(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving alladdTagsByOrgId - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving alladdTagsByOrgId - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -1458,6 +1482,7 @@ async function addTagsByOrgId(
 async function getScanVulnerabilityResults(
   appId: string
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   let allResults: ProjectSource[] = [];
   const response: ApiResponse = await GetAllConfiguredProjects();
   const configuredProjects: ConfiguredProject[] =
@@ -1507,7 +1532,6 @@ async function getScanVulnerabilityResults(
   }
 
   const filters = await getAllAssessFilters();
-
   const { apiKey, userName, serviceKey, organizationId, contrastURL } = project;
 
   try {
@@ -1531,7 +1555,6 @@ async function getScanVulnerabilityResults(
     );
 
     const client = getAxiosClient(contrastURL);
-
     const response = await client.post(
       `/ng/${organizationId}/traces/${appId}/filter`,
       body,
@@ -1554,7 +1577,7 @@ async function getScanVulnerabilityResults(
       );
     }
 
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: ${formatString(
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: ${formatString(
       'Found {0} issues in {1} files(s)',
       5,
       10
@@ -1569,7 +1592,7 @@ async function getScanVulnerabilityResults(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Unable to retrieve the project as it has been deleted from the organization table. \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Unable to retrieve the project as it has been deleted from the organization table. \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
 
@@ -1585,6 +1608,7 @@ async function getVulnerabilityLineNumberandFileName(
   traceId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1616,7 +1640,7 @@ async function getVulnerabilityLineNumberandFileName(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -1631,6 +1655,7 @@ async function getVulnerabilityIntroTextandRisk(
   traceId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1665,7 +1690,7 @@ async function getVulnerabilityIntroTextandRisk(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -1680,6 +1705,7 @@ async function getVulnerabilityRecommendation(
   traceId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1714,7 +1740,7 @@ async function getVulnerabilityRecommendation(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -1728,6 +1754,7 @@ async function addMarkByOrgId(
   addparams: addMarkByOrgIdParams,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1774,7 +1801,7 @@ async function addMarkByOrgId(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving addMarkByOrgId - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving addMarkByOrgId - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -1789,6 +1816,7 @@ async function getVulnerabilityEvents(
   traceId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1822,7 +1850,7 @@ async function getVulnerabilityEvents(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -1837,6 +1865,7 @@ async function getVulnerabilityHttps(
   traceId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -1870,7 +1899,7 @@ async function getVulnerabilityHttps(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -1884,6 +1913,7 @@ async function getAssessVulnerabilities(
   requestParams: AssessRequest,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   try {
     const level0Vulnerabilities: Level0Vulnerability[] = [];
 
@@ -2084,7 +2114,7 @@ async function getAssessVulnerabilities(
     throw new Error('Failed to retrieve vulnerabilities');
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving AssessVulnerabilities - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving AssessVulnerabilities - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return resolveFailure(
@@ -2109,6 +2139,9 @@ export const getAllAssessFilters = async (): Promise<
     let str = status;
     if (str.includes('NOT_A_PROBLEM')) {
       str = str.replace('NOT_A_PROBLEM', 'NotAProblem');
+    }
+    if (str.includes('REMEDIATED_AUTO_VERIFIED')) {
+      str = str.replace('REMEDIATED_AUTO_VERIFIED', 'AutoRemediated');
     }
     return str;
   };
@@ -2191,6 +2224,7 @@ async function getAssessVulnerabiltiesFromCache(
   requestParams: AssessRequest,
   params: PrimaryConfig
 ): Promise<ApiResponse | undefined> {
+  const startTime: string = DateTime();
   const projectVulnerabilities: ApiResponse = await getDataFromCacheAssess(
     requestParams,
     params
@@ -2206,11 +2240,11 @@ async function getAssessVulnerabiltiesFromCache(
   }
   if (projectVulnerabilities.code === 200) {
     // ShowInformationPopup(projectVulnerabilities.message);
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Vulnerabilities Retrieved from Cache \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Vulnerabilities Retrieved from Cache \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
     return projectVulnerabilities;
   } else {
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Unable to retrieve vulnerabilities from Cache \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Unable to retrieve vulnerabilities from Cache \n`;
     void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     // ShowErrorPopup(projectVulnerabilities.message);
     return projectVulnerabilities;
@@ -2312,6 +2346,7 @@ async function getVulnerabilityByTraceId(
 async function getLibraryVulnerabilities(
   requestBody: ScaFiltersType
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const response: ApiResponse = await GetAllConfiguredProjects();
   const configuredProjects: ConfiguredProject[] =
     response.responseData as ConfiguredProject[];
@@ -2413,7 +2448,7 @@ async function getLibraryVulnerabilities(
       }
     }
 
-    const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Library Vulnerabilities fetched successfully \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Library Vulnerabilities fetched successfully \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
 
     return resolveSuccess(
@@ -2423,7 +2458,7 @@ async function getLibraryVulnerabilities(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -2448,6 +2483,7 @@ async function getLibFilterListByAppId(
   appId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -2489,7 +2525,7 @@ async function getLibFilterListByAppId(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -2501,6 +2537,7 @@ async function getLibFilterListByAppId(
 
 /* getAvailableEnvironments: A method to retrieve environments for assess based on appId */
 async function getAvailableEnvironments(appId: string): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const response: ApiResponse = await GetAllConfiguredProjects();
   const configuredProjects: ConfiguredProject[] =
     response.responseData as ConfiguredProject[];
@@ -2547,7 +2584,7 @@ async function getAvailableEnvironments(appId: string): Promise<ApiResponse> {
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -2562,6 +2599,7 @@ async function getAvailableTags(
   appId: string,
   params: PrimaryConfig
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -2602,7 +2640,7 @@ async function getAvailableTags(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -2618,6 +2656,7 @@ async function getUsageForLibVul(
   hashId: string,
   params: PrimaryConfig
 ) {
+  const startTime: string = DateTime();
   if (appId === undefined) {
     return resolveFailure(
       localeI18ln.getTranslation('apiResponse.projectNotFound'),
@@ -2658,7 +2697,7 @@ async function getUsageForLibVul(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -2669,6 +2708,7 @@ async function getUsageForLibVul(
 }
 
 async function getLibOrgTags(params: PrimaryConfig) {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -2702,7 +2742,7 @@ async function getLibOrgTags(params: PrimaryConfig) {
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -2718,6 +2758,7 @@ async function updateLibTags(
   tags: Array<string>,
   tags_remove: Array<string>
 ) {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -2758,7 +2799,7 @@ async function updateLibTags(
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);
@@ -2769,6 +2810,7 @@ async function updateLibTags(
 }
 
 async function getCVEOverview(cve: string, params: PrimaryConfig) {
+  const startTime: string = DateTime();
   const validationResult = validateParams(params);
 
   if ('code' in validationResult) {
@@ -2802,7 +2844,7 @@ async function getCVEOverview(cve: string, params: PrimaryConfig) {
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: Error retrieving ServerList - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Error retrieving ServerList - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
 
       return handleErrorResponse('apiResponse.authenticationFailure', 500);

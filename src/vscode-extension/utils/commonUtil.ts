@@ -341,7 +341,7 @@ export function extractLastNumber(str: string): number {
   return match ? parseInt(match[0], 10) : 0;
 }
 
-export const DateTime = new Date().toISOString();
+export const DateTime = (): string => new Date().toISOString();
 
 export function groupByFileName(
   vulnerabilities: Level0Vulnerability[]
@@ -431,6 +431,7 @@ export function getParseLibVulData(
   configParams: ConfiguredProject,
   appId: string
 ) {
+  const startTime: string = DateTime();
   const childNodeVulnerabilities: LibraryNode[] = [];
   const noVulnChildren: LibraryNode[] = [];
 
@@ -606,7 +607,7 @@ export function getParseLibVulData(
     libraryCount: libraryCount,
     child: childNodeVulnerabilities,
   };
-  const logData = `Start Time: ${new Date().toISOString()} | End Time: ${new Date().toISOString()} | Message: ${libraryVulnerability.label} \n`;
+  const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: ${libraryVulnerability.label} \n`;
   void loggerInstance?.logMessage(LogLevel.INFO, logData);
   return libraryVulnerability;
 }
