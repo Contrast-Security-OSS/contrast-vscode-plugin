@@ -134,8 +134,6 @@
     "watch": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
     "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
     "build": " npm run build:webview && npm run build:extension",
@@ -143,9 +141,7 @@
     "build:extension": "webpack --config webpack.config.js",
     "format:check": "prettier --write .",
     "test:coverage": "npx jest --coverage",
-    "uitest": "npm run compile-tests && node ./scripts/run-electron-tests.js",
-    "extest": "npm run compile-tests && extest run --resources . --mocha --tests out/e2e/*.js",
-    "extest:headful": "npm run compile-tests && extest run --resources . --mocha --tests out/e2e/*.js --headless false"
+    "uitest": "npm run compile-tests && node ./scripts/run-electron-tests.js"
   },
   "devDependencies": {
     "@babel/core": "^7.25.7",

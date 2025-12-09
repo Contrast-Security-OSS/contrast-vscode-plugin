@@ -28,4 +28,14 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
+    collectCoverageFrom: [
+    '<rootDir>/src/**/*.ts',
+    '!<rootDir>/src/**/*.d.ts',
+    '!<rootDir>/src/vscode-extension/commands/**',
+    '!<rootDir>/src/vscode-extension/logging/**',
+    '!<rootDir>/src/vscode-extension/utils/**',
+    '!<rootDir>/src/vscode-extension/utils/commandHandler/**',
+    '!<rootDir>/src/webview/**',
+    '!<rootDir>/src/l10n.ts'
+  ],
 };
