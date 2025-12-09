@@ -43,7 +43,37 @@ jobs:
       # 8️⃣ Package extension
       - name: Package extension
         run: vsce package
+      # 🔐 Validate Microsoft Marketplace Token
+      - name: Validate Microsoft Marketplace Token (dry-run)
+        run: |
+          echo "🔐 Validating Microsoft Marketplace token..."
+          set +e
+          output=$(npx vsce publish --dry-run -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
+          echo "$output"
 
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ INVALID Microsoft Marketplace Token"
+            exit $exit_code
+          fi
+
+          echo "✅ Microsoft Marketplace token is valid for publishing"
+
+      # 🔐 Validate GitPod/OpenVSX Token
+      - name: Validate GitPod/OpenVSX Token
+        run: |
+          echo "🔐 Validating GitPod/OpenVSX token..."
+          set +e
+          output=$(npx ovsx whoami -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
+          echo "$output"
+
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ INVALID GitPod/OpenVSX Token"
+            exit $exit_code
+          fi
+
+          echo "✅ GitPod/OpenVSX token is valid"
 
       # 9️⃣ Check version in BOTH marketplaces
       - name: Check versions in both Marketplaces
@@ -94,22 +124,22 @@ jobs:
           fi
 
       # 🔟 Publish to Microsoft Marketplace (both must publish or none)
-      - name: Publish to Visual Studio Marketplace
-        if: steps.check_version.outputs.exists == 'false'
+      - name: Validate Microsoft Marketplace Token
         run: |
-          echo "Publishing to MS Marketplace..."
+          echo "🔐 Validating Microsoft Marketplace token..."
+          EXTENSION_ID=$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")
           set +e
-          output=$(npx vsce publish -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          output=$(npx vsce show $EXTENSION_ID -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
           exit_code=$?
           echo "$output"
 
-          if echo "$output" | grep -q "already exists"; then
-            exit 1
-          fi
-
           if [ $exit_code -ne 0 ]; then
+            echo "❌ INVALID Microsoft Marketplace Token"
             exit $exit_code
           fi
+
+          echo "✅ Microsoft Marketplace token is valid"
+
 
       # 1️⃣1️⃣ Publish to GitPod Marketplace (must match MS result)
       - name: Publish to GitPod Marketplace
