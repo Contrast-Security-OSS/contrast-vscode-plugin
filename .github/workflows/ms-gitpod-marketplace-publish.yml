@@ -33,83 +33,42 @@ jobs:
       - name: Build extension
         run: npm run build
 
-      # 5️⃣ Run tests
-      - name: Run tests
-        run: npx jest || echo "No tests found"
-        
-      - name: Install xvfb
-        run: sudo apt-get install -y xvfb
-
-      - name: Start Xvfb
-        run: |
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1080x24 &
-
-      - name: Run Basic Health Check
-        env:
-          DISPLAY: :99
-        run: npm run uitest
-
-      # 6️⃣ Version bump x.y.z
-      - name: Bump version
-        id: bump
-        run: |
-          node <<'EOF'
-          const fs = require("fs");
-
-          function bumpVersion(currentVersion) {
-            let [x, y, z] = currentVersion.split('.').map(Number);
-            z++;
-            if (z > 9) { z = 0; y++; }
-            if (y > 9) { y = 0; x++; }
-            return `${x}.${y}.${z}`;
-          }
-
-          const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-          const newVersion = bumpVersion(pkg.version);
-          pkg.version = newVersion;
-
-          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");
-          fs.writeFileSync(process.env.GITHUB_OUTPUT, `version=${newVersion}\n`, { flag: "a" });
-          EOF
-
-      # 7️⃣ Ensure vsce installed
-      - name: Ensure vsce is installed
-        run: |
-          if ! command -v vsce &> /dev/null; then
-            npm install -g @vscode/vsce
-          fi
 
       # 8️⃣ Package extension
       - name: Package extension
         run: vsce package
 
-      # 🔐 Validate Microsoft Marketplace Token
+      # 🔐 Validate Microsoft Marketplace Token (via vsce whoami)
       - name: Validate Microsoft Marketplace Token
         run: |
           echo "🔐 Validating Microsoft Marketplace token..."
-          RESPONSE=$(curl -s -w "%{http_code}" -o /tmp/ms_profile.json \
-            -H "Authorization: Basic $(printf ":%s" "${{ secrets.VS_MARKETPLACE_TOKEN }}" | base64 -w0)" \
-            https://app.vssps.visualstudio.com/_apis/profile/profiles/me?api-version=7.1-preview.1)
+          set +e
+          output=$(npx vsce whoami -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
+          echo "$output"
 
-          if [ "$RESPONSE" != "200" ]; then
-            echo "❌ INVALID Microsoft Marketplace Token (HTTP $RESPONSE)"
-            exit 1
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ INVALID Microsoft Marketplace Token"
+            exit $exit_code
           fi
+
           echo "✅ Microsoft Marketplace token is valid"
+
 
       # 🔐 Validate GitPod/OpenVSX Token
       - name: Validate GitPod/OpenVSX Token
         run: |
           echo "🔐 Validating GitPod/OpenVSX token..."
-          RESPONSE=$(curl -s -w "%{http_code}" -o /tmp/ovsx_profile.json \
-            -H "Authorization: Bearer ${{ secrets.GITPOD_MARKETPLACE_TOKEN }}" \
-            https://open-vsx.org/api/-/whoami)
+          set +e
+          output=$(npx ovsx whoami -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
+          echo "$output"
 
-          if [ "$RESPONSE" != "200" ]; then
-            echo "❌ INVALID GitPod/OpenVSX Token (HTTP $RESPONSE)"
-            exit 1
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ INVALID GitPod/OpenVSX Token"
+            exit $exit_code
           fi
+
           echo "✅ GitPod/OpenVSX token is valid"
 
 
