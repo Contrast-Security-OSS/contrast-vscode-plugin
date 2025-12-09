@@ -2,7 +2,7 @@
   "name": "com-contrastsecurity-vscode",
   "displayName": "Contrast IDE",
   "description": "By integrating the Contrast extension into your IDE (VSCode or GitPod Web IDE), you can quickly map vulnerabilities to your source code directly at the file and line number by importing your ( IAST & SCA ) or SAST vulnerabilities from your latest sessions or scans, providing real-time actionable insight and remediatal guidance on each of the vulnerability found",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "publisher": "ContrastSecurityIDE",
   "aboutPage": {
     "title": "About Plugin",
