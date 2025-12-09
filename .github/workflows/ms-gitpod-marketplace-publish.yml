@@ -50,15 +50,12 @@ jobs:
           echo "🔐 Validating Microsoft Marketplace token..."
           EXTENSION_ID=$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")
           set +e
-          output=$(npx vsce show $EXTENSION_ID -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          VSCE_PAT=${{ secrets.VS_MARKETPLACE_TOKEN }} npx vsce show $EXTENSION_ID 2>&1
           exit_code=$?
-          echo "$output"
-
           if [ $exit_code -ne 0 ]; then
             echo "❌ INVALID Microsoft Marketplace Token"
             exit $exit_code
           fi
-
           echo "✅ Microsoft Marketplace token is valid"
 
 
