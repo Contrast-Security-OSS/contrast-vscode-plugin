@@ -67,12 +67,10 @@ jobs:
           output=$(npx ovsx whoami -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
           exit_code=$?
           echo "$output"
-
           if [ $exit_code -ne 0 ]; then
             echo "❌ INVALID GitPod/OpenVSX Token"
             exit $exit_code
           fi
-
           echo "✅ GitPod/OpenVSX token is valid"
 
       # 9️⃣ Check version in BOTH marketplaces
@@ -122,23 +120,6 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "✔ Version $VERSION does NOT exist — safe to publish."
           fi
-
-      # 🔟 Publish to Microsoft Marketplace (both must publish or none)
-      - name: Validate Microsoft Marketplace Token
-        run: |
-          echo "🔐 Validating Microsoft Marketplace token..."
-          EXTENSION_ID=$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")
-          set +e
-          output=$(npx vsce show $EXTENSION_ID -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
-          exit_code=$?
-          echo "$output"
-
-          if [ $exit_code -ne 0 ]; then
-            echo "❌ INVALID Microsoft Marketplace Token"
-            exit $exit_code
-          fi
-
-          echo "✅ Microsoft Marketplace token is valid"
 
 
       # 1️⃣1️⃣ Publish to GitPod Marketplace (must match MS result)
