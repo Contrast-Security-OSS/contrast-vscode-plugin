@@ -82,7 +82,85 @@ jobs:
       - name: Package extension
         run: vsce package
 
+      # 🔐 Validate Microsoft Marketplace Token
+      - name: Validate Microsoft Marketplace Token
+        run: |
+          echo "🔐 Validating Microsoft Marketplace token..."
+          EXTENSION_ID=$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")
+          set +e
+          VSCE_PAT=${{ secrets.VS_MARKETPLACE_TOKEN }} npx vsce show $EXTENSION_ID 2>&1
+          exit_code=$?
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ INVALID Microsoft Marketplace Token"
+            exit $exit_code
+          fi
+          echo "✅ Microsoft Marketplace token is valid"
 
+      # 🔐 Validate GitPod/OpenVSX Token
+      - name: Validate GitPod/OpenVSX Token
+        run: |
+          echo "🔐 Validating GitPod/OpenVSX token..."
+          NAMESPACE=$(node -p "require('./package.json').publisher")
+          set +e
+          output=$(npx ovsx verify-pat $NAMESPACE -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
+          echo "$output"
+
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ INVALID GitPod/OpenVSX Token"
+            exit $exit_code
+          fi
+
+          echo "✅ GitPod/OpenVSX token is valid for namespace $NAMESPACE"
+
+
+      # 9️⃣ Check version in BOTH marketplaces
+      - name: Check versions in both Marketplaces
+        id: check_version
+        run: |
+          EXTENSION_ID=$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+
+          echo "🔍 Checking extension: $EXTENSION_ID"
+          echo "🔍 New version to publish: $VERSION"
+          echo ""
+
+          ms_exists=false
+          gitpod_exists=false
+
+          echo "📌 Microsoft Marketplace:"
+          MS_VERSION=$(npx vsce show $EXTENSION_ID -p "${{ secrets.VS_MARKETPLACE_TOKEN }}" 2>/dev/null | grep "Version:" | awk '{print $2}')
+
+          if [ -z "$MS_VERSION" ]; then
+            echo " ❌ Not published on Microsoft Marketplace"
+          else
+            echo " ✅ Current version on MS Marketplace = $MS_VERSION"
+            if [ "$MS_VERSION" = "$VERSION" ]; then ms_exists=true; fi
+          fi
+
+          echo ""
+          echo "📌 GitPod / OpenVSX Marketplace:"
+          GITPOD_VERSION=$(npx ovsx show $EXTENSION_ID -p "${{ secrets.GITPOD_MARKETPLACE_TOKEN }}" 2>/dev/null | grep "Version:" | awk '{print $2}')
+
+          if [ -z "$GITPOD_VERSION" ]; then
+            echo " ❌ Not published on GitPod/OpenVSX"
+          else
+            echo " ✅ Current version on GitPod/OpenVSX = $GITPOD_VERSION"
+            if [ "$GITPOD_VERSION" = "$VERSION" ]; then gitpod_exists=true; fi
+          fi
+
+          echo ""
+          echo "-----------------------------------------"
+          echo "🧪 Comparing with new version: $VERSION"
+          echo "-----------------------------------------"
+
+          if [ "$ms_exists" = true ] || [ "$gitpod_exists" = true ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⛔ Version $VERSION already exists — blocking publish."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✔ Version $VERSION does NOT exist — safe to publish."
+          fi
 
       # 🔟 Publish to Microsoft Marketplace (both must publish or none)
       - name: Publish to Visual Studio Marketplace
