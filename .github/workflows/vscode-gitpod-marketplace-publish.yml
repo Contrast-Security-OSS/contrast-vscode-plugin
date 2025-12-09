@@ -163,36 +163,44 @@ jobs:
             echo "✔ Version $VERSION does NOT exist — safe to publish."
           fi
 
-      # 🔟 Publish to the MS Marketplace
-      - name: Publish to MS Marketplace
+     # 🔟 Publish to Microsoft Marketplace (both must publish or none)
+      - name: Publish to Visual Studio Marketplace
+        if: steps.check_version.outputs.exists == 'false'
         run: |
-          echo "Publishing to Microsoft Marketplace..."
+          echo "Publishing to MS Marketplace..."
           set +e
           output=$(npx vsce publish -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
           echo "$output"
 
           if echo "$output" | grep -q "already exists"; then
-            echo "MS Marketplace: Version already exists → continuing"
-            exit 0
+            exit 1
           fi
 
-          exit 0
-
-      # 1️⃣1️⃣ Publish to the GitPod OpenVSX Marketplace
+          if [ $exit_code -ne 0 ]; then
+            exit $exit_code
+          fi
+          
+      # 1️⃣1️⃣ Publish to GitPod Marketplace (must match MS result)
       - name: Publish to GitPod Marketplace
+        if: steps.check_version.outputs.exists == 'false'
         run: |
-          echo "Publishing to OpenVSX/GitPod..."
+          echo "⏳ Publishing to GitPod Marketplace..."
           set +e
           output=$(npx ovsx publish -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
           echo "$output"
 
           if echo "$output" | grep -q "already exists"; then
-            echo "OpenVSX: Version already exists → continuing"
-            exit 0
+            exit 1
           fi
 
-          exit 0
-      
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ GitPod publish failed — aborting to prevent version mismatch."
+            exit $exit_code
+          fi
+
+
       # 1️⃣2️⃣ Commit version bump
       - name: Commit and push version bump
         env:
@@ -200,7 +208,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
           git add package.json package-lock.json
           git commit -m "Bump version to ${{ steps.bump.outputs.version }}" || echo "No changes"
           git push origin HEAD:${GITHUB_REF_NAME}
