@@ -44,37 +44,6 @@ jobs:
       - name: Package extension
         run: vsce package
 
-      # 🔐 Validate Microsoft Marketplace Token
-      - name: Validate Microsoft Marketplace Token (dry-run)
-        run: |
-          echo "🔐 Validating Microsoft Marketplace token..."
-          set +e
-          output=$(npx vsce publish --dry-run -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
-          exit_code=$?
-          echo "$output"
-
-          if [ $exit_code -ne 0 ]; then
-            echo "❌ INVALID Microsoft Marketplace Token"
-            exit $exit_code
-          fi
-
-          echo "✅ Microsoft Marketplace token is valid for publishing"
-
-      # 🔐 Validate GitPod/OpenVSX Token
-      - name: Validate GitPod/OpenVSX Token
-        run: |
-          echo "🔐 Validating GitPod/OpenVSX token..."
-          set +e
-          output=$(npx ovsx whoami -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
-          exit_code=$?
-          echo "$output"
-
-          if [ $exit_code -ne 0 ]; then
-            echo "❌ INVALID GitPod/OpenVSX Token"
-            exit $exit_code
-          fi
-
-          echo "✅ GitPod/OpenVSX token is valid"
 
       # 9️⃣ Check version in BOTH marketplaces
       - name: Check versions in both Marketplaces
