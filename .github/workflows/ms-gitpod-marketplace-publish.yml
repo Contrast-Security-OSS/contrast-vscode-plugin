@@ -48,9 +48,9 @@ jobs:
       - name: Validate Microsoft Marketplace Token
         run: |
           echo "🔐 Validating Microsoft Marketplace token..."
-          EXTENSION_ID=$(node -p "require('./package.json').publisher + '.' + require('./package.json').name")
+          PUBLISHER=$(node -p "require('./package.json').publisher")
           set +e
-          output=$(npx vsce show $EXTENSION_ID -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          output=$(npx vsce ls-publishers -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
           exit_code=$?
           echo "$output"
 
@@ -59,7 +59,12 @@ jobs:
             exit $exit_code
           fi
 
-          echo "✅ Microsoft Marketplace token is valid"
+          if echo "$output" | grep -q "$PUBLISHER"; then
+            echo "✅ Microsoft Marketplace token is valid for publisher $PUBLISHER"
+          else
+            echo "❌ Token valid but publisher $PUBLISHER not found"
+            exit 1
+          fi
 
       # 🔐 Validate GitPod/OpenVSX Token
       - name: Validate GitPod/OpenVSX Token
