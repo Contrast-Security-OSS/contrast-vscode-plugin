@@ -32,7 +32,13 @@ jobs:
       # 4️⃣ Build extension
       - name: Build extension
         run: npm run build
-
+        
+      # 7️⃣ Ensure vsce installed
+      - name: Ensure vsce is installed
+        run: |
+          if ! command -v vsce &> /dev/null; then
+            npm install -g @vscode/vsce
+          fi
 
       # 8️⃣ Package extension
       - name: Package extension
