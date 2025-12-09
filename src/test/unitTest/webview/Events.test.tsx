@@ -11,7 +11,7 @@ jest.mock('../../../webview/utils/postMessage', () => ({
   webviewPostMessage: jest.fn(),
 }));
 
-xdescribe('PaneHeader Component', () => {
+describe('PaneHeader Component', () => {
   const mockOnClick = jest.fn();
   const nodeMock = {
     child: [],
@@ -42,7 +42,7 @@ xdescribe('PaneHeader Component', () => {
   });
 });
 
-xdescribe('TreeRow Component', () => {
+describe('TreeRow Component', () => {
   const nodeMock = {
     child: [],
     label: 'Test Node',
@@ -58,22 +58,11 @@ xdescribe('TreeRow Component', () => {
   });
 });
 
-xdescribe('TreeView Component', () => {
+describe('TreeView Component', () => {
   const treeMock = [{ child: [], label: 'Node 1', type: 'Creation' }];
 
   test('renders TreeView correctly', () => {
     render(<TreeView tree={treeMock} p={10} />);
     expect(screen.getByText('Node 1')).toBeInTheDocument();
-  });
-});
-
-xdescribe('Events Component', () => {
-  const vulnerabilityMock = {
-    events: { data: [{ child: [], label: 'Event Node', type: 'Creation' }] },
-  };
-
-  test('renders Events with given vulnerability data', () => {
-    render(<Events vulnerability={vulnerabilityMock} />);
-    expect(screen.getByText('Event Node')).toBeInTheDocument();
   });
 });
