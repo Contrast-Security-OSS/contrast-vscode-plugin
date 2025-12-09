@@ -125,6 +125,24 @@ jobs:
           fi
 
 
+      # 🔟 Publish to Microsoft Marketplace (both must publish or none)
+      - name: Publish to Visual Studio Marketplace
+        if: steps.check_version.outputs.exists == 'false'
+        run: |
+          echo "Publishing to MS Marketplace..."
+          set +e
+          output=$(npx vsce publish -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
+          echo "$output"
+
+          if echo "$output" | grep -q "already exists"; then
+            exit 1
+          fi
+
+          if [ $exit_code -ne 0 ]; then
+            exit $exit_code
+          fi
+
       # 1️⃣1️⃣ Publish to GitPod Marketplace (must match MS result)
       - name: Publish to GitPod Marketplace
         if: steps.check_version.outputs.exists == 'false'
@@ -143,6 +161,7 @@ jobs:
             echo "❌ GitPod publish failed — aborting to prevent version mismatch."
             exit $exit_code
           fi
+          
       
       # 1️⃣2️⃣ Commit version bump
       - name: Commit and push version bump
