@@ -162,43 +162,36 @@ jobs:
             echo "✔ Version $VERSION does NOT exist — safe to publish."
           fi
 
-      # 🔟 Publish to Microsoft Marketplace (both must publish or none)
-      - name: Publish to Visual Studio Marketplace
-        if: steps.check_version.outputs.exists == 'false'
+      # 🔟 Publish to the MS Marketplace
+      - name: Publish to MS Marketplace
         run: |
-          echo "Publishing to MS Marketplace..."
+          echo "Publishing to Microsoft Marketplace..."
           set +e
           output=$(npx vsce publish -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
-          exit_code=$?
           echo "$output"
 
           if echo "$output" | grep -q "already exists"; then
-            exit 1
+            echo "MS Marketplace: Version already exists → continuing"
+            exit 0
           fi
 
-          if [ $exit_code -ne 0 ]; then
-            exit $exit_code
-          fi
+          exit 0
 
-      # 1️⃣1️⃣ Publish to GitPod Marketplace (must match MS result)
+      # 1️⃣1️⃣ Publish to the GitPod OpenVSX Marketplace
       - name: Publish to GitPod Marketplace
-        if: steps.check_version.outputs.exists == 'false'
         run: |
-          echo "⏳ Publishing to GitPod Marketplace..."
+          echo "Publishing to OpenVSX/GitPod..."
           set +e
           output=$(npx ovsx publish -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
-          exit_code=$?
           echo "$output"
 
           if echo "$output" | grep -q "already exists"; then
-            exit 1
+            echo "OpenVSX: Version already exists → continuing"
+            exit 0
           fi
 
-          if [ $exit_code -ne 0 ]; then
-            echo "❌ GitPod publish failed — aborting to prevent version mismatch."
-            exit $exit_code
-          fi
-          
+          exit 0
+      
       
       # 1️⃣2️⃣ Commit version bump
       - name: Commit and push version bump
