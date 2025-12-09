@@ -113,7 +113,6 @@ jobs:
 
           echo "✅ GitPod/OpenVSX token is valid for namespace $NAMESPACE"
 
-
       # 9️⃣ Check version in BOTH marketplaces
       - name: Check versions in both Marketplaces
         id: check_version
@@ -123,76 +122,71 @@ jobs:
 
           echo "🔍 Checking extension: $EXTENSION_ID"
           echo "🔍 New version to publish: $VERSION"
-          echo ""
 
           ms_exists=false
           gitpod_exists=false
 
           echo "📌 Microsoft Marketplace:"
           MS_VERSION=$(npx vsce show $EXTENSION_ID -p "${{ secrets.VS_MARKETPLACE_TOKEN }}" 2>/dev/null | grep "Version:" | awk '{print $2}')
+          echo "• MS Marketplace Version = ${MS_VERSION:-none}"
 
-          if [ -z "$MS_VERSION" ]; then
-            echo " ❌ Not published on Microsoft Marketplace"
-          else
-            echo " ✅ Current version on MS Marketplace = $MS_VERSION"
-            if [ "$MS_VERSION" = "$VERSION" ]; then ms_exists=true; fi
+          if [ "$MS_VERSION" = "$VERSION" ]; then
+            ms_exists=true
           fi
 
-          echo ""
-          echo "📌 GitPod / OpenVSX Marketplace:"
+          echo "📌 GitPod / OpenVSX:"
           GITPOD_VERSION=$(npx ovsx show $EXTENSION_ID -p "${{ secrets.GITPOD_MARKETPLACE_TOKEN }}" 2>/dev/null | grep "Version:" | awk '{print $2}')
+          echo "• GitPod Version = ${GITPOD_VERSION:-none}"
 
-          if [ -z "$GITPOD_VERSION" ]; then
-            echo " ❌ Not published on GitPod/OpenVSX"
-          else
-            echo " ✅ Current version on GitPod/OpenVSX = $GITPOD_VERSION"
-            if [ "$GITPOD_VERSION" = "$VERSION" ]; then gitpod_exists=true; fi
+          if [ "$GITPOD_VERSION" = "$VERSION" ]; then
+            gitpod_exists=true
           fi
-
-          echo ""
-          echo "-----------------------------------------"
-          echo "🧪 Comparing with new version: $VERSION"
-          echo "-----------------------------------------"
 
           if [ "$ms_exists" = true ] || [ "$gitpod_exists" = true ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⛔ Version $VERSION already exists — blocking publish."
+            echo "⛔ Version already exists — blocking publish."
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "✔ Version $VERSION does NOT exist — safe to publish."
+            echo "✔ Version safe to publish."
           fi
 
-      # 🔟 Publish to the MS Marketplace
-      - name: Publish to MS Marketplace
+      # 🔟 Publish to Microsoft Marketplace (both must publish or none)
+      - name: Publish to Visual Studio Marketplace
+        if: steps.check_version.outputs.exists == 'false'
         run: |
-          echo "Publishing to Microsoft Marketplace..."
+          echo "Publishing to MS Marketplace..."
           set +e
           output=$(npx vsce publish -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
           echo "$output"
 
           if echo "$output" | grep -q "already exists"; then
-            echo "MS Marketplace: Version already exists → continuing"
-            exit 0
+            exit 1
           fi
 
-          exit 0
+          if [ $exit_code -ne 0 ]; then
+            exit $exit_code
+          fi
 
-      # 1️⃣1️⃣ Publish to the GitPod OpenVSX Marketplace
+      # 1️⃣1️⃣ Publish to GitPod Marketplace (must match MS result)
       - name: Publish to GitPod Marketplace
+        if: steps.check_version.outputs.exists == 'false'
         run: |
-          echo "Publishing to OpenVSX/GitPod..."
+          echo "⏳ Publishing to GitPod Marketplace..."
           set +e
           output=$(npx ovsx publish -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
+          exit_code=$?
           echo "$output"
 
           if echo "$output" | grep -q "already exists"; then
-            echo "OpenVSX: Version already exists → continuing"
-            exit 0
+            exit 1
           fi
 
-          exit 0
-      
-      
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ GitPod publish failed — aborting to prevent version mismatch."
+            exit $exit_code
+          fi
+
       # 1️⃣2️⃣ Commit version bump
       - name: Commit and push version bump
         env:
@@ -200,7 +194,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
           git add package.json package-lock.json
           git commit -m "Bump version to ${{ steps.bump.outputs.version }}" || echo "No changes"
           git push origin HEAD:${GITHUB_REF_NAME}
