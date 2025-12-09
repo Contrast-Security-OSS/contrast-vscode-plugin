@@ -45,12 +45,11 @@ jobs:
         run: vsce package
 
       # 🔐 Validate Microsoft Marketplace Token
-      - name: Validate Microsoft Marketplace Token
+      - name: Validate Microsoft Marketplace Token (dry-run)
         run: |
           echo "🔐 Validating Microsoft Marketplace token..."
-          PUBLISHER=$(node -p "require('./package.json').publisher")
           set +e
-          output=$(npx vsce verify-pat ${{ secrets.VS_MARKETPLACE_TOKEN }} $PUBLISHER 2>&1)
+          output=$(npx vsce publish --dry-run -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
           exit_code=$?
           echo "$output"
 
@@ -59,7 +58,7 @@ jobs:
             exit $exit_code
           fi
 
-          echo "✅ Microsoft Marketplace token is valid for publisher $PUBLISHER"
+          echo "✅ Microsoft Marketplace token is valid for publishing"
 
       # 🔐 Validate GitPod/OpenVSX Token
       - name: Validate GitPod/OpenVSX Token
