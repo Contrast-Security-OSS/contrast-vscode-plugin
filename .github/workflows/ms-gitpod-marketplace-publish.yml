@@ -44,12 +44,12 @@ jobs:
       - name: Package extension
         run: vsce package
 
-      # 🔐 Validate Microsoft Marketplace Token (via vsce whoami)
+      # 🔐 Validate Microsoft Marketplace Token
       - name: Validate Microsoft Marketplace Token
         run: |
           echo "🔐 Validating Microsoft Marketplace token..."
           set +e
-          output=$(npx vsce whoami -p ${{ secrets.VS_MARKETPLACE_TOKEN }} 2>&1)
+          output=$(npx vsce verify-pat ${{ secrets.VS_MARKETPLACE_TOKEN }} $(node -p "require('./package.json').publisher") 2>&1)
           exit_code=$?
           echo "$output"
 
@@ -76,7 +76,6 @@ jobs:
           fi
 
           echo "✅ GitPod/OpenVSX token is valid"
-
 
       # 9️⃣ Check version in BOTH marketplaces
       - name: Check versions in both Marketplaces
