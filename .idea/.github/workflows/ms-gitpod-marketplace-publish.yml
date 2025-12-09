@@ -2,7 +2,7 @@ name: Publish VS Code Extension
 
 on:
   push:
-    branches: [ "cd-devops" ]
+    branches: [ "ci/cd-devops" ]
   workflow_dispatch:
 
 permissions:
@@ -84,7 +84,7 @@ jobs:
       - name: Package extension
         run: vsce package
 
-      # 🔐 NEW: Validate both marketplace tokens BEFORE ANY publishing
+      # 🔐 Validate both marketplace tokens BEFORE ANY publishing
       - name: Validate Marketplace Tokens
         id: validate_tokens
         run: |
@@ -95,7 +95,7 @@ jobs:
 
           if [ $MS_STATUS -ne 0 ]; then
             echo "❌ INVALID Microsoft Marketplace Token"
-            exit 1
+            exit 1 # ⛔ STOPS the  pipeline
           fi
           echo "✅ Microsoft token is valid"
           echo ""
@@ -106,7 +106,7 @@ jobs:
 
           if [ $GP_STATUS -ne 0 ]; then
             echo "❌ INVALID GitPod/OpenVSX Token"
-            exit 1
+            exit 1 # ⛔ STOPS the  pipeline
           fi
 
           echo "✅ GitPod token is valid"
