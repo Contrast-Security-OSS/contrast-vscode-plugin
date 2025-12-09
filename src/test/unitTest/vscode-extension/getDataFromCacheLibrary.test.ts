@@ -4,58 +4,64 @@ import { getDataFromCacheLibrary } from '../../../vscode-extension/cache/cacheMa
 import { Uri } from 'vscode';
 import path from 'path';
 
-jest.mock('vscode', () => ({
-  env: {
-    language: 'en',
-    appName: 'VSCode',
-  },
-  workspace: {
-    workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
-  },
-  window: {
-    activeTextEditor: {
-      document: {
-        fileName: 'test.js',
-      },
+jest.mock('vscode', () => {
+  const UIKind = { Desktop: 1, Web: 2 };
+  return {
+    UIKind,
+    env: {
+      language: 'en',
+      appName: 'VSCode',
+      uiKind: UIKind.Desktop,
     },
-    showErrorMessage: jest.fn(),
-    ShowErrorPopup: jest.fn(),
-    showInformationMessage: jest.fn(),
-  },
-  TreeItem: class {
-    [x: string]: { dark: Uri; light: Uri };
-    constructor(
-      label: { dark: Uri; light: Uri },
-      command: any = null,
-      icon: any = null
-    ) {
-      this.label = label;
-      if (command !== null) {
-        this.command = {
-          title: label,
-          command: command,
-        } as any;
+    workspace: {
+      workspaceFolders: [{ uri: { fsPath: '/path/to/mock/workspace' } }],
+      onDidChangeConfiguration: jest.fn(),
+    },
+    window: {
+      activeTextEditor: {
+        document: {
+          fileName: 'test.js',
+        },
+      },
+      showErrorMessage: jest.fn(),
+      ShowErrorPopup: jest.fn(),
+      showInformationMessage: jest.fn(),
+    },
+    TreeItem: class {
+      [x: string]: { dark: Uri; light: Uri };
+      constructor(
+        label: { dark: Uri; light: Uri },
+        command: any = null,
+        icon: any = null
+      ) {
+        this.label = label;
+        if (command !== null) {
+          this.command = {
+            title: label,
+            command: command,
+          } as any;
+        }
+        if (icon !== null) {
+          const projectRoot = path.resolve(__dirname, '..');
+          const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
+          this.iconPath = {
+            dark: iconPath,
+            light: iconPath,
+          };
+        }
       }
-      if (icon !== null) {
-        const projectRoot = path.resolve(__dirname, '..');
-        const iconPath = Uri.file(path.join(projectRoot, 'assets', icon));
-        this.iconPath = {
-          dark: iconPath,
-          light: iconPath,
-        };
-      }
-    }
-  },
-  Uri: {
-    file: jest.fn().mockReturnValue('mockUri'),
-  },
-  commands: {
-    registerCommand: jest.fn(),
-  },
-  languages: {
-    registerHoverProvider: jest.fn(),
-  },
-}));
+    },
+    Uri: {
+      file: jest.fn().mockReturnValue('mockUri'),
+    },
+    commands: {
+      registerCommand: jest.fn(),
+    },
+    languages: {
+      registerHoverProvider: jest.fn(),
+    },
+  };
+});
 
 jest.mock('cache-manager', () => ({
   caching: jest.fn().mockReturnValue({
@@ -164,7 +170,7 @@ describe('getDataFromCacheLibrary', () => {
     const apiResponse = {
       status: 'failure',
       code: 400,
-      message: "Sorry we can't find the Vulnerabilities for this project",
+      message: "Sorry we can't find the Vulnerabilities for this project.",
       responseData: null,
     };
 

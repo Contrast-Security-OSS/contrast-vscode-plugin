@@ -69,8 +69,8 @@
   width: 100%;
 
   .tree-window {
-    min-height: 432px;
-    max-height: 432px;
+    min-height: 550px;
+    max-height: 550px;
     overflow: auto;
     border: 1px solid #2b2b2b;
   }
@@ -79,8 +79,8 @@
     width: 100%;
     max-width: 50%;
     word-wrap: break-word;
-    min-height: 432px;
-    max-height: 432px;
+    min-height: 550px;
+    max-height: 550px;
 
     .assess-split-panel {
       border: 1px solid #2b2b2b;
@@ -194,8 +194,8 @@
   flex-direction: column;
   gap: 25px;
 
-  .whatHappend>.title,
-  .whatRisk>.title {
+  .whatHappend > .title,
+  .whatRisk > .title {
     font-size: 14px;
     font-weight: bold;
   }
@@ -419,7 +419,6 @@
     flex-direction: column;
     gap: 6px;
 
-
     .library-drawer__file-info {
       display: flex;
       flex-direction: row;
@@ -445,7 +444,6 @@
       gap: 5px;
 
       .library-drawer__metadata-item {
-
         padding-right: 5px;
 
         .bold {
@@ -470,7 +468,6 @@
       flex-wrap: wrap;
       gap: 4px;
       align-items: center;
-
     }
 
     .library-summary {
@@ -511,7 +508,6 @@
           }
 
           .progress-bar-inner {
-
             height: 100%;
             border-radius: 5px;
           }
@@ -534,7 +530,7 @@
     font-size: 15px;
     font-weight: bold;
   }
-  .epss{
+  .epss {
     display: flex;
     flex-direction: row;
     gap: 4px;
@@ -558,33 +554,30 @@
   .whatRisk {
     max-width: 100%;
     overflow: auto;
-      td{
-        width: unset;
-        padding-right: 5px;
+    td {
+      width: unset;
+      padding-right: 5px;
+    }
+    th {
+      padding: 10px 0px;
+      text-align: start;
+    }
+    .cveRecord {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      border-radius: 2px;
+      gap: 1em;
+
+      .score {
+        font-size: 14px;
       }
-      th{
-        padding: 10px 0px;
-        text-align: start;
+
+      .name {
+        color: rgb(13, 161, 169);
+        white-space: nowrap;
       }
-      .cveRecord {
-        display: flex;
-        align-items: center;
-        flex-direction: row;
-        border-radius: 2px;
-        gap: 1em;
-
-
-
-        .score {
-          font-size: 14px;
-        }
-
-        .name {
-          color: rgb(13, 161, 169);
-          white-space: nowrap;
-        }
-      }
-    
+    }
   }
 }
 
@@ -627,8 +620,8 @@
       font-weight: 270;
     }
 
-    .score {}
-
+    .score {
+    }
   }
 }
 
@@ -668,7 +661,6 @@
     .prevIcon,
     .nextIcon {
       font-size: 16px;
-
     }
 
     .prevIcon {
@@ -700,7 +692,6 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-
 
     .cve-drawer__file-info {
       display: flex;
@@ -738,7 +729,6 @@
         gap: 5px;
         align-items: center;
       }
-
     }
   }
 
@@ -757,7 +747,6 @@
   }
 
   .cve-severity-metrics {
-
     .metrics-stacks {
       display: flex;
       flex-direction: row;
@@ -892,7 +881,9 @@
     height: 4px;
     background-color: rgb(49, 160, 145);
     border-radius: 10px;
-    transition: left 0.3s ease, width 0.3s ease;
+    transition:
+      left 0.3s ease,
+      width 0.3s ease;
   }
 
   .ds-tab-content {
@@ -916,7 +907,7 @@
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
-      gap: 5px; 
+      gap: 5px;
     }
   }
 
@@ -933,15 +924,8 @@
   }
 }
 
-
-
-
-
-
-
-
 @media screen and (max-width: 600px) {
-  .assess-filter-features>.feature>.build-feature {
+  .assess-filter-features > .feature > .build-feature {
     flex-wrap: wrap;
   }
 }

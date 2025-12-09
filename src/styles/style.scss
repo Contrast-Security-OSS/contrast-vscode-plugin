@@ -268,7 +268,7 @@
 }
 
 .table-container {
-  max-height: 200px;
+  max-height: 460px;
   overflow-y: auto;
   border: 1px solid #2b2b2b;
 
@@ -391,8 +391,8 @@ td {
   border: 1px solid #2b2b2b;
 
   min-height: 300px;
-  height: 475px;
-  max-height: 475px;
+  height: 550px;
+  max-height: 600px;
   overflow: auto;
 
   .c-panel-header {
@@ -421,8 +421,8 @@ td {
 }
 
 .c-assess-panel {
-  height: 524px;
-  max-height: 524px;
+  height: 600px;
+  max-height: 650px;
 }
 
 /* Vulnerability Report */

@@ -6,7 +6,6 @@ import {
   WEBVIEW_COMMANDS,
   WEBVIEW_SCREENS,
 } from '../utils/constants/commands';
-import { decrypt, encrypt } from '../utils/encryptDecrypt';
 import { resolveFailure, resolveSuccess } from '../utils/errorHandling';
 import { PersistenceInstance } from '../utils/persistanceState';
 import {
@@ -34,20 +33,26 @@ import { ContrastPanelInstance } from '../commands/ui-commands/webviewHandler';
 import { closeActiveFileHightlighting } from '../utils/helper';
 import { updateGlobalWebviewConfig } from '../utils/multiInstanceConfigSync';
 import { LocaleMemoryCacheInstance } from '../utils/localeMemoryCache';
+import { secrets } from '../../vscode-extension/commands';
 
 async function AddProjectToConfig(
   payload: ConfiguredProject
 ): Promise<ApiResponse> {
   const isScan = payload.source === 'scan';
+  const startTime: string = DateTime();
   try {
     // Encrypt service_key and api_key before saving
     const getOrgName = await getOrganisationName(payload);
     if (getOrgName !== null) {
+      const randomID = randomUUID();
+      // Store secrets securely
+      await secrets.storeSecret(`${randomID}-serviceKey`, payload.serviceKey);
+      await secrets.storeSecret(`${randomID}-apiKey`, payload.apiKey);
       const encryptedPayload = {
-        id: randomUUID(),
+        id: randomID,
         ...payload,
-        serviceKey: encrypt(payload.serviceKey),
-        apiKey: encrypt(payload.apiKey),
+        serviceKey: `${randomID}-serviceKey`,
+        apiKey: `${randomID}-apiKey`,
         organizationName: getOrgName,
       };
       const isVerified = isScan
@@ -81,7 +86,7 @@ async function AddProjectToConfig(
           );
         }
         const allConfigProjects = GetAllConfiguredProjects();
-        const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: ${isScan ? 'Project' : 'Application'} Added Successfully \n`;
+        const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: ${isScan ? 'Project' : 'Application'} Added Successfully \n`;
         void loggerInstance?.logMessage(LogLevel.INFO, logData);
         return Promise.resolve(
           resolveSuccess(
@@ -93,7 +98,7 @@ async function AddProjectToConfig(
           )
         );
       } else {
-        const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Add ${isScan ? 'Project' : 'Application'}  - Authentication failure \n`;
+        const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Add ${isScan ? 'Project' : 'Application'}  - Authentication failure \n`;
         void loggerInstance?.logMessage(LogLevel.ERROR, logData);
         return Promise.resolve(
           resolveFailure(
@@ -108,7 +113,7 @@ async function AddProjectToConfig(
     );
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Add ${isScan ? 'Project' : 'Application'}  - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Add ${isScan ? 'Project' : 'Application'}  - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
     console.error('Error in AddProjectToConfig:', error);
@@ -130,16 +135,17 @@ async function GetAllConfiguredProjects(): Promise<ApiResponse> {
         SETTING_KEYS.CONFIGPROJECT as keyof PersistedDTO
       ) as ConfiguredProject[] | undefined;
 
-    if (persistedData !== undefined && persistedData?.length > 0) {
-      const decryptedData: ConfiguredProject[] = persistedData.map(
-        (project: ConfiguredProject) => {
-          return {
-            ...project,
-            serviceKey: decrypt(project.serviceKey),
-            apiKey: decrypt(project.apiKey),
-          };
-        }
-      );
+    if (persistedData && persistedData.length > 0) {
+      const decryptedData: ConfiguredProject[] = [];
+      for (const project of persistedData) {
+        const serviceKey = await secrets.getSecret(project.serviceKey);
+        const apiKey = await secrets.getSecret(project.apiKey);
+        decryptedData.push({
+          ...project,
+          serviceKey: serviceKey ?? '',
+          apiKey: apiKey ?? '',
+        });
+      }
 
       return Promise.resolve(
         resolveSuccess(
@@ -174,6 +180,7 @@ async function UpdateConfiguredProjectById(
   id: string,
   payload: ConfiguredProject
 ): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   const isScan = payload.source === 'scan';
   try {
     const persistedData = PersistenceInstance.getByKey(
@@ -182,7 +189,7 @@ async function UpdateConfiguredProjectById(
     ) as ConfiguredProject[];
 
     if (persistedData === null || persistedData.length === 0) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update ${isScan ? 'Project - Project' : 'Application - Application'} Updated Successfully \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update ${isScan ? 'Project - Project' : 'Application - Application'} Updated Successfully \n`;
       void loggerInstance?.logMessage(LogLevel.INFO, logData);
       return resolveSuccess(
         localeI18ln.getTranslation(
@@ -209,7 +216,7 @@ async function UpdateConfiguredProjectById(
 
     const getOrgName = await getOrganisationName(payload);
     if (getOrgName === null) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update ${isScan ? 'Project' : 'Application'} - Organization ID not found \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update ${isScan ? 'Project' : 'Application'} - Organization ID not found \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
       return resolveFailure(
         localeI18ln.getTranslation('persistResponse.organizationNotFound'),
@@ -225,7 +232,7 @@ async function UpdateConfiguredProjectById(
         : false;
 
     if (!isVerified) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update ${isScan ? 'Project' : 'Application'} - Authentication failure \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update ${isScan ? 'Project' : 'Application'} - Authentication failure \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
       return resolveFailure(
         localeI18ln.getTranslation('apiResponse.badRequest'),
@@ -233,18 +240,24 @@ async function UpdateConfiguredProjectById(
       );
     }
 
-    const updatedData = persistedData.map((item: ConfiguredProject) => {
-      if (item.id === id) {
-        return {
-          ...payload,
-          id,
-          serviceKey: encrypt(payload.serviceKey),
-          apiKey: encrypt(payload.apiKey),
-          organizationName: getOrgName,
-        };
-      }
-      return item;
-    });
+    const updatedData = await Promise.all(
+      persistedData.map(async (item: ConfiguredProject) => {
+        if (item.id === id) {
+          // Overwrite secrets in SecretStorage
+          await secrets.storeSecret(`${id}-serviceKey`, payload.serviceKey);
+          await secrets.storeSecret(`${id}-apiKey`, payload.apiKey);
+
+          return {
+            ...payload,
+            id,
+            serviceKey: `${id}-serviceKey`, // store only the reference
+            apiKey: `${id}-apiKey`,
+            organizationName: getOrgName,
+          };
+        }
+        return item;
+      })
+    );
 
     await PersistenceInstance.set(
       TOKEN.SETTING,
@@ -294,7 +307,7 @@ async function UpdateConfiguredProjectById(
       }
     }
 
-    const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update ${isScan ? 'Project - Project' : 'Application - Application'} updated successfully \n`;
+    const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update ${isScan ? 'Project - Project' : 'Application - Application'} updated successfully \n`;
     void loggerInstance?.logMessage(LogLevel.INFO, logData);
     return resolveSuccess(
       localeI18ln.getTranslation(
@@ -306,7 +319,7 @@ async function UpdateConfiguredProjectById(
   } catch (error) {
     console.error('error', error);
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update ${isScan ? 'Project' : 'Application'} - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update ${isScan ? 'Project' : 'Application'} - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
     return resolveFailure(
@@ -320,6 +333,7 @@ async function DeleteConfiguredProjectById(
   id: string,
   payload?: ConfiguredProject
 ): Promise<ApiResponse | undefined> {
+  const startTime: string = DateTime();
   const isScan = payload?.source === 'scan';
   try {
     const persistedData = PersistenceInstance.getByKey(
@@ -394,7 +408,7 @@ async function DeleteConfiguredProjectById(
           command: WEBVIEW_COMMANDS.SETTING_CANCEL_STATE_WHILE_DELETE,
           data: null,
         });
-        const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Delete ${isScan ? 'Project - Project' : 'Application - Application'}  deleted successfully. \n`;
+        const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Delete ${isScan ? 'Project - Project' : 'Application - Application'}  deleted successfully. \n`;
         void loggerInstance?.logMessage(LogLevel.INFO, logData);
         return Promise.resolve(
           resolveSuccess(
@@ -412,7 +426,7 @@ async function DeleteConfiguredProjectById(
         });
       }
     } else {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Delete ${isScan ? 'Project' : 'Application'} - No Data in the Organisation Table. \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Delete ${isScan ? 'Project' : 'Application'} - No Data in the Organisation Table. \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
       return Promise.reject(
         resolveSuccess(
@@ -427,7 +441,7 @@ async function DeleteConfiguredProjectById(
   } catch (error) {
     console.error('error', error);
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Delete ${isScan ? 'Project' : 'Application'} - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Delete ${isScan ? 'Project' : 'Application'} - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
     ShowInformationPopup(
@@ -445,6 +459,7 @@ async function DeleteConfiguredProjectById(
 }
 
 async function GetFilters(): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   try {
     const persistedData = (await LocaleMemoryCacheInstance.getItem(
       TOKEN.SCAN,
@@ -470,7 +485,7 @@ async function GetFilters(): Promise<ApiResponse> {
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Filter Data - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Filter Data - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
     return Promise.reject(
@@ -483,6 +498,7 @@ async function GetFilters(): Promise<ApiResponse> {
 }
 
 async function UpdateFilters(payload: FilterType): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   try {
     const persistedData = await LocaleMemoryCacheInstance.setItem(
       TOKEN.SCAN,
@@ -490,7 +506,7 @@ async function UpdateFilters(payload: FilterType): Promise<ApiResponse> {
       payload
     );
     if (persistedData !== null) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update Filter - Filters updated successfully \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update Filter - Filters updated successfully \n`;
       void loggerInstance?.logMessage(LogLevel.INFO, logData);
       return Promise.resolve(
         resolveSuccess(
@@ -500,7 +516,7 @@ async function UpdateFilters(payload: FilterType): Promise<ApiResponse> {
         )
       );
     } else {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update Filter - Filters updated successfully \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update Filter - Filters updated successfully \n`;
       void loggerInstance?.logMessage(LogLevel.INFO, logData);
       return Promise.resolve(
         resolveSuccess(
@@ -512,7 +528,7 @@ async function UpdateFilters(payload: FilterType): Promise<ApiResponse> {
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update Filter - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update Filter - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
     return Promise.reject(
@@ -525,6 +541,7 @@ async function UpdateFilters(payload: FilterType): Promise<ApiResponse> {
 }
 
 async function GetAssessFilter(): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   try {
     const persistedData = (await LocaleMemoryCacheInstance.getItem(
       TOKEN.ASSESS,
@@ -550,7 +567,7 @@ async function GetAssessFilter(): Promise<ApiResponse> {
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Assess Filter Data - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Assess Filter Data - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
     return Promise.reject(
@@ -563,6 +580,7 @@ async function GetAssessFilter(): Promise<ApiResponse> {
 }
 
 async function UpdateAssessFilter(payload: AssessFilter): Promise<ApiResponse> {
+  const startTime: string = DateTime();
   try {
     const persistedData = await LocaleMemoryCacheInstance.setItem(
       TOKEN.ASSESS,
@@ -570,7 +588,7 @@ async function UpdateAssessFilter(payload: AssessFilter): Promise<ApiResponse> {
       payload
     );
     if (persistedData !== null) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update  Filter - Filters updated successfully \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update  Filter - Filters updated successfully \n`;
       void loggerInstance?.logMessage(LogLevel.INFO, logData);
       return Promise.resolve(
         resolveSuccess(
@@ -580,7 +598,7 @@ async function UpdateAssessFilter(payload: AssessFilter): Promise<ApiResponse> {
         )
       );
     } else {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update  Filter -  Filters updated successfully \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update  Filter -  Filters updated successfully \n`;
       void loggerInstance?.logMessage(LogLevel.INFO, logData);
       return Promise.resolve(
         resolveSuccess(
@@ -592,7 +610,7 @@ async function UpdateAssessFilter(payload: AssessFilter): Promise<ApiResponse> {
     }
   } catch (error) {
     if (error instanceof Error) {
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message:  Update Filter - ${error.message} \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message:  Update Filter - ${error.message} \n`;
       void loggerInstance?.logMessage(LogLevel.ERROR, logData);
     }
     return Promise.reject(

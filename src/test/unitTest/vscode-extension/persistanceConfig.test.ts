@@ -27,10 +27,6 @@ import {
   getProjectById,
 } from '../../../vscode-extension/api/services/apiService';
 import {
-  decrypt,
-  encrypt,
-} from '../../../vscode-extension/utils/encryptDecrypt';
-import {
   ASSESS_KEYS,
   SCAN_KEYS,
   SETTING_KEYS,
@@ -46,6 +42,7 @@ import { Uri } from 'vscode';
 import { ContrastPanelInstance } from '../../../vscode-extension/commands/ui-commands/webviewHandler';
 import { updateGlobalWebviewConfig } from '../../../vscode-extension/utils/multiInstanceConfigSync';
 import { LocaleMemoryCacheInstance } from '../../../vscode-extension/utils/localeMemoryCache';
+import { secrets } from '../../../vscode-extension/commands';
 
 jest.mock('../../../vscode-extension/utils/helper', () => ({
   closeActiveFileHightlighting: jest.fn(),
@@ -178,9 +175,12 @@ jest.mock('../../../vscode-extension/api/services/apiService', () => ({
   getApplicationById: jest.fn(),
 }));
 
-jest.mock('../../../vscode-extension/utils/encryptDecrypt', () => ({
-  encrypt: jest.fn((key) => `encrypted-${key}`),
-  decrypt: jest.fn(),
+jest.mock('../../../vscode-extension/commands', () => ({
+  secrets: {
+    storeSecret: jest.fn(),
+    getSecret: jest.fn(),
+    deleteSecret: jest.fn(),
+  },
 }));
 
 jest.mock('../../../vscode-extension/logging/logger', () => ({
@@ -205,8 +205,11 @@ describe('Project Configuration Functions', () => {
       }
       (PersistenceInstance.getByKey as jest.Mock).mockReturnValue([]);
       (getOrganisationName as jest.Mock).mockResolvedValue('OrgName');
-      (encrypt as jest.Mock).mockImplementation(
-        (value) => `encrypted-${value}`
+      (secrets.storeSecret as jest.Mock).mockImplementation(
+        (key) => `${key}-serviceKey`
+      );
+      (secrets.storeSecret as jest.Mock).mockImplementation(
+        (key) => `${key}-apiKey`
       );
 
       const response = await AddProjectToConfig(project);
@@ -236,8 +239,11 @@ describe('Project Configuration Functions', () => {
       }
       (PersistenceInstance.getByKey as jest.Mock).mockReturnValue([]);
       (getOrganisationName as jest.Mock).mockResolvedValue('OrgName');
-      (encrypt as jest.Mock).mockImplementation(
-        (value) => `encrypted-${value}`
+      (secrets.storeSecret as jest.Mock).mockImplementation(
+        (key) => `${key}-serviceKey`
+      );
+      (secrets.storeSecret as jest.Mock).mockImplementation(
+        (key) => `${key}-apiKey`
       );
 
       const response = await AddProjectToConfig(project);
@@ -376,14 +382,17 @@ describe('Project Configuration Functions', () => {
       (PersistenceInstance.getByKey as jest.Mock).mockReturnValue(
         persistedData
       );
-      (decrypt as jest.Mock).mockImplementation(
-        (value) => `decrypted-${value}`
+
+      (secrets.getSecret as jest.Mock).mockImplementation(
+        (key) => `${key}-serviceKey`
+      );
+      (secrets.getSecret as jest.Mock).mockImplementation(
+        (key) => `${key}-apiKey`
       );
 
       const response = await GetAllConfiguredProjects();
 
-      expect(decrypt).toHaveBeenCalledTimes(2);
-      expect(decrypt).toHaveBeenCalledTimes(2);
+      expect(secrets.getSecret).toHaveBeenCalledTimes(2);
       expect(response).toEqual(
         resolveSuccess(
           localeI18ln.getTranslation('persistResponse.fetchAllProjectsSuccess'),
@@ -393,10 +402,10 @@ describe('Project Configuration Functions', () => {
               projectId: '1',
               projectName: 'Test Project 1',
               minute: 10,
-              apiKey: 'decrypted-0123',
+              apiKey: '0123-apiKey',
               contrastURL: 'example.com',
               userName: 'user',
-              serviceKey: 'decrypted-1234',
+              serviceKey: '1234-apiKey',
               organizationId: 'org123',
               source: 'assess',
             },
@@ -1460,7 +1469,7 @@ describe('Project Configuration Functions', () => {
 
       await expect(GetAssessFilter()).rejects.toEqual({
         code: 400,
-        message: 'Something went wrong, Please try again',
+        message: 'Something went wrong, Please try again.',
         responseData: null,
         status: 'failure',
       });
@@ -1495,7 +1504,7 @@ describe('Project Configuration Functions', () => {
 
       await expect(UpdateAssessFilter(payload)).resolves.toEqual({
         code: 200,
-        message: 'Filters updated successfully',
+        message: 'Filters updated successfully.',
         responseData: payload,
         status: 'success',
       });
@@ -1529,7 +1538,7 @@ describe('Project Configuration Functions', () => {
 
       await expect(UpdateAssessFilter(payload)).resolves.toEqual({
         code: 200,
-        message: 'Filters updated successfully',
+        message: 'Filters updated successfully.',
         responseData: null,
         status: 'success',
       });
@@ -1567,7 +1576,7 @@ describe('Project Configuration Functions', () => {
 
       await expect(UpdateAssessFilter(payload)).rejects.toEqual({
         code: 400,
-        message: 'Something went wrong, Please try again',
+        message: 'Something went wrong, Please try again.',
         responseData: null,
         status: 'failure',
       });

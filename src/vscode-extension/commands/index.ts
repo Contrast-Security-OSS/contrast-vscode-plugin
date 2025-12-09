@@ -21,8 +21,10 @@ import { PersistedDTO } from '../../common/types';
 import { registerAssessCommand } from './ui-commands/assessCommand';
 import { globalConfigChangeListener } from '../utils/multiInstanceConfigSync';
 import { LocaleMemoryCacheInstance } from '../utils/localeMemoryCache';
+import { SecretService } from '../utils/encryptDecrypt';
 
 let globalExtentionUri: vscode.ExtensionContext;
+export let secrets: SecretService;
 
 const registeredCommands = [
   registerSettingsCommand,
@@ -39,6 +41,7 @@ const registeredCommands = [
 export async function registerCommands(
   context: vscode.ExtensionContext
 ): Promise<void> {
+  secrets = new SecretService(context.secrets);
   globalExtentionUri = context;
   PersistenceInstance.registerContext(context.globalState);
 

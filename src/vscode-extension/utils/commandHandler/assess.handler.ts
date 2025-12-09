@@ -73,6 +73,7 @@ import { loggerInstance } from '../../logging/logger';
 import { DateTime } from '../commonUtil';
 
 export const AssessCommandHandler = async (props: CommandRequest) => {
+  const startTime: string = DateTime();
   const { command, payload } = props;
   switch (command) {
     case WEBVIEW_COMMANDS.GET_CONFIGURED_APPLICATIONS: {
@@ -521,7 +522,7 @@ export const AssessCommandHandler = async (props: CommandRequest) => {
       ShowInformationPopup(
         localeI18ln.getTranslation('persistResponse.scaFilterUpdatedSuccess')
       );
-      const logData = `Start Time: ${DateTime} | End Time: ${DateTime} | Message: Update Library Filter - Filters updated successfully \n`;
+      const logData = `Start Time: ${startTime} | End Time: ${DateTime()} | Message: Update Library Filter - Filters updated successfully \n`;
       void loggerInstance?.logMessage(LogLevel.INFO, logData);
       return {
         command: WEBVIEW_COMMANDS.SCA_UPDATE_FILTERS,

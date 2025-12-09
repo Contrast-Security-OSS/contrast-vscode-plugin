@@ -1,5 +1,24 @@
 # Change Log
 
+## [3.0.1] - 2025-12-08
+
+### Added
+
+- Extended support for the Gitpod Web Browser IDE.
+- Added support for the AutoRemediated status in the assess filter screen.
+
+### Changed
+
+- Removed the old mechanism of encrypting and decrypting API Key and Service Key using the crypto library. The extension now uses VS Code Secret Storage for secure credential storage and retrieval.
+- Updated the About page to retrieve dynamic platform-based data.
+
+### Fixed
+
+- Fixed several bugs related to text updates in pop-up messages.
+- Fixed the timestamp issue in the logs; it now shows the exact start time and end time of the service from initiation until a response is returned.
+
+---
+
 ## [3.0.0] - 2025-07-31
 
 ### Added

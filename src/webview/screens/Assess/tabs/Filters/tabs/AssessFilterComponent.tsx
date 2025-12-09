@@ -235,9 +235,7 @@ function AssessFilterComponent() {
   const [severityOptions, setSeverityOptions] =
     useState<SeverityOptionsType>(SeverityOptions);
   const [statusOptions, setStatusOptions] = useState<StatusOptionsType>([
-    ...StatusOptions.filter(
-      (item) => !['REOPENED', 'REMEDIATED_AUTO_VERIFIED'].includes(item.type)
-    ),
+    ...StatusOptions.filter((item) => !['REOPENED'].includes(item.type)),
   ]);
 
   // -> Date Filter States
