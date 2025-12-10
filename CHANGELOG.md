@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.0.2] - 2025-12-15
+
+### Added
+
+- CI/CD pipeline for automatic deployment of the extension to the OpenVSX Registry and Microsoft Marketplace.
+
 ## [3.0.1] - 2025-12-08
 
 ### Added
