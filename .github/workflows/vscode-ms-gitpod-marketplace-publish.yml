@@ -104,7 +104,7 @@ jobs:
           echo "🔐 Validating GitPod/OpenVSX token..."
           NAMESPACE=$(node -p "require('./package.json').publisher")
           set +e
-          output=$(npx ovsx verify-pat $NAMESPACE -p ${{ secrets.GITPOD_MARKETPLACE_TOKEN }} 2>&1)
+          output=$(npx ovsx verify-pat $NAMESPACE -p ${{ secrets.GITPOD_MARKETPLACE_TOKENs }} 2>&1)
           exit_code=$?
           echo "$output"
 
