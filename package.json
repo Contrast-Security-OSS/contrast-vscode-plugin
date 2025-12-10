@@ -1,9 +1,9 @@
 {
-  "name": "ContrastSecurityIDE",
-  "displayName": "ContrastSecurityIDE",
+  "name": "Contrast-Security",
+  "displayName": "Contrast IDE",
   "description": "By integrating the Contrast extension into your IDE (VSCode or GitPod Web IDE), you can quickly map vulnerabilities to your source code directly at the file and line number by importing your ( IAST & SCA ) or SAST vulnerabilities from your latest sessions or scans, providing real-time actionable insight and remediatal guidance on each of the vulnerability found",
   "version": "3.0.0",
-  "publisher": "Contrast Security",
+  "publisher": "ContrastSecurityIDE",
   "aboutPage": {
     "title": "About Plugin",
     "content": "<p class='about-ul'>By integrating the Contrast extension into your IDE (VSCode or GitPod Web IDE), you are able to quickly map vulnerabilities to your source code directly at the file and line number by importing your ( IAST & SCA ) or SAST vulnerabilities from the latest sessions or scans getting actionable information on each of the vulnerabilities found.</p><p>The IDE plugin provides the following <strong>features</strong> : </p><ul class='about-ul'><li><strong>Comprehensive vulnerability analysis : </strong> The extension allows you to connect your IDE (VSCode or GitPod Web IDE) to the Contrast Platform and analyse any of your IAST Applications or SAST projects directly within the IDE. See vulnerability summaries right at the file and line number, highlighting the risk and providing a short summary of remediation you can take or follow the link back to the Contrast platform. IAST vulnerabilities are fetched along with SCA library vulnerabilities.</li><br><li><strong>Broad language and framework support : </strong> Contrast Security covers commonly supported languages.</li></ul>"
