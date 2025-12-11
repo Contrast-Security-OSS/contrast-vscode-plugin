@@ -166,6 +166,7 @@ By integrating the Contrast extension into your IDE (VSCode or GitPod Web IDE), 
 ![Configuration Setting Screen](assets/readme-images/gitpod/assess-library-report.png)
 
 ---
+### Note : Change the version manually only if any major release - https://github.com/Contrast-Security-OSS/contrast-vscode-plugin/blob/main/package.json#L5
 
 ### Frequently Asked Questions
 
